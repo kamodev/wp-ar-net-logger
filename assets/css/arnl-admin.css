@@ -330,6 +330,36 @@
 	overflow-x: auto;
 }
 
+.arnl-refresh {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.3em 1em;
+	margin: -0.5em 0 0.6em;
+}
+
+.arnl-refresh label {
+	font-weight: normal;
+}
+
+/* Rows added by the background refresh. */
+.arnl-checkins-table tr.arnl-ci-new td {
+	animation: arnl-new-row 4s ease-out;
+}
+
+@keyframes arnl-new-row {
+	from {
+		background-color: #fff3a3;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.arnl-checkins-table tr.arnl-ci-new td {
+		animation: none;
+		background-color: #fcf9e8;
+	}
+}
+
 .arnl-checkins-table td {
 	vertical-align: top;
 }

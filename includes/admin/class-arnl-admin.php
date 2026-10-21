@@ -75,6 +75,15 @@ class ARNL_Admin {
 			array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'arnl_lookup' ),
+				'refresh' => array(
+					'nonce'    => wp_create_nonce( 'arnl_refresh_log' ),
+					/**
+					 * Filters how often (in seconds) the Net Log checks for new check-ins.
+					 *
+					 * @param int $seconds Interval.
+					 */
+					'interval' => max( 2, (int) apply_filters( 'arnl_log_refresh_interval', 15 ) ),
+				),
 				'i18n'    => array(
 					'confirm'     => __( 'Are you sure?', 'ar-net-logger' ),
 					'found'       => __( 'Filled in from a previous check-in.', 'ar-net-logger' ),
@@ -82,6 +91,15 @@ class ARNL_Admin {
 					/* translators: %d: number of previous check-ins. */
 					'checkins'    => __( '%d check-ins', 'ar-net-logger' ),
 					'online'      => __( 'License lookup', 'ar-net-logger' ),
+					/* translators: %s: time of the last update. */
+					'updated'     => __( 'Updated %s', 'ar-net-logger' ),
+					/* translators: %d: number of new check-ins. */
+					'newOne'      => __( '%d new check-in', 'ar-net-logger' ),
+					/* translators: %d: number of new check-ins. */
+					'newMany'     => __( '%d new check-ins', 'ar-net-logger' ),
+					'paused'      => __( 'Automatic updates paused.', 'ar-net-logger' ),
+					'retrying'    => __( 'Could not reach the server, retrying…', 'ar-net-logger' ),
+					'expired'     => __( 'Automatic updates stopped. Reload the page to resume.', 'ar-net-logger' ),
 				),
 			)
 		);

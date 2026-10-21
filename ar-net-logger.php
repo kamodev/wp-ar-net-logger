@@ -3,7 +3,7 @@
  * Plugin Name:       AR Net Logger
  * Plugin URI:        https://github.com/kamodev/wp-ar-net-logger
  * Description:       Schedule, publish and log Amateur (ham) Radio nets: recurring net schedules, per-session overrides, a public calendar with shortcodes, iCalendar export, Net Control Station assignments and online / NCS-logged check-ins.
- * Version:           1.1.0
+ * Version:           1.1.1
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            kamodev
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ARNL_VERSION', '1.1.0' );
+define( 'ARNL_VERSION', '1.1.1' );
 define( 'ARNL_DB_VERSION', '2' );
 define( 'ARNL_FILE', __FILE__ );
 define( 'ARNL_DIR', plugin_dir_path( __FILE__ ) );
