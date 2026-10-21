@@ -47,9 +47,40 @@
 		$( '#arnl-recurrence' ).on( 'change', syncRecurrence );
 	}
 
+	// Net form: the per-net webhook only matters for "this net's own channel".
+	var syncDiscord = function () {
+		$( '.arnl-row-discord-webhook' ).toggle( $( '#arnl-discord-mode' ).val() === 'custom' );
+	};
+	if ( $( '#arnl-discord-mode' ).length ) {
+		syncDiscord();
+		$( '#arnl-discord-mode' ).on( 'change', syncDiscord );
+	}
+
 	if ( $.fn.wpColorPicker ) {
 		$( '.arnl-color-picker' ).wpColorPicker();
 	}
+
+	// Copy-to-clipboard buttons (e.g. Facebook event details).
+	$( document ).on( 'click', '[data-arnl-copy]', function () {
+		var $button = $( this );
+		var field = document.querySelector( $button.data( 'arnl-copy' ) );
+		var done = function () {
+			$button.siblings( '.arnl-copy-status' ).text( settings.i18n.copied );
+		};
+		if ( ! field ) {
+			return;
+		}
+		if ( window.navigator.clipboard && window.isSecureContext ) {
+			window.navigator.clipboard.writeText( field.value ).then( done, function () {
+				field.select();
+			} );
+		} else {
+			field.select();
+			if ( document.execCommand( 'copy' ) ) {
+				done();
+			}
+		}
+	} );
 
 	$( '.arnl-print' ).on( 'click', function () {
 		window.print();

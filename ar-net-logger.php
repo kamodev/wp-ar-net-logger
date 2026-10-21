@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       AR Net Logger
  * Plugin URI:        https://github.com/kamodev/wp-ar-net-logger
- * Description:       Schedule, publish and log Amateur (ham) Radio nets: recurring net schedules, per-session overrides, a public calendar with shortcodes, iCalendar export, Net Control Station assignments and online / NCS-logged check-ins.
- * Version:           1.1.1
+ * Description:       Schedule, publish and log Amateur (ham) Radio nets: recurring net schedules, per-session overrides, a public calendar with shortcodes, iCalendar export, Net Control Station assignments, online / NCS-logged check-ins, Discord check-in posts and Facebook Page announcements.
+ * Version:           1.2.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            kamodev
@@ -18,8 +18,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ARNL_VERSION', '1.1.1' );
-define( 'ARNL_DB_VERSION', '2' );
+define( 'ARNL_VERSION', '1.2.0' );
+define( 'ARNL_DB_VERSION', '3' );
 define( 'ARNL_FILE', __FILE__ );
 define( 'ARNL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ARNL_URL', plugin_dir_url( __FILE__ ) );
@@ -38,6 +38,8 @@ require_once ARNL_DIR . 'includes/class-arnl-callsign-lookup.php';
 require_once ARNL_DIR . 'includes/class-arnl-calendar.php';
 require_once ARNL_DIR . 'includes/class-arnl-ical.php';
 require_once ARNL_DIR . 'includes/class-arnl-checkin-handler.php';
+require_once ARNL_DIR . 'includes/class-arnl-discord.php';
+require_once ARNL_DIR . 'includes/class-arnl-facebook.php';
 require_once ARNL_DIR . 'includes/class-arnl-shortcodes.php';
 require_once ARNL_DIR . 'includes/class-arnl-plugin.php';
 

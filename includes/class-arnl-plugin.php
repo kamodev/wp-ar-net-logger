@@ -27,6 +27,8 @@ class ARNL_Plugin {
 		ARNL_Permalinks::init();
 		ARNL_ICal::init();
 		ARNL_Checkin_Handler::init();
+		ARNL_Discord::init();
+		ARNL_Facebook::init();
 		ARNL_Shortcodes::init();
 
 		if ( is_admin() ) {

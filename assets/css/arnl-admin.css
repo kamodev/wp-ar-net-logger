@@ -112,6 +112,20 @@
 	color: #fff;
 }
 
+/* Integrations */
+.arnl-integration-error {
+	color: #b32d2e;
+}
+
+.arnl-integration-note {
+	max-width: 800px;
+}
+
+.arnl-share-box .arnl-fb-event {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 12px;
+}
+
 /* Schedule list */
 .arnl-filters {
 	display: flex;

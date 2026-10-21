@@ -19,6 +19,7 @@ class ARNL_Admin_Schedule {
 		add_action( 'admin_post_arnl_save_event', array( __CLASS__, 'handle_save' ) );
 		add_action( 'admin_post_arnl_event_status', array( __CLASS__, 'handle_status' ) );
 		add_action( 'admin_post_arnl_delete_event', array( __CLASS__, 'handle_delete' ) );
+		add_action( 'admin_post_arnl_facebook_post', array( __CLASS__, 'handle_facebook_post' ) );
 	}
 
 	/**
@@ -69,6 +70,49 @@ class ARNL_Admin_Schedule {
 			),
 			'arnl_event_status_' . $o->key()
 		);
+	}
+
+	/**
+	 * "Post to Facebook" button, or a link to the post once published.
+	 *
+	 * @param ARNL_Occurrence $o Session.
+	 * @return string
+	 */
+	public static function facebook_button( ARNL_Occurrence $o ) {
+		if ( ! ARNL_Facebook::enabled_for( $o->net ) ) {
+			return '';
+		}
+		$post_id = ARNL_Facebook::posted( $o );
+		if ( '' !== $post_id ) {
+			return '<a class="button button-small arnl-fb-posted" href="' . esc_url( ARNL_Facebook::post_url( $post_id ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'On Facebook ✓', 'ar-net-logger' ) . '</a>';
+		}
+		if ( $o->is_cancelled() || ! current_user_can( ARNL_Install::CAP_MANAGE_NETS ) || $o->end() < arnl_now() ) {
+			return '';
+		}
+		$url = ARNL_Admin::action_url( 'arnl_facebook_post', array( 'event' => $o->key() ), 'arnl_facebook_post_' . $o->key() );
+		return '<a class="button button-small arnl-fb-post" href="' . esc_url( $url ) . '">' . esc_html__( 'Post to Facebook', 'ar-net-logger' ) . '</a>';
+	}
+
+	/**
+	 * Publish one session on the Facebook Page now.
+	 */
+	public static function handle_facebook_post() {
+		$key = isset( $_GET['event'] ) ? sanitize_text_field( wp_unslash( $_GET['event'] ) ) : '';
+		check_admin_referer( 'arnl_facebook_post_' . $key );
+		if ( ! current_user_can( ARNL_Install::CAP_MANAGE_NETS ) ) {
+			wp_die( esc_html__( 'You are not allowed to edit the schedule.', 'ar-net-logger' ), 403 );
+		}
+		$o = ARNL_Schedule::find( $key );
+		if ( ! $o ) {
+			wp_die( esc_html__( 'Session not found.', 'ar-net-logger' ) );
+		}
+		$back   = wp_get_referer();
+		$back   = $back ? remove_query_arg( array( 'arnl_notice', 'arnl_error' ), $back ) : ARNL_Admin::url( 'arnl-schedule' );
+		$result = ARNL_Facebook::post( $o );
+		if ( is_wp_error( $result ) ) {
+			ARNL_Admin::fail( $back, $result );
+		}
+		ARNL_Admin::redirect( $back, 'facebook_posted' );
 	}
 
 	/**
@@ -269,6 +313,7 @@ class ARNL_Admin_Schedule {
 							<?php elseif ( 'scheduled' === $o->status ) : ?>
 								<a class="button button-small arnl-confirm" data-arnl-confirm="<?php esc_attr_e( 'Cancel this session? It will show as cancelled on the calendar.', 'ar-net-logger' ); ?>" href="<?php echo esc_url( self::status_url( $o, 'cancelled' ) ); ?>"><?php esc_html_e( 'Cancel', 'ar-net-logger' ); ?></a>
 							<?php endif; ?>
+							<?php echo self::facebook_button( $o ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in the helper. ?>
 							<?php if ( $can_manage && ! $o->is_virtual() ) : ?>
 								<a class="button button-small button-link-delete arnl-confirm" data-arnl-confirm="<?php esc_attr_e( 'Delete this session record and all of its check-ins? Regular sessions return to the net\'s default details.', 'ar-net-logger' ); ?>" href="<?php echo esc_url( ARNL_Admin::action_url( 'arnl_delete_event', array( 'event' => $o->event_id ), 'arnl_delete_event_' . $o->event_id ) ); ?>"><?php esc_html_e( 'Delete', 'ar-net-logger' ); ?></a>
 							<?php endif; ?>

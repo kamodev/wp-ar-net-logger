@@ -168,6 +168,7 @@ class ARNL_Admin_Log {
 				</div>
 				<div class="arnl-log-side">
 					<?php self::render_session_box( $o ); ?>
+					<?php self::render_share_box( $o ); ?>
 					<?php if ( '' !== trim( wp_strip_all_tags( $net['preamble'] ) ) ) : ?>
 						<details class="arnl-box arnl-preamble" open>
 							<summary><?php esc_html_e( 'Net preamble / script', 'ar-net-logger' ); ?></summary>
@@ -430,6 +431,54 @@ class ARNL_Admin_Log {
 				</tbody>
 			</table>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Sharing box: Discord status, Facebook Page post, Facebook event details to paste.
+	 *
+	 * @param ARNL_Occurrence $o Session.
+	 */
+	protected static function render_share_box( ARNL_Occurrence $o ) {
+		$webhook = ARNL_Discord::webhook_for( $o->net );
+		$details = ARNL_Facebook::event_details( $o );
+		$text    = '';
+		foreach ( $details as $label => $value ) {
+			$text .= $label . ': ' . $value . "\n";
+		}
+		?>
+		<details class="arnl-box arnl-share-box">
+			<summary><?php esc_html_e( 'Share', 'ar-net-logger' ); ?></summary>
+			<p>
+				<strong><?php esc_html_e( 'Discord:', 'ar-net-logger' ); ?></strong>
+				<?php
+				if ( '' === $webhook ) {
+					esc_html_e( 'not posting this net.', 'ar-net-logger' );
+				} elseif ( ARNL_Settings::get( 'discord_checkins' ) ) {
+					esc_html_e( 'check-ins are posted to the channel as they are logged.', 'ar-net-logger' );
+				} else {
+					esc_html_e( 'check-in posts are turned off in the settings.', 'ar-net-logger' );
+				}
+				?>
+			</p>
+			<p>
+				<strong><?php esc_html_e( 'Facebook Page:', 'ar-net-logger' ); ?></strong>
+				<?php
+				$button = ARNL_Admin_Schedule::facebook_button( $o );
+				if ( '' !== $button ) {
+					echo $button; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in the helper.
+				} elseif ( ! ARNL_Facebook::configured() ) {
+					esc_html_e( 'not connected.', 'ar-net-logger' );
+				} else {
+					esc_html_e( 'not posted.', 'ar-net-logger' );
+				}
+				?>
+			</p>
+			<p class="arnl-muted"><?php esc_html_e( 'Facebook event (Page or Group): Facebook does not let apps create events, so copy these details into "Create event".', 'ar-net-logger' ); ?></p>
+			<label class="screen-reader-text" for="arnl-fb-event"><?php esc_html_e( 'Facebook event details', 'ar-net-logger' ); ?></label>
+			<textarea id="arnl-fb-event" class="widefat arnl-fb-event" rows="9" readonly><?php echo esc_textarea( trim( $text ) ); ?></textarea>
+			<p><button type="button" class="button arnl-copy-button" data-arnl-copy="#arnl-fb-event"><?php esc_html_e( 'Copy event details', 'ar-net-logger' ); ?></button> <span class="arnl-copy-status" aria-live="polite"></span></p>
+		</details>
 		<?php
 	}
 

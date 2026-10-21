@@ -66,6 +66,7 @@ class ARNL_Install {
 	 */
 	public static function deactivate() {
 		delete_option( 'rewrite_rules' );
+		wp_clear_scheduled_hook( 'arnl_hourly' );
 	}
 
 	/**
@@ -116,6 +117,9 @@ class ARNL_Install {
   preamble longtext NULL,
   color varchar(7) NOT NULL DEFAULT '',
   allow_checkins tinyint(1) NOT NULL DEFAULT 1,
+  discord_mode varchar(10) NOT NULL DEFAULT 'default',
+  discord_webhook varchar(255) NOT NULL DEFAULT '',
+  facebook_mode varchar(10) NOT NULL DEFAULT 'default',
   status varchar(20) NOT NULL DEFAULT 'active',
   created_at datetime NOT NULL,
   updated_at datetime NOT NULL,

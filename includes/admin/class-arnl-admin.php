@@ -91,6 +91,7 @@ class ARNL_Admin {
 					/* translators: %d: number of previous check-ins. */
 					'checkins'    => __( '%d check-ins', 'ar-net-logger' ),
 					'online'      => __( 'License lookup', 'ar-net-logger' ),
+					'copied'      => __( 'Copied.', 'ar-net-logger' ),
 					/* translators: %s: time of the last update. */
 					'updated'     => __( 'Updated %s', 'ar-net-logger' ),
 					/* translators: %d: number of new check-ins. */
@@ -232,7 +233,15 @@ class ARNL_Admin {
 			'checkin_deleted'   => __( 'Check-in deleted.', 'ar-net-logger' ),
 			'checkins_approved' => __( 'Pending check-ins approved.', 'ar-net-logger' ),
 			'checkin_changed'   => __( 'Check-in updated.', 'ar-net-logger' ),
+			'discord_test_sent' => __( 'Test message sent to Discord. Check the channel.', 'ar-net-logger' ),
+			'facebook_posted'   => __( 'Session posted to the Facebook Page.', 'ar-net-logger' ),
 		);
+		if ( 'facebook_connected' === $code ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
+			$page = isset( $_GET['arnl_page'] ) ? sanitize_text_field( wp_unslash( $_GET['arnl_page'] ) ) : '';
+			/* translators: %s: Facebook Page name. */
+			$messages[ $code ] = sprintf( __( 'Connected to the Facebook Page "%s".', 'ar-net-logger' ), $page );
+		}
 		if ( isset( $messages[ $code ] ) ) {
 			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $messages[ $code ] ) . '</p></div>';
 		}

@@ -273,6 +273,51 @@ class ARNL_Admin_Nets {
 					</tr>
 				</table>
 
+				<h2 class="title"><?php esc_html_e( 'Sharing', 'ar-net-logger' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="arnl-discord-mode"><?php esc_html_e( 'Discord', 'ar-net-logger' ); ?></label></th>
+						<td>
+							<?php
+							ARNL_Admin::select(
+								'discord_mode',
+								array(
+									'default' => '' !== (string) ARNL_Settings::get( 'discord_webhook' ) ? __( 'Post check-ins to the default Discord channel', 'ar-net-logger' ) : __( 'Use the default Discord webhook (none set yet)', 'ar-net-logger' ),
+									'custom'  => __( 'Post check-ins to this net\'s own Discord channel', 'ar-net-logger' ),
+									'off'     => __( 'Do not post this net to Discord', 'ar-net-logger' ),
+								),
+								$net['discord_mode'],
+								array( 'id' => 'arnl-discord-mode' )
+							);
+							?>
+							<p class="arnl-row-discord-webhook">
+								<label for="arnl-discord-webhook"><?php esc_html_e( 'Webhook URL for this net', 'ar-net-logger' ); ?></label><br>
+								<input type="password" id="arnl-discord-webhook" name="discord_webhook" class="large-text code" value="" autocomplete="off" placeholder="<?php echo esc_attr( '' !== $net['discord_webhook'] ? __( 'Saved – leave blank to keep it', 'ar-net-logger' ) : 'https://discord.com/api/webhooks/…' ); ?>">
+							</p>
+							<p class="description"><?php esc_html_e( 'In Discord: Server Settings → Integrations → Webhooks → New Webhook, choose the channel, then Copy Webhook URL.', 'ar-net-logger' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="arnl-facebook-mode"><?php esc_html_e( 'Facebook', 'ar-net-logger' ); ?></label></th>
+						<td>
+							<?php
+							ARNL_Admin::select(
+								'facebook_mode',
+								array(
+									'default' => __( 'Announce sessions on the Facebook Page', 'ar-net-logger' ),
+									'off'     => __( 'Do not post this net to Facebook', 'ar-net-logger' ),
+								),
+								$net['facebook_mode'],
+								array( 'id' => 'arnl-facebook-mode' )
+							);
+							?>
+							<?php if ( ! ARNL_Facebook::configured() ) : ?>
+								<p class="description"><?php esc_html_e( 'Connect a Facebook Page under Net Logger → Settings first.', 'ar-net-logger' ); ?></p>
+							<?php endif; ?>
+						</td>
+					</tr>
+				</table>
+
 				<h2 class="title"><?php esc_html_e( 'Display & check-ins', 'ar-net-logger' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
@@ -331,6 +376,18 @@ class ARNL_Admin_Nets {
 			$data[ $field ] = isset( $_POST[ $field ] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST[ $field ] ) ) : array();
 		}
 		$data['allow_checkins'] = empty( $_POST['allow_checkins'] ) ? 0 : 1;
+		foreach ( array( 'discord_mode', 'facebook_mode' ) as $field ) {
+			$data[ $field ] = isset( $_POST[ $field ] ) ? sanitize_key( wp_unslash( $_POST[ $field ] ) ) : 'default';
+		}
+		// The webhook is a secret and not shown again: blank keeps the saved one; other modes clear it.
+		$webhook = isset( $_POST['discord_webhook'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['discord_webhook'] ) ) ) : '';
+		if ( 'custom' !== $data['discord_mode'] ) {
+			$webhook = '';
+		} elseif ( '' === $webhook && $id ) {
+			$saved   = ARNL_Nets::get( $id );
+			$webhook = $saved ? $saved['discord_webhook'] : '';
+		}
+		$data['discord_webhook'] = $webhook;
 
 		$result = $id ? ARNL_Nets::update( $id, $data ) : ARNL_Nets::insert( $data );
 		$form   = ARNL_Admin::url(

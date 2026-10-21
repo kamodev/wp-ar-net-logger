@@ -11,3 +11,5 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once dirname( __DIR__ ) . '/includes/class-arnl-recurrence.php';
 require_once dirname( __DIR__ ) . '/includes/class-arnl-callsign-lookup.php';
+require_once dirname( __DIR__ ) . '/includes/class-arnl-discord.php';
+require_once dirname( __DIR__ ) . '/includes/class-arnl-facebook.php';

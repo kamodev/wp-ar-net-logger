@@ -1,14 +1,14 @@
 === AR Net Logger ===
 Contributors: kamodev
-Tags: ham radio, amateur radio, net control, calendar, check-in
+Tags: ham radio, amateur radio, net control, calendar, discord
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Schedule, publish and log Amateur Radio nets: recurring schedules, a public calendar, iCal export, Net Control assignments and online check-ins.
+Schedule, publish and log Amateur Radio nets: recurring schedules, a public calendar, iCal export, Net Control assignments, online check-ins, Discord and Facebook.
 
 == Description ==
 
@@ -21,6 +21,8 @@ AR Net Logger helps radio clubs, ARES / RACES groups and net managers run their 
 * **Calendar shortcodes** with visitor filters (Net, Type, Mode, Band): `[arnl_calendar]`, `[arnl_upcoming]`, `[arnl_nets]`, `[arnl_event]`, `[arnl_checkin]`, `[arnl_net]`.
 * **Calendar export**: subscribable iCal feeds (filterable by net, type, mode and band), single-session .ics downloads, Google Calendar and Outlook.com links.
 * **Net Log** for the Net Control Station: preamble, open / close net, quick check-in entry with a callsign type-ahead that fills in name, QTH and station type from previous check-ins or the US license database (callook.info), short-time, mobile / portable, relays, traffic precedence and count, acknowledgements, QNI / QTC counts that update in the background, CSV export and print.
+* **Discord**: each check-in posted to a channel as it is logged (plus "on the air" and closing-summary posts), per-net channels, privacy options.
+* **Facebook Page**: upcoming sessions announced automatically (or on demand); cancelled sessions marked; ready-to-paste details for Facebook Page / Group events.
 * **Online check-ins** from the website during a configurable window, with callsign validation, duplicate detection, honeypot, rate limiting and optional moderation.
 * **Net Control Operator** role that can run nets and log check-ins without editing the site.
 
@@ -52,11 +54,25 @@ Net Logger → Settings → Net permalink base. It is the slug of the "Nets" pag
 
 `[arnl_calendar show_filter="no"]`, or choose which drop-downs to show with `filters="net,type"`.
 
+= How do I post check-ins to Discord? =
+
+Create a webhook in Discord (Server Settings → Integrations → Webhooks), paste its URL under Net Logger → Settings → Discord, save, and send a test message. A net can post to its own channel under Nets → Edit → Sharing.
+
+= Can it create Facebook events or post in a Facebook Group? =
+
+No. Facebook does not allow apps to create events, and it removed posting to Groups in 2024. AR Net Logger posts sessions to a Facebook Page and gives you ready-to-paste event details (Net Log → Share) for creating Page or Group events by hand.
+
 = Can I accept check-ins from non-amateur stations? =
 
 Untick "Require a valid amateur radio callsign format" in the settings.
 
 == Changelog ==
+
+= 1.2.0 =
+* Discord: post each check-in to a Discord channel through a webhook as it is logged (NCS or website), plus "net is on the air" and closing-summary posts. Per-net channel or opt-out, name / location / comments options, test message, delivery errors shown in the settings.
+* Facebook Page: announce sessions as Page posts automatically N hours before they start or on demand ("Post to Facebook"); cancelled sessions' posts are marked CANCELLED; editable post template; connection test.
+* Net Log "Share" box with Discord status, the Facebook post and copy-ready Facebook event details (Facebook does not allow apps to create events or post in Groups).
+* New hooks: arnl_checkin_approved, arnl_event_status_changed, arnl_discord_payload, arnl_facebook_message, arnl_facebook_posted.
 
 = 1.1.1 =
 * Net Log: the check-in list and QNI / QTC counts refresh in the background (AJAX), so website check-ins appear without reloading and without disturbing the check-in form. New rows are highlighted; updates pause while the tab is hidden and can be switched off.

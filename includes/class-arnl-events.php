@@ -224,6 +224,16 @@ class ARNL_Events {
 			return new WP_Error( 'arnl_db_error', __( 'The session could not be saved.', 'ar-net-logger' ) );
 		}
 		do_action( 'arnl_event_saved', (int) $id, false );
+		if ( $row['status'] !== $current['status'] ) {
+			/**
+			 * Fires when a session's status changes (scheduled, active, completed, cancelled).
+			 *
+			 * @param int    $id  Session ID.
+			 * @param string $old Previous status.
+			 * @param string $new New status.
+			 */
+			do_action( 'arnl_event_status_changed', (int) $id, $current['status'], $row['status'] );
+		}
 		return true;
 	}
 
