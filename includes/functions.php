@@ -266,7 +266,7 @@ function arnl_is_valid_callsign( $callsign ) {
 	}
 	$valid = true;
 	if ( ARNL_Settings::get( 'validate_callsign' ) ) {
-		$valid = (bool) preg_match( '#^(?:[A-Z0-9]{1,4}/)?[A-Z0-9]{1,3}[0-9][A-Z0-9]{0,3}[A-Z](?:/[A-Z0-9]{1,4})?$#', $callsign );
+		$valid = arnl_looks_like_callsign( $callsign );
 	}
 	/**
 	 * Filters whether a callsign is accepted.
@@ -275,6 +275,17 @@ function arnl_is_valid_callsign( $callsign ) {
 	 * @param string $callsign Callsign.
 	 */
 	return (bool) apply_filters( 'arnl_is_valid_callsign', $valid, $callsign );
+}
+
+/**
+ * Whether a string has the format of an amateur callsign, with an optional
+ * portable prefix / suffix (W1AW, 2E0ABC, VE3/W1AW, W1AW/M, K4X).
+ *
+ * @param string $callsign Upper-case callsign.
+ * @return bool
+ */
+function arnl_looks_like_callsign( $callsign ) {
+	return (bool) preg_match( '#^(?:[A-Z0-9]{1,4}/)?[A-Z0-9]{1,3}[0-9][A-Z0-9]{0,3}[A-Z](?:/[A-Z0-9]{1,4})?$#', (string) $callsign );
 }
 
 /**
@@ -487,18 +498,35 @@ function arnl_timezone_label( $timestamp = null ) {
 /**
  * Public URL of an occurrence's detail view.
  *
+ * By default this is the session's net permalink (/net/{net-slug}/?p={id}).
+ * A "Session details page" chosen in the settings, or an explicit base URL,
+ * shows the session on that page instead (?arnl_event=...).
+ *
  * @param ARNL_Occurrence $occurrence Occurrence.
- * @param string          $base       Base URL; defaults to the configured event page or the current page.
+ * @param string          $base       Base URL; defaults to the configured event page, the net permalink or the current page.
  * @return string
  */
 function arnl_event_url( ARNL_Occurrence $occurrence, $base = '' ) {
 	if ( '' === $base ) {
 		$page_id = (int) ARNL_Settings::get( 'event_page_id' );
 		$base    = $page_id ? (string) get_permalink( $page_id ) : '';
+		if ( '' === $base && ARNL_Permalinks::available() ) {
+			return ARNL_Permalinks::session_url( $occurrence );
+		}
 	}
 	// Without a dedicated event page, link to the current page (the shortcode renders the details).
 	$base = '' !== $base ? remove_query_arg( array( 'arnl_event', 'arnl_msg' ), $base ) : remove_query_arg( array( 'arnl_event', 'arnl_msg' ) );
 	return add_query_arg( 'arnl_event', $occurrence->key(), $base );
+}
+
+/**
+ * Public URL of a net's page (/net/{net-slug}/), or '' when net pages are unavailable.
+ *
+ * @param array $net Net.
+ * @return string
+ */
+function arnl_net_url( array $net ) {
+	return ARNL_Permalinks::net_url( $net );
 }
 
 /**

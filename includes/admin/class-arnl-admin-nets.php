@@ -139,6 +139,17 @@ class ARNL_Admin_Nets {
 					&middot; <a href="<?php echo esc_url( ARNL_Admin::url( 'arnl-schedule', array( 'net' => $net['id'] ) ) ); ?>"><?php esc_html_e( 'View sessions', 'ar-net-logger' ); ?></a>
 					&middot; <code class="arnl-copy">[arnl_calendar net="<?php echo esc_html( $net['slug'] ); ?>"]</code>
 				</p>
+				<?php $net_url = arnl_net_url( $net ); ?>
+				<?php if ( '' !== $net_url ) : ?>
+					<p class="arnl-permalink">
+						<strong><?php esc_html_e( 'Permalink:', 'ar-net-logger' ); ?></strong>
+						<?php if ( 'active' === $net['status'] ) : ?>
+							<a href="<?php echo esc_url( $net_url ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $net_url ); ?></a>
+						<?php else : ?>
+							<code><?php echo esc_html( $net_url ); ?></code> <span class="arnl-muted"><?php esc_html_e( '(inactive nets are not shown publicly)', 'ar-net-logger' ); ?></span>
+						<?php endif; ?>
+					</p>
+				<?php endif; ?>
 			<?php endif; ?>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="arnl-net-form">
 				<input type="hidden" name="action" value="arnl_save_net">
@@ -247,7 +258,7 @@ class ARNL_Admin_Nets {
 					<tr>
 						<th scope="row"><label for="arnl-ncs-callsign"><?php esc_html_e( 'Default Net Control Station', 'ar-net-logger' ); ?></label></th>
 						<td>
-							<input type="text" id="arnl-ncs-callsign" name="ncs_callsign" class="arnl-callsign-input" value="<?php echo esc_attr( $net['ncs_callsign'] ); ?>" maxlength="20" placeholder="<?php esc_attr_e( 'Callsign', 'ar-net-logger' ); ?>">
+							<input type="text" id="arnl-ncs-callsign" name="ncs_callsign" class="arnl-callsign-input" value="<?php echo esc_attr( $net['ncs_callsign'] ); ?>" maxlength="20" placeholder="<?php esc_attr_e( 'Callsign', 'ar-net-logger' ); ?>" autocomplete="off" data-arnl-lookup="<?php echo esc_attr( wp_json_encode( array( 'name' => '#arnl-ncs-name' ) ) ); ?>">
 							<label class="screen-reader-text" for="arnl-ncs-name"><?php esc_html_e( 'NCS name', 'ar-net-logger' ); ?></label>
 							<input type="text" id="arnl-ncs-name" name="ncs_name" value="<?php echo esc_attr( $net['ncs_name'] ); ?>" maxlength="100" placeholder="<?php esc_attr_e( 'Name', 'ar-net-logger' ); ?>">
 							<p class="description"><?php esc_html_e( 'Can be changed for each session on the schedule.', 'ar-net-logger' ); ?></p>

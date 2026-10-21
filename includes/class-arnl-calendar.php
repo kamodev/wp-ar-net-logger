@@ -271,7 +271,9 @@ class ARNL_Calendar {
 					<span aria-hidden="true">&lsaquo;</span><span class="screen-reader-text"><?php esc_html_e( 'Previous', 'ar-net-logger' ); ?></span>
 				</a>
 			<?php endif; ?>
-			<h3 class="arnl-cal-title"><?php echo esc_html( $title ); ?></h3>
+			<?php if ( '' !== $title ) : ?>
+				<h3 class="arnl-cal-title"><?php echo esc_html( $title ); ?></h3>
+			<?php endif; ?>
 			<?php if ( $opts['next_url'] ) : ?>
 				<a class="arnl-cal-nav arnl-cal-next" href="<?php echo esc_url( $opts['next_url'] ); ?>" rel="nofollow">
 					<span class="screen-reader-text"><?php esc_html_e( 'Next', 'ar-net-logger' ); ?></span><span aria-hidden="true">&rsaquo;</span>

@@ -171,6 +171,16 @@ class ARNL_Occurrence {
 	}
 
 	/**
+	 * Session number used in net permalinks (/net/{slug}/?p=...): the stored
+	 * session ID, or the date as YYYYMMDD for a regular session not stored yet.
+	 *
+	 * @return int
+	 */
+	public function url_id() {
+		return $this->event_id ? $this->event_id : (int) str_replace( '-', '', $this->date );
+	}
+
+	/**
 	 * Whether this occurrence has no session row yet.
 	 *
 	 * @return bool

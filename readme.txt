@@ -4,7 +4,7 @@ Tags: ham radio, amateur radio, net control, calendar, check-in
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -17,9 +17,10 @@ AR Net Logger helps radio clubs, ARES / RACES groups and net managers run their 
 * **Nets**: name, type (directed, traffic / NTS, ARES, SKYWARN, rag chew, ...), frequency, mode, band, repeater / access info, description, net preamble, calendar color.
 * **Schedules**: weekly, every other week, monthly by week of the month (1st–5th or last), one-time, or manual. Days of the week, months, start / end dates, start / end times.
 * **Session overrides**: change the date, time, topic, Net Control Station or frequency of any single session, cancel it, or add special sessions.
-* **Calendar shortcodes** with filters: `[arnl_calendar]`, `[arnl_upcoming]`, `[arnl_nets]`, `[arnl_event]`, `[arnl_checkin]`.
+* **Net pages**: every net at `/net/{net-name}/` and every session at `/net/{net-name}/?p={id}`, with a directory at `/net/`.
+* **Calendar shortcodes** with visitor filters (Net, Type, Mode, Band): `[arnl_calendar]`, `[arnl_upcoming]`, `[arnl_nets]`, `[arnl_event]`, `[arnl_checkin]`, `[arnl_net]`.
 * **Calendar export**: subscribable iCal feeds (filterable by net, type, mode and band), single-session .ics downloads, Google Calendar and Outlook.com links.
-* **Net Log** for the Net Control Station: preamble, open / close net, quick check-in entry with name / QTH lookup, short-time, mobile / portable, relays, traffic precedence and count, acknowledgements, QNI / QTC counts, CSV export and print.
+* **Net Log** for the Net Control Station: preamble, open / close net, quick check-in entry with a callsign type-ahead that fills in name, QTH and station type from previous check-ins or the US license database (callook.info), short-time, mobile / portable, relays, traffic precedence and count, acknowledgements, QNI / QTC counts, CSV export and print.
 * **Online check-ins** from the website during a configurable window, with callsign validation, duplicate detection, honeypot, rate limiting and optional moderation.
 * **Net Control Operator** role that can run nets and log check-ins without editing the site.
 
@@ -43,11 +44,25 @@ Net Logger → Schedule → Edit on that session. Changes apply only to that dat
 
 Yes. Every calendar shows Subscribe, Google Calendar and Download .ics links, and each session page has "Add to calendar" links.
 
+= How do I change the /net/ address? =
+
+Net Logger → Settings → Net permalink base. It is the slug of the "Nets" page the plugin creates, which must keep the [arnl_net] shortcode.
+
+= How do I hide the calendar filters? =
+
+`[arnl_calendar show_filter="no"]`, or choose which drop-downs to show with `filters="net,type"`.
+
 = Can I accept check-ins from non-amateur stations? =
 
 Untick "Require a valid amateur radio callsign format" in the settings.
 
 == Changelog ==
+
+= 1.1.0 =
+* Net permalinks: each net at /net/{net-name}/ and each session at /net/{net-name}/?p={id}, with a nets directory at /net/. The base is configurable in the settings.
+* Net Log callsign type-ahead: suggestions from previous check-ins and the callook.info license database fill in name, QTH and station type. Also on NCS fields.
+* [arnl_calendar] shows Net / Type / Mode / Band filters by default; turn them off with show_filter="no" or choose them with filters="...".
+* New [arnl_net] shortcode.
 
 = 1.0.0 =
 * Initial release.

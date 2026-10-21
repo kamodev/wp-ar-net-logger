@@ -443,7 +443,7 @@ class ARNL_Admin_Schedule {
 					<tr>
 						<th scope="row"><label for="arnl-event-ncs"><?php esc_html_e( 'Net Control Station', 'ar-net-logger' ); ?></label></th>
 						<td>
-							<input type="text" id="arnl-event-ncs" name="ncs_callsign" class="arnl-callsign-input" value="<?php echo esc_attr( $values['ncs_callsign'] ); ?>" maxlength="20" placeholder="<?php echo esc_attr( '' !== $net['ncs_callsign'] ? $net['ncs_callsign'] : __( 'Callsign', 'ar-net-logger' ) ); ?>">
+							<input type="text" id="arnl-event-ncs" name="ncs_callsign" class="arnl-callsign-input" value="<?php echo esc_attr( $values['ncs_callsign'] ); ?>" maxlength="20" placeholder="<?php echo esc_attr( '' !== $net['ncs_callsign'] ? $net['ncs_callsign'] : __( 'Callsign', 'ar-net-logger' ) ); ?>" autocomplete="off" data-arnl-lookup="<?php echo esc_attr( wp_json_encode( array( 'name' => '#arnl-event-ncs-name' ) ) ); ?>">
 							<label class="screen-reader-text" for="arnl-event-ncs-name"><?php esc_html_e( 'NCS name', 'ar-net-logger' ); ?></label>
 							<input type="text" id="arnl-event-ncs-name" name="ncs_name" value="<?php echo esc_attr( $values['ncs_name'] ); ?>" maxlength="100" placeholder="<?php echo esc_attr( '' !== $net['ncs_name'] ? $net['ncs_name'] : __( 'Name', 'ar-net-logger' ) ); ?>">
 							<p class="description"><?php esc_html_e( 'Leave blank to use the net\'s default Net Control Station.', 'ar-net-logger' ); ?></p>

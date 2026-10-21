@@ -73,6 +73,23 @@
 	margin: 0 0 1em;
 }
 
+.arnl-filter-clear {
+	font-size: 0.9em;
+}
+
+.arnl-breadcrumb {
+	margin: 0 0 1em;
+	font-size: 0.9em;
+}
+
+.arnl-net-page > .arnl-net {
+	margin-bottom: 1em;
+}
+
+.arnl-net-page .arnl-calendar--list .arnl-cal-title {
+	text-align: left;
+}
+
 /* Month grid */
 .arnl-cal-grid {
 	width: 100%;

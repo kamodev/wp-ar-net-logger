@@ -7,6 +7,7 @@
  * [arnl_nets]      Directory of nets with schedule, frequency and next session.
  * [arnl_event]     Details of one session, with online check-in and the check-in list.
  * [arnl_checkin]   Check-in form for a net's current / next session.
+ * [arnl_net]       Net page: the "Nets" page behind /net/{net-slug}/ permalinks, or one net.
  *
  * @package AR_Net_Logger
  */
@@ -34,6 +35,7 @@ class ARNL_Shortcodes {
 		add_shortcode( 'arnl_nets', array( __CLASS__, 'nets' ) );
 		add_shortcode( 'arnl_event', array( __CLASS__, 'event' ) );
 		add_shortcode( 'arnl_checkin', array( __CLASS__, 'checkin' ) );
+		add_shortcode( 'arnl_net', array( __CLASS__, 'net_page' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_assets' ) );
 	}
 
@@ -67,7 +69,100 @@ class ARNL_Shortcodes {
 	}
 
 	/**
-	 * Schedule filters from shortcode attributes, narrowed by the visitor's net filter.
+	 * Visitor filter dimensions: shortcode keyword => (query arg, schedule filter key).
+	 *
+	 * @return array<string,array{0:string,1:string}>
+	 */
+	protected static function filter_dimensions() {
+		return array(
+			'net'  => array( 'arnl_net', 'net' ),
+			'type' => array( 'arnl_type', 'net_type' ),
+			'mode' => array( 'arnl_mode', 'mode' ),
+			'band' => array( 'arnl_band', 'band' ),
+		);
+	}
+
+	/**
+	 * Visitor filter dimensions enabled by show_filter / filters.
+	 *
+	 * @param array $atts Attributes.
+	 * @return string[] Keywords (net, type, mode, band).
+	 */
+	protected static function enabled_filters( array $atts ) {
+		if ( empty( $atts['show_filter'] ) || ! self::yes( $atts['show_filter'] ) ) {
+			return array();
+		}
+		$wanted = isset( $atts['filters'] ) ? arnl_parse_list( $atts['filters'] ) : array( 'net' );
+		return array_values( array_intersect( array_keys( self::filter_dimensions() ), $wanted ) );
+	}
+
+	/**
+	 * Choices offered by each enabled filter, from the nets the shortcode allows.
+	 *
+	 * @param array $atts Attributes.
+	 * @return array<string,array<string,string>> Keyword => (value => label); only filters with 2+ choices.
+	 */
+	protected static function filter_choices( array $atts ) {
+		$enabled = self::enabled_filters( $atts );
+		if ( ! $enabled ) {
+			return array();
+		}
+		$nets    = self::allowed_nets( $atts );
+		$choices = array();
+		foreach ( $enabled as $dimension ) {
+			$values = array();
+			foreach ( $nets as $net ) {
+				switch ( $dimension ) {
+					case 'net':
+						$values[ $net['slug'] ] = $net['name'];
+						break;
+					case 'type':
+						$values[ $net['net_type'] ] = arnl_label( arnl_net_types(), $net['net_type'] );
+						break;
+					case 'mode':
+						if ( '' !== $net['mode'] ) {
+							$values[ $net['mode'] ] = arnl_label( arnl_modes(), $net['mode'] );
+						}
+						break;
+					case 'band':
+						if ( '' !== $net['band'] ) {
+							$values[ $net['band'] ] = arnl_label( arnl_bands(), $net['band'] );
+						}
+						break;
+				}
+			}
+			if ( count( $values ) > 1 ) {
+				if ( 'net' !== $dimension ) {
+					asort( $values, SORT_NATURAL | SORT_FLAG_CASE );
+				}
+				$choices[ $dimension ] = $values;
+			}
+		}
+		return $choices;
+	}
+
+	/**
+	 * Values the visitor picked in the filter bar (only valid, allowed ones).
+	 *
+	 * @param array $atts Attributes.
+	 * @return array<string,string> Keyword => value.
+	 */
+	protected static function visitor_choices( array $atts ) {
+		$picked = array();
+		$dims   = self::filter_dimensions();
+		foreach ( self::filter_choices( $atts ) as $dimension => $values ) {
+			$param = $dims[ $dimension ][0];
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filter.
+			$value = isset( $_GET[ $param ] ) ? sanitize_title( wp_unslash( $_GET[ $param ] ) ) : '';
+			if ( '' !== $value && isset( $values[ $value ] ) ) {
+				$picked[ $dimension ] = $value;
+			}
+		}
+		return $picked;
+	}
+
+	/**
+	 * Schedule filters from shortcode attributes, narrowed by the visitor's filter choices.
 	 *
 	 * @param array $atts Attributes.
 	 * @return array
@@ -79,32 +174,11 @@ class ARNL_Shortcodes {
 			'mode'     => arnl_parse_list( $atts['mode'] ),
 			'band'     => arnl_parse_list( $atts['band'] ),
 		);
-		$chosen  = self::visitor_net( $atts );
-		if ( $chosen ) {
-			$filters['net'] = array( (string) $chosen['id'] );
+		$dims    = self::filter_dimensions();
+		foreach ( self::visitor_choices( $atts ) as $dimension => $value ) {
+			$filters[ $dims[ $dimension ][1] ] = array( $value );
 		}
 		return $filters;
-	}
-
-	/**
-	 * Net chosen in the visitor filter, if allowed by the shortcode.
-	 *
-	 * @param array $atts Attributes.
-	 * @return array|null
-	 */
-	protected static function visitor_net( array $atts ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filter.
-		$ref = isset( $_GET['arnl_net'] ) ? sanitize_title( wp_unslash( $_GET['arnl_net'] ) ) : '';
-		if ( '' === $ref || empty( $atts['show_filter'] ) || ! self::yes( $atts['show_filter'] ) ) {
-			return null;
-		}
-		$allowed = self::allowed_nets( $atts );
-		foreach ( $allowed as $net ) {
-			if ( $net['slug'] === $ref ) {
-				return $net;
-			}
-		}
-		return null;
 	}
 
 	/**
@@ -168,7 +242,8 @@ class ARNL_Shortcodes {
 				'show_frequency' => 'yes',
 				'show_legend'    => 'yes',
 				'show_subscribe' => 'yes',
-				'show_filter'    => 'no',
+				'show_filter'    => 'yes',
+				'filters'        => 'net,type,mode,band',
 				'nav'            => 'yes',
 				'link'           => 'yes',
 				'title'          => '',
@@ -256,39 +331,57 @@ class ARNL_Shortcodes {
 	}
 
 	/**
-	 * Visitor net filter (GET form).
+	 * Visitor filter bar (GET form): one drop-down per enabled filter with 2+ choices.
 	 *
 	 * @param array $atts Attributes.
 	 * @return string
 	 */
 	protected static function filter_form( array $atts ) {
-		$nets = self::allowed_nets( $atts );
-		if ( count( $nets ) < 2 ) {
+		$choices = self::filter_choices( $atts );
+		if ( ! $choices ) {
 			return '';
 		}
-		$chosen = self::visitor_net( $atts );
+		$picked = self::visitor_choices( $atts );
+		$dims   = self::filter_dimensions();
+		$params = array();
+		foreach ( $dims as $dim ) {
+			$params[] = $dim[0];
+		}
+		$labels = array(
+			'net'  => array( __( 'Net', 'ar-net-logger' ), __( 'All nets', 'ar-net-logger' ) ),
+			'type' => array( __( 'Type', 'ar-net-logger' ), __( 'All types', 'ar-net-logger' ) ),
+			'mode' => array( __( 'Mode', 'ar-net-logger' ), __( 'All modes', 'ar-net-logger' ) ),
+			'band' => array( __( 'Band', 'ar-net-logger' ), __( 'All bands', 'ar-net-logger' ) ),
+		);
 		$keep   = array();
 		// Preserve other query args (e.g. ?page_id=5 on sites without pretty permalinks).
 		foreach ( $_GET as $key => $value ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			if ( is_string( $value ) && ! in_array( $key, array( 'arnl_net', 'arnl_event', 'arnl_msg', 'arnl_cs' ), true ) ) {
+			if ( is_string( $value ) && ! in_array( $key, array_merge( $params, array( 'arnl_event', 'arnl_msg', 'arnl_cs' ) ), true ) ) {
 				$keep[ sanitize_key( $key ) ] = sanitize_text_field( wp_unslash( $value ) );
 			}
 		}
-		$id = 'arnl-filter-' . wp_unique_id();
+		$uid = 'arnl-filter-' . wp_unique_id();
 		ob_start();
 		?>
 		<form class="arnl-filter" method="get" action="<?php echo esc_url( strtok( arnl_current_url(), '?' ) ); ?>">
 			<?php foreach ( $keep as $key => $value ) : ?>
 				<input type="hidden" name="<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $value ); ?>">
 			<?php endforeach; ?>
-			<label for="<?php echo esc_attr( $id ); ?>"><?php esc_html_e( 'Show', 'ar-net-logger' ); ?></label>
-			<select id="<?php echo esc_attr( $id ); ?>" name="arnl_net" onchange="this.form.submit()">
-				<option value=""><?php esc_html_e( 'All nets', 'ar-net-logger' ); ?></option>
-				<?php foreach ( $nets as $net ) : ?>
-					<option value="<?php echo esc_attr( $net['slug'] ); ?>" <?php selected( $chosen && $chosen['id'] === $net['id'] ); ?>><?php echo esc_html( $net['name'] ); ?></option>
-				<?php endforeach; ?>
-			</select>
+			<span class="arnl-filter-label"><?php esc_html_e( 'Show', 'ar-net-logger' ); ?></span>
+			<?php foreach ( $choices as $dimension => $values ) : ?>
+				<?php $id = $uid . '-' . $dimension; ?>
+				<label class="screen-reader-text" for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $labels[ $dimension ][0] ); ?></label>
+				<select id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $dims[ $dimension ][0] ); ?>" class="arnl-filter-<?php echo esc_attr( $dimension ); ?>" onchange="this.form.submit()">
+					<option value=""><?php echo esc_html( $labels[ $dimension ][1] ); ?></option>
+					<?php foreach ( $values as $value => $label ) : ?>
+						<option value="<?php echo esc_attr( $value ); ?>" <?php selected( isset( $picked[ $dimension ] ) && $picked[ $dimension ] === (string) $value ); ?>><?php echo esc_html( $label ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			<?php endforeach; ?>
 			<noscript><button type="submit"><?php esc_html_e( 'Filter', 'ar-net-logger' ); ?></button></noscript>
+			<?php if ( $picked ) : ?>
+				<a class="arnl-filter-clear" href="<?php echo esc_url( remove_query_arg( $params, arnl_current_url() ) ); ?>" rel="nofollow"><?php esc_html_e( 'Clear filters', 'ar-net-logger' ); ?></a>
+			<?php endif; ?>
 		</form>
 		<?php
 		return (string) ob_get_clean();
@@ -369,6 +462,7 @@ class ARNL_Shortcodes {
 				'link'           => 'yes',
 				'title'          => '',
 				'show_filter'    => 'no',
+				'filters'        => 'net,type,mode,band',
 			),
 			$atts,
 			'arnl_upcoming'
@@ -413,6 +507,7 @@ class ARNL_Shortcodes {
 				'show_topic'     => self::yes( $atts['show_topic'] ),
 				'show_frequency' => self::yes( $atts['show_frequency'] ),
 				'title'          => sanitize_text_field( $atts['title'] ),
+				'header_extra'   => self::filter_form( $atts ),
 				'checkin_links'  => true,
 				'empty_text'     => __( 'No upcoming nets.', 'ar-net-logger' ),
 			)
@@ -464,60 +559,185 @@ class ARNL_Shortcodes {
 			return '<div class="arnl-nets"><p class="arnl-cal-empty">' . esc_html__( 'No nets found.', 'ar-net-logger' ) . '</p></div>';
 		}
 
-		ob_start();
-		echo '<div class="arnl-nets">';
+		$html = '<div class="arnl-nets">';
 		foreach ( $nets as $net ) {
-			$next = self::yes( $atts['show_next'] ) ? ARNL_Schedule::current_or_next( $net['id'] ) : null;
-			$freq = arnl_describe_frequency( $net );
-			?>
-			<section class="arnl-net arnl-type-<?php echo esc_attr( $net['net_type'] ); ?>" style="--arnl-color: <?php echo esc_attr( $net['color'] ); ?>">
-				<h3 class="arnl-net-name"><?php echo esc_html( $net['name'] ); ?></h3>
-				<dl class="arnl-details">
-					<dt><?php esc_html_e( 'When', 'ar-net-logger' ); ?></dt>
-					<dd><?php echo esc_html( arnl_describe_schedule( $net ) . ' ' . arnl_timezone_label() ); ?></dd>
-					<?php if ( '' !== $freq ) : ?>
-						<dt><?php esc_html_e( 'Frequency', 'ar-net-logger' ); ?></dt>
-						<dd><?php echo esc_html( $freq ); ?></dd>
-					<?php endif; ?>
-					<dt><?php esc_html_e( 'Type', 'ar-net-logger' ); ?></dt>
-					<dd><?php echo esc_html( arnl_label( arnl_net_types(), $net['net_type'] ) ); ?></dd>
-					<?php if ( self::yes( $atts['show_ncs'] ) && '' !== $net['ncs_callsign'] ) : ?>
-						<dt><?php esc_html_e( 'Net Control', 'ar-net-logger' ); ?></dt>
-						<dd><?php echo esc_html( $net['ncs_callsign'] . ( '' !== $net['ncs_name'] ? ' – ' . $net['ncs_name'] : '' ) ); ?></dd>
-					<?php endif; ?>
-					<?php if ( $next ) : ?>
-						<dt><?php esc_html_e( 'Next session', 'ar-net-logger' ); ?></dt>
-						<dd>
-							<?php
-							$label = arnl_format_date( $next->date, 'l, ' . get_option( 'date_format' ) ) . ', ' . ARNL_Calendar::time_range( $next );
-							if ( self::yes( $atts['link'] ) ) {
-								printf( '<a href="%1$s">%2$s</a>', esc_url( arnl_event_url( $next ) ), esc_html( $label ) );
-							} else {
-								echo esc_html( $label );
-							}
-							if ( '' !== $next->topic ) {
-								echo ' <span class="arnl-list-topic">' . esc_html( $next->topic ) . '</span>';
-							}
-							?>
-						</dd>
-					<?php endif; ?>
-				</dl>
-				<?php if ( self::yes( $atts['show_description'] ) && '' !== $net['description'] ) : ?>
-					<div class="arnl-net-description"><?php echo wp_kses_post( wpautop( $net['description'] ) ); ?></div>
-				<?php endif; ?>
-				<?php if ( self::yes( $atts['show_subscribe'] ) && ARNL_Settings::get( 'ics_enabled' ) ) : ?>
-					<?php $feed = arnl_ics_url( array( 'net' => $net['slug'] ) ); ?>
-					<p class="arnl-subscribe">
-						<a href="<?php echo esc_url( arnl_webcal_url( $feed ), array( 'webcal', 'http', 'https' ) ); ?>"><?php esc_html_e( 'Subscribe to this net', 'ar-net-logger' ); ?></a>
-						<span class="arnl-sep" aria-hidden="true">|</span>
-						<a href="<?php echo esc_url( add_query_arg( 'download', 1, $feed ) ); ?>"><?php esc_html_e( 'Download .ics', 'ar-net-logger' ); ?></a>
-					</p>
-				<?php endif; ?>
-			</section>
-			<?php
+			$html .= self::net_card( $net, $atts, 'h3', self::yes( $atts['link'] ) );
 		}
-		echo '</div>';
+		return $html . '</div>';
+	}
+
+	/**
+	 * Net summary: schedule, frequency, type, NCS, next session, description, subscribe links.
+	 *
+	 * @param array  $net       Net.
+	 * @param array  $atts      Display options (show_next, show_ncs, show_description, show_subscribe, link).
+	 * @param string $heading   Heading tag.
+	 * @param bool   $link_name Link the name to the net's page.
+	 * @return string
+	 */
+	protected static function net_card( array $net, array $atts, $heading = 'h3', $link_name = true ) {
+		$next    = self::yes( $atts['show_next'] ) ? ARNL_Schedule::current_or_next( $net['id'] ) : null;
+		$freq    = arnl_describe_frequency( $net );
+		$net_url = $link_name ? arnl_net_url( $net ) : '';
+		$heading = in_array( $heading, array( 'h2', 'h3', 'h4' ), true ) ? $heading : 'h3';
+		ob_start();
+		?>
+		<section class="arnl-net arnl-type-<?php echo esc_attr( $net['net_type'] ); ?>" style="--arnl-color: <?php echo esc_attr( $net['color'] ); ?>">
+			<<?php echo esc_html( $heading ); ?> class="arnl-net-name">
+				<?php if ( '' !== $net_url ) : ?>
+					<a href="<?php echo esc_url( $net_url ); ?>"><?php echo esc_html( $net['name'] ); ?></a>
+				<?php else : ?>
+					<?php echo esc_html( $net['name'] ); ?>
+				<?php endif; ?>
+			</<?php echo esc_html( $heading ); ?>>
+			<dl class="arnl-details">
+				<dt><?php esc_html_e( 'When', 'ar-net-logger' ); ?></dt>
+				<dd><?php echo esc_html( arnl_describe_schedule( $net ) . ' ' . arnl_timezone_label() ); ?></dd>
+				<?php if ( '' !== $freq ) : ?>
+					<dt><?php esc_html_e( 'Frequency', 'ar-net-logger' ); ?></dt>
+					<dd><?php echo esc_html( $freq ); ?></dd>
+				<?php endif; ?>
+				<dt><?php esc_html_e( 'Type', 'ar-net-logger' ); ?></dt>
+				<dd><?php echo esc_html( arnl_label( arnl_net_types(), $net['net_type'] ) ); ?></dd>
+				<?php if ( self::yes( $atts['show_ncs'] ) && '' !== $net['ncs_callsign'] ) : ?>
+					<dt><?php esc_html_e( 'Net Control', 'ar-net-logger' ); ?></dt>
+					<dd><?php echo esc_html( $net['ncs_callsign'] . ( '' !== $net['ncs_name'] ? ' – ' . $net['ncs_name'] : '' ) ); ?></dd>
+				<?php endif; ?>
+				<?php if ( $next ) : ?>
+					<dt><?php esc_html_e( 'Next session', 'ar-net-logger' ); ?></dt>
+					<dd>
+						<?php
+						$label = arnl_format_date( $next->date, 'l, ' . get_option( 'date_format' ) ) . ', ' . ARNL_Calendar::time_range( $next );
+						if ( self::yes( $atts['link'] ) ) {
+							printf( '<a href="%1$s">%2$s</a>', esc_url( arnl_event_url( $next ) ), esc_html( $label ) );
+						} else {
+							echo esc_html( $label );
+						}
+						if ( '' !== $next->topic ) {
+							echo ' <span class="arnl-list-topic">' . esc_html( $next->topic ) . '</span>';
+						}
+						?>
+					</dd>
+				<?php endif; ?>
+			</dl>
+			<?php if ( self::yes( $atts['show_description'] ) && '' !== $net['description'] ) : ?>
+				<div class="arnl-net-description"><?php echo wp_kses_post( wpautop( $net['description'] ) ); ?></div>
+			<?php endif; ?>
+			<?php if ( self::yes( $atts['show_subscribe'] ) && ARNL_Settings::get( 'ics_enabled' ) ) : ?>
+				<?php $feed = arnl_ics_url( array( 'net' => $net['slug'] ) ); ?>
+				<p class="arnl-subscribe">
+					<a href="<?php echo esc_url( arnl_webcal_url( $feed ), array( 'webcal', 'http', 'https' ) ); ?>"><?php esc_html_e( 'Subscribe to this net', 'ar-net-logger' ); ?></a>
+					<span class="arnl-sep" aria-hidden="true">|</span>
+					<a href="<?php echo esc_url( add_query_arg( 'download', 1, $feed ) ); ?>"><?php esc_html_e( 'Download .ics', 'ar-net-logger' ); ?></a>
+				</p>
+			<?php endif; ?>
+		</section>
+		<?php
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * [arnl_net]: on the "Nets" page it shows the net or session from the
+	 * permalink (/net/{net-slug}/, /net/{net-slug}/?p={id}) and otherwise the
+	 * directory of nets. With net="slug" it shows that net anywhere.
+	 *
+	 * @param array|string $atts Attributes.
+	 * @return string
+	 */
+	public static function net_page( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'net'   => '',
+				'limit' => 10,
+				'days'  => 90,
+			),
+			$atts,
+			'arnl_net'
+		);
+		self::enqueue();
+
+		if ( '' !== $atts['net'] ) {
+			$net = ARNL_Nets::find( $atts['net'] );
+			if ( ! $net || 'active' !== $net['status'] ) {
+				return '<div class="arnl-net-page"><p class="arnl-cal-empty">' . esc_html__( 'Net not found.', 'ar-net-logger' ) . '</p></div>';
+			}
+			return self::render_net( $net, $atts, false );
+		}
+
+		if ( ARNL_Permalinks::is_net_request() ) {
+			$current = ARNL_Permalinks::current();
+			if ( ! $current['net'] || ( $current['session_requested'] && ! $current['occurrence'] ) ) {
+				return '<div class="arnl-net-page"><p class="arnl-cal-empty">' . esc_html__( 'That net or session could not be found.', 'ar-net-logger' ) . '</p></div>';
+			}
+			if ( $current['occurrence'] ) {
+				$o = $current['occurrence'];
+				return '<div class="arnl-net-page">'
+					. self::breadcrumb( $current['net'], arnl_format_date( $o->date, 'l, ' . get_option( 'date_format' ) ) )
+					. self::render_event( $o )
+					. '</div>';
+			}
+			return self::render_net( $current['net'], $atts, true );
+		}
+
+		return self::nets( array() );
+	}
+
+	/**
+	 * A net's page: summary and upcoming sessions.
+	 *
+	 * @param array $net        Net.
+	 * @param array $atts       Attributes (limit, days).
+	 * @param bool  $breadcrumb Show the "Nets > Net" trail.
+	 * @return string
+	 */
+	protected static function render_net( array $net, array $atts, $breadcrumb ) {
+		$card = self::net_card(
+			$net,
+			array(
+				'show_next'        => 'no',
+				'show_ncs'         => 'yes',
+				'show_description' => 'yes',
+				'show_subscribe'   => 'yes',
+				'link'             => 'yes',
+			),
+			'h2',
+			false
+		);
+		$list = self::upcoming(
+			array(
+				'net'            => (string) $net['id'],
+				'limit'          => max( 1, absint( $atts['limit'] ) ),
+				'days'           => max( 1, absint( $atts['days'] ) ),
+				'show_frequency' => 'no',
+				'show_cancelled' => 'yes',
+				'title'          => __( 'Upcoming sessions', 'ar-net-logger' ),
+			)
+		);
+		return '<div class="arnl-net-page">' . ( $breadcrumb ? self::breadcrumb( $net ) : '' ) . $card . $list . '</div>';
+	}
+
+	/**
+	 * "Nets > Net name > Session" trail on net pages.
+	 *
+	 * @param array  $net     Net.
+	 * @param string $session Session label, if on a session page.
+	 * @return string
+	 */
+	protected static function breadcrumb( array $net, $session = '' ) {
+		$directory = ARNL_Permalinks::directory_url();
+		if ( '' === $directory ) {
+			return '';
+		}
+		$html  = '<nav class="arnl-breadcrumb" aria-label="' . esc_attr__( 'Breadcrumb', 'ar-net-logger' ) . '">';
+		$html .= '<a href="' . esc_url( $directory ) . '">' . esc_html( get_the_title( ARNL_Permalinks::page_id() ) ) . '</a>';
+		$html .= ' <span class="arnl-sep" aria-hidden="true">&rsaquo;</span> ';
+		if ( '' !== $session ) {
+			$html .= '<a href="' . esc_url( arnl_net_url( $net ) ) . '">' . esc_html( $net['name'] ) . '</a>';
+			$html .= ' <span class="arnl-sep" aria-hidden="true">&rsaquo;</span> <span aria-current="page">' . esc_html( $session ) . '</span>';
+		} else {
+			$html .= '<span aria-current="page">' . esc_html( $net['name'] ) . '</span>';
+		}
+		return $html . '</nav>';
 	}
 
 	/**
@@ -665,7 +885,12 @@ class ARNL_Shortcodes {
 				<div class="arnl-net-description"><?php echo wp_kses_post( wpautop( $net['description'] ) ); ?></div>
 			<?php endif; ?>
 			<?php if ( ARNL_Settings::get( 'ics_enabled' ) && ! $o->is_cancelled() ) : ?>
-				<?php $link = arnl_event_url( $o, $self ); ?>
+				<?php
+				$link = arnl_event_url( $o );
+				if ( 0 !== strpos( $link, 'http' ) ) {
+					$link = arnl_event_url( $o, $self );
+				}
+				?>
 				<p class="arnl-add-to-calendar">
 					<span class="arnl-subscribe-label"><?php esc_html_e( 'Add to calendar:', 'ar-net-logger' ); ?></span>
 					<a href="<?php echo esc_url( arnl_ics_url( array( 'event' => $o->key() ) ) ); ?>"><?php esc_html_e( 'Apple / Outlook (.ics)', 'ar-net-logger' ); ?></a>

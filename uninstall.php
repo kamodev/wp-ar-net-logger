@@ -19,8 +19,13 @@ function arnl_uninstall_site() {
 	foreach ( array( 'arnl_checkins', 'arnl_events', 'arnl_nets' ) as $table ) {
 		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}{$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange
 	}
-	delete_option( 'arnl_settings' );
-	delete_option( 'arnl_db_version' );
+	$page_id = (int) get_option( 'arnl_net_page_id' );
+	if ( $page_id && 'page' === get_post_type( $page_id ) ) {
+		wp_delete_post( $page_id, true );
+	}
+	foreach ( array( 'arnl_settings', 'arnl_db_version', 'arnl_net_page_id', 'arnl_flush_rewrite', 'arnl_create_page' ) as $option ) {
+		delete_option( $option );
+	}
 	delete_transient( 'arnl_event_page' );
 
 	foreach ( array( 'administrator', 'editor' ) as $role_name ) {
