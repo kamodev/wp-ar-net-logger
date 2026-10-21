@@ -1,0 +1,37 @@
+name: Release
+
+# Push a tag like v1.0.0 to build the plugin zip and publish a GitHub release with it.
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the tag matches the plugin version
+        run: |
+          version="$(sed -n 's/^ \* Version: *//p' ar-net-logger.php | tr -d '[:space:]')"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match the plugin version ($version) in ar-net-logger.php"
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Build the plugin zip
+        run: bash bin/build-zip.sh
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "dist/ar-net-logger-$VERSION.zip" \
+            --title "AR Net Logger $VERSION" \
+            --generate-notes \
+            --notes "**Install:** download \`ar-net-logger-$VERSION.zip\` below, then in WordPress go to *Plugins → Add New → Upload Plugin*. Requires WordPress 6.0+ and PHP 7.4+. See the [README](https://github.com/$GITHUB_REPOSITORY#readme) for setup, shortcodes and calendar feeds."
