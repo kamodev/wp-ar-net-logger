@@ -1,0 +1,615 @@
+/* AR Net Logger: calendar, net directory, session details and check-in form. */
+
+.arnl-calendar,
+.arnl-nets,
+.arnl-event,
+.arnl-checkin-box {
+	--arnl-border: rgba(128, 128, 128, 0.3);
+	--arnl-soft: rgba(128, 128, 128, 0.07);
+	--arnl-accent: #2271b1;
+	margin: 1.5em 0;
+}
+
+.arnl-calendar *,
+.arnl-event *,
+.arnl-checkin-box * {
+	box-sizing: border-box;
+}
+
+.arnl-calendar .screen-reader-text,
+.arnl-event .screen-reader-text,
+.arnl-checkin .screen-reader-text,
+.arnl-cal-fulldate {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	border: 0;
+	white-space: nowrap;
+}
+
+/* Header & navigation */
+.arnl-cal-header {
+	display: flex;
+	align-items: center;
+	gap: 0.75em;
+	margin-bottom: 0.75em;
+}
+
+.arnl-cal-title {
+	flex: 1;
+	margin: 0;
+	font-size: 1.3em;
+	text-align: center;
+}
+
+.arnl-cal-nav {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.2em;
+	height: 2.2em;
+	border: 1px solid var(--arnl-border);
+	border-radius: 50%;
+	font-size: 1.3em;
+	line-height: 1;
+	text-decoration: none;
+}
+
+.arnl-cal-nav:hover,
+.arnl-cal-nav:focus {
+	background: var(--arnl-soft);
+}
+
+.arnl-filter {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5em;
+	margin: 0 0 1em;
+}
+
+/* Month grid */
+.arnl-cal-grid {
+	width: 100%;
+	margin: 0;
+	border-collapse: collapse;
+	table-layout: fixed;
+}
+
+.arnl-cal-grid th {
+	padding: 0.4em 0.25em;
+	border: 0;
+	border-bottom: 2px solid var(--arnl-border);
+	font-size: 0.8em;
+	letter-spacing: 0.04em;
+	text-align: center;
+	text-transform: uppercase;
+}
+
+.arnl-cal-grid th abbr {
+	border: 0;
+	text-decoration: none;
+}
+
+.arnl-cal-day {
+	height: 7em;
+	padding: 0.3em;
+	border: 1px solid var(--arnl-border);
+	vertical-align: top;
+}
+
+.arnl-cal-pad {
+	background: var(--arnl-soft);
+}
+
+.arnl-cal-daynum {
+	display: inline-block;
+	min-width: 1.9em;
+	padding: 0.05em 0.35em;
+	border-radius: 1em;
+	font-size: 0.85em;
+	font-weight: 600;
+	text-align: center;
+}
+
+.arnl-cal-today {
+	background: rgba(34, 113, 177, 0.05);
+}
+
+.arnl-cal-today .arnl-cal-daynum {
+	background: var(--arnl-accent);
+	color: #fff;
+}
+
+.arnl-cal-events,
+.arnl-list-events,
+.arnl-legend {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.arnl-cal-events {
+	margin-top: 0.2em;
+}
+
+.arnl-cal-event {
+	margin: 0 0 0.3em;
+	padding: 0;
+}
+
+.arnl-cal-event-link {
+	display: block;
+	padding: 0.2em 0.35em;
+	border-left: 3px solid var(--arnl-color, #2271b1);
+	border-radius: 3px;
+	background: rgba(34, 113, 177, 0.1);
+	background: color-mix(in srgb, var(--arnl-color, #2271b1) 13%, transparent);
+	color: inherit;
+	font-size: 0.8em;
+	line-height: 1.3;
+	text-decoration: none;
+	overflow-wrap: break-word;
+}
+
+.arnl-cal-event-link .arnl-badge {
+	max-width: 100%;
+	border-radius: 3px;
+	letter-spacing: 0;
+	text-transform: none;
+	white-space: normal;
+}
+
+a.arnl-cal-event-link:hover,
+a.arnl-cal-event-link:focus {
+	background: color-mix(in srgb, var(--arnl-color, #2271b1) 24%, transparent);
+	color: inherit;
+}
+
+.arnl-cal-time,
+.arnl-cal-name {
+	font-weight: 600;
+}
+
+.arnl-cal-topic,
+.arnl-cal-ncs {
+	display: block;
+	font-size: 0.92em;
+	opacity: 0.8;
+}
+
+.arnl-cal-past .arnl-cal-event-link {
+	opacity: 0.7;
+}
+
+.arnl-status-cancelled .arnl-cal-name,
+.arnl-status-cancelled .arnl-list-name {
+	text-decoration: line-through;
+}
+
+.arnl-status-cancelled .arnl-cal-event-link {
+	opacity: 0.6;
+}
+
+.arnl-cal-empty {
+	margin: 1em 0;
+	font-style: italic;
+	opacity: 0.8;
+}
+
+/* Footer: legend, timezone, subscribe */
+.arnl-cal-footer {
+	margin-top: 0.75em;
+	font-size: 0.9em;
+}
+
+.arnl-legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4em 1.2em;
+	margin-bottom: 0.5em;
+}
+
+.arnl-swatch {
+	display: inline-block;
+	width: 0.85em;
+	height: 0.85em;
+	margin-right: 0.35em;
+	border-radius: 2px;
+	background: var(--arnl-color, #2271b1);
+	vertical-align: -0.05em;
+}
+
+.arnl-tz-note,
+.arnl-subscribe,
+.arnl-add-to-calendar {
+	margin: 0.35em 0;
+}
+
+.arnl-sep {
+	margin: 0 0.25em;
+	opacity: 0.5;
+}
+
+/* Badges */
+.arnl-badge {
+	display: inline-block;
+	padding: 0.05em 0.5em;
+	border-radius: 1em;
+	background: #e7e7e7;
+	color: #1e1e1e;
+	font-size: 0.72em;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	line-height: 1.6;
+	text-decoration: none;
+	text-transform: uppercase;
+	vertical-align: middle;
+	white-space: nowrap;
+}
+
+.arnl-badge--cancelled { background: #fbe3e4; color: #8a1f11; }
+.arnl-badge--active { background: #d7f5dd; color: #0a5c1e; }
+.arnl-badge--rescheduled,
+.arnl-badge--pending { background: #fff1c2; color: #6b4e00; }
+.arnl-badge--special { background: #e8e3ff; color: #3b2a8f; }
+.arnl-badge--today { background: #2271b1; color: #fff; }
+.arnl-badge--scheduled { background: #e6f0f8; color: #135e96; }
+.arnl-badge--completed { background: #ececec; color: #3c434a; }
+.arnl-badge--short { background: #e6f0f8; color: #135e96; }
+.arnl-badge--traffic-routine { background: #ececec; color: #1e1e1e; }
+.arnl-badge--traffic-welfare { background: #fff1c2; color: #6b4e00; }
+.arnl-badge--traffic-priority { background: #ffe0c2; color: #7a3800; }
+.arnl-badge--traffic-emergency { background: #d63638; color: #fff; }
+
+/* Agenda list */
+.arnl-list-day {
+	margin: 0 0 1.25em;
+}
+
+.arnl-list-date {
+	margin: 0 0 0.4em;
+	padding-bottom: 0.25em;
+	border-bottom: 1px solid var(--arnl-border);
+	font-size: 1em;
+}
+
+.arnl-list-events .arnl-cal-event {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25em 1em;
+	margin: 0 0 0.5em;
+	padding: 0.4em 0.6em;
+	border-left: 4px solid var(--arnl-color, #2271b1);
+	background: var(--arnl-soft);
+}
+
+.arnl-list-time {
+	min-width: 11em;
+	font-variant-numeric: tabular-nums;
+	font-weight: 600;
+}
+
+.arnl-list-body {
+	flex: 1;
+	min-width: 12em;
+}
+
+.arnl-list-name {
+	font-weight: 600;
+}
+
+.arnl-list-topic {
+	display: block;
+	font-style: italic;
+}
+
+.arnl-list-meta {
+	display: block;
+	font-size: 0.9em;
+	opacity: 0.85;
+}
+
+.arnl-list-events .arnl-button {
+	align-self: center;
+}
+
+/* Net directory & session details */
+.arnl-net {
+	margin: 0 0 1.5em;
+	padding: 0.75em 1em;
+	border-left: 4px solid var(--arnl-color, #2271b1);
+	background: var(--arnl-soft);
+}
+
+.arnl-net-name {
+	margin: 0 0 0.5em;
+}
+
+.arnl-details {
+	display: grid;
+	grid-template-columns: max-content 1fr;
+	gap: 0.3em 1em;
+	margin: 0 0 0.75em;
+}
+
+.arnl-details dt {
+	margin: 0;
+	font-weight: 600;
+}
+
+.arnl-details dd {
+	margin: 0;
+}
+
+.arnl-event {
+	padding-left: 1em;
+	border-left: 4px solid var(--arnl-color, #2271b1);
+}
+
+.arnl-event-title {
+	margin: 0 0 0.2em;
+}
+
+.arnl-event-when {
+	margin: 0 0 1em;
+	font-size: 1.05em;
+}
+
+.arnl-callsign {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	letter-spacing: 0.02em;
+}
+
+/* Check-in form */
+.arnl-checkin {
+	margin: 1.5em 0;
+	padding: 1em 1.25em;
+	border: 1px solid var(--arnl-border, rgba(128, 128, 128, 0.3));
+	border-radius: 6px;
+}
+
+.arnl-checkin-title {
+	margin-top: 0;
+}
+
+.arnl-field-row {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(11em, 1fr));
+	gap: 0.75em;
+}
+
+.arnl-field {
+	margin: 0 0 0.75em;
+}
+
+.arnl-field label {
+	display: block;
+	margin-bottom: 0.2em;
+	font-weight: 600;
+}
+
+.arnl-field input[type="text"],
+.arnl-field select,
+.arnl-field textarea {
+	width: 100%;
+	max-width: 100%;
+}
+
+.arnl-checkin-form input[type="text"],
+.arnl-checkin-form select,
+.arnl-checkin-form textarea,
+.arnl-filter select {
+	padding: 0.4em 0.6em;
+	border: 1px solid rgba(128, 128, 128, 0.6);
+	border-radius: 4px;
+	font: inherit;
+	font-size: 1em;
+	line-height: 1.4;
+}
+
+.arnl-filter select {
+	width: auto;
+	padding: 0.25em 0.5em;
+}
+
+.arnl-checkin-form input[type="checkbox"] {
+	width: 1.1em;
+	height: 1.1em;
+	margin: 0 0.4em 0 0;
+	vertical-align: -0.15em;
+}
+
+.arnl-field--callsign input {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	text-transform: uppercase;
+}
+
+.arnl-field--options {
+	padding: 0;
+	border: 0;
+}
+
+.arnl-field--options label {
+	display: block;
+	font-weight: normal;
+}
+
+.arnl-js .arnl-field--traffic[hidden] {
+	display: none;
+}
+
+.arnl-required {
+	color: #d63638;
+}
+
+.arnl-hp {
+	position: absolute !important;
+	left: -9999px !important;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+}
+
+.arnl-button {
+	display: inline-block;
+	padding: 0.5em 1.2em;
+	border: 0;
+	border-radius: 4px;
+	background: var(--arnl-accent, #2271b1);
+	color: #fff;
+	font: inherit;
+	font-weight: 600;
+	line-height: 1.4;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.arnl-button:hover,
+.arnl-button:focus {
+	background: #135e96;
+	color: #fff;
+}
+
+.arnl-button--small {
+	padding: 0.2em 0.7em;
+	font-size: 0.85em;
+}
+
+.arnl-notice {
+	margin: 0 0 1em;
+	padding: 0.6em 0.9em;
+	border-left: 4px solid #2271b1;
+	background: #f0f6fc;
+	color: #1e1e1e;
+}
+
+.arnl-notice--success { border-color: #00a32a; background: #edfaef; }
+.arnl-notice--error { border-color: #d63638; background: #fcf0f1; }
+.arnl-notice--info { border-color: #dba617; background: #fcf9e8; }
+
+.arnl-checkin-closed {
+	font-style: italic;
+}
+
+.arnl-public-log-list {
+	columns: 14em auto;
+	column-gap: 2em;
+	margin: 0 0 1em 1.5em;
+}
+
+.arnl-public-log-list li {
+	break-inside: avoid;
+}
+
+.arnl-public-log-list .arnl-name {
+	margin-left: 0.4em;
+	opacity: 0.85;
+}
+
+/*
+ * The month grid adapts to the width it is given (content column, sidebar or
+ * phone) using container queries: compact entries when narrow, and a list of
+ * days with nets when very narrow.
+ */
+.arnl-calendar--month {
+	container-type: inline-size;
+}
+
+@container (max-width: 760px) {
+	.arnl-cal-day {
+		height: 5.5em;
+		padding: 0.15em;
+	}
+
+	.arnl-cal-event-link {
+		padding: 0.15em 0.25em;
+		font-size: 0.72em;
+	}
+
+	.arnl-cal-event-link .arnl-badge {
+		padding: 0 0.3em;
+		font-size: 0.8em;
+		overflow-wrap: normal;
+	}
+
+	.arnl-cal-topic,
+	.arnl-cal-ncs {
+		display: none;
+	}
+}
+
+@container (max-width: 520px) {
+	.arnl-cal-grid thead {
+		display: none;
+	}
+
+	.arnl-cal-grid,
+	.arnl-cal-grid tbody,
+	.arnl-cal-grid tr,
+	.arnl-cal-day {
+		display: block;
+		width: auto;
+		height: auto;
+	}
+
+	.arnl-cal-pad,
+	.arnl-no-events {
+		display: none;
+	}
+
+	.arnl-cal-day {
+		padding: 0.6em 0;
+		border: 0;
+		border-bottom: 1px solid var(--arnl-border);
+	}
+
+	.arnl-cal-daynum {
+		display: none;
+	}
+
+	.arnl-cal-fulldate {
+		position: static;
+		width: auto;
+		height: auto;
+		margin: 0;
+		overflow: visible;
+		clip: auto;
+		font-weight: 600;
+		white-space: normal;
+	}
+
+	.arnl-cal-event-link {
+		padding: 0.2em 0.4em;
+		font-size: 0.95em;
+	}
+
+	.arnl-cal-topic,
+	.arnl-cal-ncs {
+		display: block;
+	}
+}
+
+@media (max-width: 700px) {
+	.arnl-details {
+		grid-template-columns: 1fr;
+	}
+
+	.arnl-details dd {
+		margin-bottom: 0.4em;
+	}
+}
+
+@media print {
+	.arnl-cal-nav,
+	.arnl-filter,
+	.arnl-subscribe,
+	.arnl-checkin {
+		display: none;
+	}
+}
