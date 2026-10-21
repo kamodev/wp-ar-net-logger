@@ -26,6 +26,7 @@ class ARNL_Admin_Log {
 		add_action( 'admin_post_arnl_export_checkins', array( __CLASS__, 'handle_export' ) );
 		add_action( 'wp_ajax_arnl_lookup_callsign', array( __CLASS__, 'ajax_lookup' ) );
 		add_action( 'wp_ajax_arnl_search_callsigns', array( __CLASS__, 'ajax_search' ) );
+		add_action( 'wp_ajax_arnl_refresh_log', array( __CLASS__, 'ajax_refresh' ) );
 	}
 
 	/**
@@ -91,7 +92,7 @@ class ARNL_Admin_Log {
 			}
 		}
 		?>
-		<div class="wrap arnl-wrap arnl-log">
+		<div class="wrap arnl-wrap arnl-log" data-arnl-refresh="<?php echo esc_attr( $o->key() ); ?>" data-arnl-signature="<?php echo esc_attr( self::signature( $o, $checkins ) ); ?>">
 			<p class="arnl-breadcrumb"><a href="<?php echo esc_url( ARNL_Admin::url( 'arnl-schedule', array( 'net' => $o->net_id ) ) ); ?>">&larr; <?php esc_html_e( 'Net Schedule', 'ar-net-logger' ); ?></a></p>
 			<h1 class="wp-heading-inline">
 				<span class="arnl-swatch" style="--arnl-color: <?php echo esc_attr( $net['color'] ); ?>" aria-hidden="true"></span>
@@ -154,21 +155,15 @@ class ARNL_Admin_Log {
 				</div>
 			</div>
 
-			<ul class="arnl-stats">
-				<li><span class="arnl-stat-num"><?php echo (int) $stats['approved']; ?></span> <abbr title="<?php esc_attr_e( 'Stations checked in', 'ar-net-logger' ); ?>"><?php esc_html_e( 'Check-ins (QNI)', 'ar-net-logger' ); ?></abbr></li>
-				<li><span class="arnl-stat-num"><?php echo (int) $stats['traffic_count']; ?></span> <abbr title="<?php esc_attr_e( 'Messages / traffic listed', 'ar-net-logger' ); ?>"><?php esc_html_e( 'Traffic (QTC)', 'ar-net-logger' ); ?></abbr></li>
-				<li><span class="arnl-stat-num"><?php echo (int) $stats['short_time']; ?></span> <?php esc_html_e( 'Short time', 'ar-net-logger' ); ?></li>
-				<li><span class="arnl-stat-num"><?php echo (int) $stats['mobile']; ?></span> <?php esc_html_e( 'Mobile / portable', 'ar-net-logger' ); ?></li>
-				<li><span class="arnl-stat-num"><?php echo (int) $stats['relayed']; ?></span> <?php esc_html_e( 'Relayed', 'ar-net-logger' ); ?></li>
-				<li><span class="arnl-stat-num"><?php echo (int) $stats['online']; ?></span> <?php esc_html_e( 'Online', 'ar-net-logger' ); ?></li>
-				<?php if ( $stats['pending'] ) : ?>
-					<li class="arnl-stat-pending"><span class="arnl-stat-num"><?php echo (int) $stats['pending']; ?></span> <?php esc_html_e( 'Pending', 'ar-net-logger' ); ?></li>
-				<?php endif; ?>
-			</ul>
+			<?php self::render_stats( $stats ); ?>
 
 			<div class="arnl-log-columns">
 				<div class="arnl-log-main">
 					<?php self::render_checkin_form( $o, $editing ); ?>
+					<p class="arnl-refresh arnl-noprint">
+						<label><input type="checkbox" id="arnl-auto-refresh" checked> <?php esc_html_e( 'Update the check-in list automatically', 'ar-net-logger' ); ?></label>
+						<span class="arnl-refresh-status arnl-muted" role="status" aria-live="polite"></span>
+					</p>
 					<?php self::render_checkins_table( $o, $checkins, $stats ); ?>
 				</div>
 				<div class="arnl-log-side">
@@ -282,6 +277,43 @@ class ARNL_Admin_Log {
 	}
 
 	/**
+	 * QNI / QTC counts bar.
+	 *
+	 * @param array $stats Stats from ARNL_Checkins::stats().
+	 */
+	protected static function render_stats( array $stats ) {
+		?>
+		<ul class="arnl-stats" id="arnl-stats">
+			<li><span class="arnl-stat-num"><?php echo (int) $stats['approved']; ?></span> <abbr title="<?php esc_attr_e( 'Stations checked in', 'ar-net-logger' ); ?>"><?php esc_html_e( 'Check-ins (QNI)', 'ar-net-logger' ); ?></abbr></li>
+			<li><span class="arnl-stat-num"><?php echo (int) $stats['traffic_count']; ?></span> <abbr title="<?php esc_attr_e( 'Messages / traffic listed', 'ar-net-logger' ); ?>"><?php esc_html_e( 'Traffic (QTC)', 'ar-net-logger' ); ?></abbr></li>
+			<li><span class="arnl-stat-num"><?php echo (int) $stats['short_time']; ?></span> <?php esc_html_e( 'Short time', 'ar-net-logger' ); ?></li>
+			<li><span class="arnl-stat-num"><?php echo (int) $stats['mobile']; ?></span> <?php esc_html_e( 'Mobile / portable', 'ar-net-logger' ); ?></li>
+			<li><span class="arnl-stat-num"><?php echo (int) $stats['relayed']; ?></span> <?php esc_html_e( 'Relayed', 'ar-net-logger' ); ?></li>
+			<li><span class="arnl-stat-num"><?php echo (int) $stats['online']; ?></span> <?php esc_html_e( 'Online', 'ar-net-logger' ); ?></li>
+			<?php if ( $stats['pending'] ) : ?>
+				<li class="arnl-stat-pending"><span class="arnl-stat-num"><?php echo (int) $stats['pending']; ?></span> <?php esc_html_e( 'Pending', 'ar-net-logger' ); ?></li>
+			<?php endif; ?>
+		</ul>
+		<?php
+	}
+
+	/**
+	 * Fingerprint of a session's check-ins and status, so the Net Log only
+	 * re-renders when something changed.
+	 *
+	 * @param ARNL_Occurrence $o        Session.
+	 * @param array[]         $checkins Check-ins.
+	 * @return string
+	 */
+	protected static function signature( ARNL_Occurrence $o, array $checkins ) {
+		$parts = array( $o->key(), $o->status );
+		foreach ( $checkins as $c ) {
+			$parts[] = $c['id'] . ':' . $c['status'] . ':' . $c['acknowledged'] . ':' . $c['updated_at'];
+		}
+		return md5( implode( '|', $parts ) );
+	}
+
+	/**
 	 * Check-ins table.
 	 *
 	 * @param ARNL_Occurrence $o        Session.
@@ -291,7 +323,7 @@ class ARNL_Admin_Log {
 	protected static function render_checkins_table( ARNL_Occurrence $o, array $checkins, array $stats ) {
 		$types = arnl_station_types();
 		?>
-		<div class="arnl-box arnl-checkins">
+		<div class="arnl-box arnl-checkins" id="arnl-checkins">
 			<h2>
 				<?php esc_html_e( 'Check-ins', 'ar-net-logger' ); ?>
 				<?php if ( $stats['pending'] ) : ?>
@@ -337,7 +369,7 @@ class ARNL_Admin_Log {
 							$classes[] = 'arnl-ci-ack';
 						}
 						?>
-						<tr class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
+						<tr class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" data-checkin="<?php echo (int) $c['id']; ?>">
 							<td class="num"><?php echo 'rejected' === $c['status'] ? '–' : (int) ++$n; ?></td>
 							<td><?php echo esc_html( mysql2date( get_option( 'time_format' ), $c['checkin_time'] ) ); ?></td>
 							<td>
@@ -710,6 +742,53 @@ class ARNL_Admin_Log {
 			);
 		}
 		wp_send_json_success( '' !== $callsign ? ARNL_Callsign_Lookup::lookup( $callsign ) : null );
+	}
+
+	/**
+	 * AJAX: background refresh of the Net Log's check-in list and counts.
+	 *
+	 * The page sends the fingerprint it shows; the list is only re-rendered
+	 * and returned when check-ins (e.g. from the website) changed.
+	 */
+	public static function ajax_refresh() {
+		check_ajax_referer( 'arnl_refresh_log', 'nonce' );
+		if ( ! current_user_can( ARNL_Install::CAP_LOG ) ) {
+			wp_send_json_error( null, 403 );
+		}
+		$key = isset( $_GET['event'] ) ? sanitize_text_field( wp_unslash( $_GET['event'] ) ) : '';
+		$o   = ARNL_Schedule::find( $key );
+		if ( ! $o ) {
+			wp_send_json_error( array( 'message' => __( 'Session not found.', 'ar-net-logger' ) ), 404 );
+		}
+		$checkins  = $o->is_virtual() ? array() : ARNL_Checkins::for_event( $o->event_id );
+		$signature = self::signature( $o, $checkins );
+		$since     = isset( $_GET['since'] ) ? sanitize_key( wp_unslash( $_GET['since'] ) ) : '';
+		if ( $since === $signature ) {
+			wp_send_json_success(
+				array(
+					'changed'   => false,
+					'signature' => $signature,
+				)
+			);
+		}
+
+		$stats = ARNL_Checkins::stats( $checkins );
+		ob_start();
+		self::render_stats( $stats );
+		$stats_html = ob_get_clean();
+		ob_start();
+		self::render_checkins_table( $o, $checkins, $stats );
+		$table_html = ob_get_clean();
+
+		wp_send_json_success(
+			array(
+				'changed'   => true,
+				'signature' => $signature,
+				'event'     => $o->key(),
+				'stats'     => $stats_html,
+				'table'     => $table_html,
+			)
+		);
 	}
 
 	/**

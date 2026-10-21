@@ -4,7 +4,7 @@ Tags: ham radio, amateur radio, net control, calendar, check-in
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,7 +20,7 @@ AR Net Logger helps radio clubs, ARES / RACES groups and net managers run their 
 * **Net pages**: every net at `/net/{net-name}/` and every session at `/net/{net-name}/?p={id}`, with a directory at `/net/`.
 * **Calendar shortcodes** with visitor filters (Net, Type, Mode, Band): `[arnl_calendar]`, `[arnl_upcoming]`, `[arnl_nets]`, `[arnl_event]`, `[arnl_checkin]`, `[arnl_net]`.
 * **Calendar export**: subscribable iCal feeds (filterable by net, type, mode and band), single-session .ics downloads, Google Calendar and Outlook.com links.
-* **Net Log** for the Net Control Station: preamble, open / close net, quick check-in entry with a callsign type-ahead that fills in name, QTH and station type from previous check-ins or the US license database (callook.info), short-time, mobile / portable, relays, traffic precedence and count, acknowledgements, QNI / QTC counts, CSV export and print.
+* **Net Log** for the Net Control Station: preamble, open / close net, quick check-in entry with a callsign type-ahead that fills in name, QTH and station type from previous check-ins or the US license database (callook.info), short-time, mobile / portable, relays, traffic precedence and count, acknowledgements, QNI / QTC counts that update in the background, CSV export and print.
 * **Online check-ins** from the website during a configurable window, with callsign validation, duplicate detection, honeypot, rate limiting and optional moderation.
 * **Net Control Operator** role that can run nets and log check-ins without editing the site.
 
@@ -57,6 +57,9 @@ Net Logger → Settings → Net permalink base. It is the slug of the "Nets" pag
 Untick "Require a valid amateur radio callsign format" in the settings.
 
 == Changelog ==
+
+= 1.1.1 =
+* Net Log: the check-in list and QNI / QTC counts refresh in the background (AJAX), so website check-ins appear without reloading and without disturbing the check-in form. New rows are highlighted; updates pause while the tab is hidden and can be switched off.
 
 = 1.1.0 =
 * Net permalinks: each net at /net/{net-name}/ and each session at /net/{net-name}/?p={id}, with a nets directory at /net/. The base is configurable in the settings.

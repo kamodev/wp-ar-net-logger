@@ -4,7 +4,7 @@ A WordPress plugin for scheduling, publishing and logging **Amateur Radio (ham r
 
 - **Requires:** WordPress 6.0+, PHP 7.4+
 - **License:** GPL-2.0-or-later
-- **Download:** [`dist/ar-net-logger-1.1.0.zip`](dist/ar-net-logger-1.1.0.zip) or the [latest release](https://github.com/kamodev/wp-ar-net-logger/releases/latest), installable from *Plugins → Add New → Upload Plugin*
+- **Download:** [`dist/ar-net-logger-1.1.1.zip`](dist/ar-net-logger-1.1.1.zip) or the [latest release](https://github.com/kamodev/wp-ar-net-logger/releases/latest), installable from *Plugins → Add New → Upload Plugin*
 
 ---
 
@@ -25,7 +25,7 @@ The design follows standard net practice: ARRL NTS net procedures, common NCS sc
 
 ## Installation
 
-1. Download `dist/ar-net-logger-1.1.0.zip`, then go to **Plugins → Add New → Upload Plugin** and activate it. (Or clone this repository into `wp-content/plugins/`.)
+1. Download `dist/ar-net-logger-1.1.1.zip`, then go to **Plugins → Add New → Upload Plugin** and activate it. (Or clone this repository into `wp-content/plugins/`.)
 2. Go to **Net Logger → Nets → Add New Net**: enter the name, frequency / mode / band, days and time, default NCS and the net preamble.
 3. Add `[arnl_calendar]` to a page.
 
@@ -38,7 +38,7 @@ On activation the plugin creates three tables (`{prefix}arnl_nets`, `{prefix}arn
 | **Net Logger → Schedule** | Upcoming (or past) sessions with filters by net, date range and status. Per session: **Net Log**, **Edit** (override date / time / topic / NCS for that date only), **Cancel / Restore**, **Delete** (reverts a regular session to the net's defaults). Also *Add Special Session* and *Export .ics*. |
 | **Net Logger → Calendar** | Month view; click a session to open its Net Log. |
 | **Net Logger → Nets** | Nets list (search, active / inactive views, bulk activate / deactivate / delete) and the add / edit form. |
-| **Net Log** (from the schedule) | Run the net: open / close, session NCS / topic / private log notes, quick check-in entry with **callsign type-ahead**, approve / reject / acknowledge / edit / delete check-ins, *Approve all pending*, CSV export, print. |
+| **Net Log** (from the schedule) | Run the net: open / close, session NCS / topic / private log notes, quick check-in entry with **callsign type-ahead**, a check-in list that **updates in the background** (website check-ins appear without reloading; new rows are highlighted), approve / reject / acknowledge / edit / delete check-ins, *Approve all pending*, CSV export, print. |
 | **Net Logger → Settings** | Online check-in options, check-in window, public check-in list, flood protection, session details page, iCal feed range, data removal on uninstall, plus a shortcode and feed reference. |
 
 ### Roles and capabilities
@@ -174,7 +174,7 @@ Regular sessions are not stored. `ARNL_Schedule::occurrences()` expands each net
 
 ### Hooks for developers
 
-Filters: `arnl_net_types`, `arnl_modes`, `arnl_bands`, `arnl_station_types`, `arnl_is_valid_callsign`, `arnl_checkins_open`, `arnl_pre_online_checkin` (return `WP_Error` to reject), `arnl_checkin_prefill`, `arnl_occurrences`, `arnl_describe_schedule`, `arnl_ics_vevent`, `arnl_callsign_lookup` (return station fields, `false` for unknown, or `null` for the built-in lookup), `arnl_now`.
+Filters: `arnl_log_refresh_interval` (seconds between Net Log updates, default 15), `arnl_net_types`, `arnl_modes`, `arnl_bands`, `arnl_station_types`, `arnl_is_valid_callsign`, `arnl_checkins_open`, `arnl_pre_online_checkin` (return `WP_Error` to reject), `arnl_checkin_prefill`, `arnl_occurrences`, `arnl_describe_schedule`, `arnl_ics_vevent`, `arnl_callsign_lookup` (return station fields, `false` for unknown, or `null` for the built-in lookup), `arnl_now`.
 
 Actions: `arnl_net_saved`, `arnl_before_delete_net`, `arnl_event_saved`, `arnl_before_delete_event`, `arnl_checkin_created`, `arnl_checkin_updated`.
 

@@ -296,4 +296,132 @@
 	$( '[data-arnl-lookup]' ).each( function () {
 		$( this ).data( 'arnlTypeahead', new Typeahead( this ) );
 	} );
+
+	/*
+	 * Net Log: refresh the check-in list and counts in the background, so
+	 * website check-ins show up while the NCS keeps typing in the form.
+	 * Only the counts bar and the check-ins table are replaced; the form is
+	 * never touched. Polling pauses while the tab is hidden, while focus is
+	 * inside the table, or when the operator turns it off.
+	 */
+	var $log = $( '.arnl-log[data-arnl-refresh]' );
+	if ( $log.length && settings.refresh ) {
+		var refresh = {
+			event: String( $log.attr( 'data-arnl-refresh' ) ),
+			signature: String( $log.attr( 'data-arnl-signature' ) ),
+			busy: false,
+			failures: 0,
+			stopped: false,
+			timer: null
+		};
+		var $toggle = $( '#arnl-auto-refresh' );
+		var $refreshStatus = $( '.arnl-refresh-status' );
+		var storageKey = 'arnlAutoRefresh';
+
+		try {
+			if ( window.localStorage.getItem( storageKey ) === 'off' ) {
+				$toggle.prop( 'checked', false );
+				$refreshStatus.text( settings.i18n.paused );
+			}
+		} catch ( e ) {
+			// Storage unavailable; keep the default.
+		}
+
+		var rowIds = function () {
+			return $( '#arnl-checkins tr[data-checkin]' ).map( function () {
+				return String( $( this ).attr( 'data-checkin' ) );
+			} ).get();
+		};
+		var clock = function () {
+			return new Date().toLocaleTimeString( [], { hour: 'numeric', minute: '2-digit', second: '2-digit' } );
+		};
+		var interacting = function () {
+			return $( document.activeElement ).closest( '#arnl-checkins' ).length > 0;
+		};
+		var stop = function ( message ) {
+			refresh.stopped = true;
+			window.clearTimeout( refresh.timer );
+			$refreshStatus.text( message );
+		};
+		var schedule = function ( seconds ) {
+			window.clearTimeout( refresh.timer );
+			if ( ! refresh.stopped ) {
+				refresh.timer = window.setTimeout( poll, seconds * 1000 );
+			}
+		};
+		var poll = function () {
+			if ( refresh.stopped ) {
+				return;
+			}
+			if ( ! $toggle.prop( 'checked' ) || document.hidden || refresh.busy || interacting() ) {
+				schedule( settings.refresh.interval );
+				return;
+			}
+			refresh.busy = true;
+			$.ajax( {
+				url: settings.ajaxUrl,
+				dataType: 'json',
+				cache: false,
+				data: {
+					action: 'arnl_refresh_log',
+					nonce: settings.refresh.nonce,
+					event: refresh.event,
+					since: refresh.signature
+				}
+			} ).done( function ( response ) {
+				refresh.failures = 0;
+				if ( ! response || ! response.success ) {
+					stop( settings.i18n.expired );
+					return;
+				}
+				var data = response.data;
+				var message = settings.i18n.updated.replace( '%s', clock() );
+				if ( data.changed ) {
+					var before = rowIds();
+					$( '#arnl-stats' ).replaceWith( data.stats );
+					$( '#arnl-checkins' ).replaceWith( data.table );
+					var $added = $( '#arnl-checkins tr[data-checkin]' ).filter( function () {
+						return before.indexOf( String( $( this ).attr( 'data-checkin' ) ) ) === -1;
+					} ).addClass( 'arnl-ci-new' );
+					refresh.signature = data.signature;
+					refresh.event = data.event;
+					$log.attr( 'data-arnl-signature', data.signature );
+					if ( $added.length ) {
+						message = ( $added.length === 1 ? settings.i18n.newOne : settings.i18n.newMany ).replace( '%d', $added.length ) + ' · ' + message;
+					}
+				}
+				$refreshStatus.text( message );
+			} ).fail( function ( xhr ) {
+				// Expired nonce / logged out (403) or the session was deleted (404).
+				if ( xhr.status === 403 || xhr.status === 404 || xhr.responseText === '-1' ) {
+					stop( settings.i18n.expired );
+					return;
+				}
+				refresh.failures++;
+				$refreshStatus.text( settings.i18n.retrying );
+			} ).always( function () {
+				refresh.busy = false;
+				schedule( settings.refresh.interval * Math.min( 4, refresh.failures + 1 ) );
+			} );
+		};
+
+		$toggle.on( 'change', function () {
+			try {
+				window.localStorage.setItem( storageKey, this.checked ? 'on' : 'off' );
+			} catch ( e ) {
+				// Optional.
+			}
+			if ( this.checked ) {
+				poll();
+			} else {
+				$refreshStatus.text( settings.i18n.paused );
+			}
+		} );
+		document.addEventListener( 'visibilitychange', function () {
+			if ( ! document.hidden && $toggle.prop( 'checked' ) ) {
+				poll();
+			}
+		} );
+		schedule( settings.refresh.interval );
+	}
 }( jQuery ) );
