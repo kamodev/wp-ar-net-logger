@@ -62,6 +62,13 @@ class ARNL_Admin_Settings {
 						</td>
 					</tr>
 					<tr>
+						<th scope="row"><?php esc_html_e( 'Callsign lookup', 'ar-net-logger' ); ?></th>
+						<td>
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[online_lookup]" value="1" <?php checked( $s['online_lookup'] ); ?>> <?php esc_html_e( 'On the Net Log, look up stations not logged before in the US license database (callook.info) to fill in name and location', 'ar-net-logger' ); ?></label>
+							<p class="description"><?php esc_html_e( 'Stations that checked in before are always suggested from your own logs as you type.', 'ar-net-logger' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row"><?php esc_html_e( 'Check-in window', 'ar-net-logger' ); ?></th>
 						<td>
 							<?php
@@ -106,6 +113,49 @@ class ARNL_Admin_Settings {
 					</tr>
 				</table>
 
+				<h2 class="title"><?php esc_html_e( 'Net pages', 'ar-net-logger' ); ?></h2>
+				<?php
+				$net_base = ARNL_Permalinks::base();
+				$net_slug = ARNL_Permalinks::slug();
+				$parent   = '' !== $net_slug ? substr( $net_base, 0, -strlen( $net_slug ) ) : '';
+				$example  = ARNL_Nets::query( array( 'number' => 1 ) );
+				$example  = $example ? reset( $example ) : array( 'slug' => 'colorado-preparedness-net' );
+				?>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="arnl-net-base"><?php esc_html_e( 'Net permalink base', 'ar-net-logger' ); ?></label></th>
+						<td>
+							<code><?php echo esc_html( trailingslashit( home_url() ) . $parent ); ?></code><input type="text" id="arnl-net-base" name="<?php echo esc_attr( $name ); ?>[net_base]" value="<?php echo esc_attr( '' !== $net_slug ? $net_slug : 'net' ); ?>" class="regular-text code" style="width: 12em;"><code>/<?php echo esc_html( $example['slug'] ); ?>/</code>
+							<?php if ( ARNL_Permalinks::available() ) : ?>
+								<p class="description">
+									<?php
+									printf(
+										/* translators: 1: example net URL, 2: example session URL. */
+										esc_html__( 'Each net has its own page, e.g. %1$s, and each session of it %2$s (the session number, or its date for regular sessions not yet logged).', 'ar-net-logger' ),
+										'<code>' . esc_html( '/' . $net_base . '/' . $example['slug'] . '/' ) . '</code>',
+										'<code>' . esc_html( '/' . $net_base . '/' . $example['slug'] . '/?p=134' ) . '</code>'
+									);
+									?>
+									<?php if ( ! ARNL_Permalinks::pretty() ) : ?>
+										<br><strong><?php esc_html_e( 'Plain permalinks are active (Settings → Permalinks), so net pages use query-string addresses until pretty permalinks are enabled.', 'ar-net-logger' ); ?></strong>
+									<?php endif; ?>
+								</p>
+								<p class="description">
+									<?php
+									printf(
+										/* translators: %s: link to edit the page. */
+										esc_html__( 'The base is the slug of the %s page, which lists all nets. Add an introduction to that page if you like; keep the [arnl_net] shortcode in it.', 'ar-net-logger' ),
+										'<a href="' . esc_url( get_edit_post_link( ARNL_Permalinks::page_id() ) ) . '">' . esc_html( get_the_title( ARNL_Permalinks::page_id() ) ) . '</a>'
+									);
+									?>
+								</p>
+							<?php else : ?>
+								<p class="description"><strong><?php esc_html_e( 'The page for net permalinks is missing or not published. Save the settings to (re)create it.', 'ar-net-logger' ); ?></strong></p>
+							<?php endif; ?>
+						</td>
+					</tr>
+				</table>
+
 				<h2 class="title"><?php esc_html_e( 'Calendar', 'ar-net-logger' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
@@ -117,12 +167,12 @@ class ARNL_Admin_Settings {
 									'name'              => esc_attr( $name ) . '[event_page_id]',
 									'id'                => 'arnl-event-page',
 									'selected'          => (int) $s['event_page_id'],
-									'show_option_none'  => esc_html__( '— Same page as the calendar —', 'ar-net-logger' ),
+									'show_option_none'  => esc_html__( '— Net permalinks (recommended) —', 'ar-net-logger' ),
 									'option_none_value' => '0',
 								)
 							);
 							?>
-							<p class="description"><?php esc_html_e( 'Optional page containing [arnl_event]. Calendar links open session details (with the check-in form) there; by default they open on the page that shows the calendar.', 'ar-net-logger' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Calendar links open each session (details and check-in form) at its net permalink. Optionally choose a page containing [arnl_event] to show sessions there instead.', 'ar-net-logger' ); ?></p>
 						</td>
 					</tr>
 					<tr>
@@ -165,15 +215,17 @@ class ARNL_Admin_Settings {
 	 */
 	protected static function reference() {
 		$rows       = array(
-			array( '[arnl_calendar]', __( 'Month calendar of all active nets with previous / next navigation, color legend and subscribe links.', 'ar-net-logger' ) ),
+			array( '[arnl_calendar]', __( 'Month calendar of all active nets with Net / Type / Mode / Band filters, previous / next navigation, color legend and subscribe links.', 'ar-net-logger' ) ),
 			array( '[arnl_calendar view="list" days="60"]', __( 'Agenda list for the next 60 days instead of a month grid.', 'ar-net-logger' ) ),
-			array( '[arnl_calendar net="club-net,ares-net" show_filter="yes"]', __( 'Only the listed nets (slugs or IDs), with a drop-down so visitors can narrow it to one net.', 'ar-net-logger' ) ),
+			array( '[arnl_calendar net="club-net,ares-net" filters="net"]', __( 'Only the listed nets (slugs or IDs), with only the Net drop-down for visitors.', 'ar-net-logger' ) ),
+			array( '[arnl_calendar show_filter="no"]', __( 'Calendar without the visitor filter drop-downs.', 'ar-net-logger' ) ),
 			array( '[arnl_calendar type="emergency,weather" mode="fm" band="2m,70cm"]', __( 'Filter by net type, mode and band (comma-separated keys).', 'ar-net-logger' ) ),
 			array( '[arnl_calendar month="2026-12" nav="no" show_ncs="no" show_topic="no"]', __( 'Fixed month without navigation, hiding NCS and topic.', 'ar-net-logger' ) ),
 			array( '[arnl_upcoming limit="5" net="club-net"]', __( 'The next sessions with "Check in" buttons while check-in is open.', 'ar-net-logger' ) ),
 			array( '[arnl_nets type="traffic"]', __( 'Directory of nets: schedule, frequency, NCS, next session and per-net subscribe links.', 'ar-net-logger' ) ),
 			array( '[arnl_event net="club-net"]', __( 'Details of a net\'s current or next session with the check-in form. Shows the selected session when linked from a calendar.', 'ar-net-logger' ) ),
 			array( '[arnl_checkin net="club-net"]', __( 'Just the online check-in form (and check-in list) for a net\'s current / next session.', 'ar-net-logger' ) ),
+			array( '[arnl_net]', __( 'On the Nets page: the net or session from the permalink (/net/net-name/?p=134), otherwise the directory of nets. With net="club-net": that net\'s page anywhere.', 'ar-net-logger' ) ),
 		);
 		$attributes = array(
 			'net'           => __( 'Net slugs or IDs, comma-separated.', 'ar-net-logger' ),
@@ -184,7 +236,9 @@ class ARNL_Admin_Settings {
 			'month / start' => __( 'First month (YYYY-MM) for the month view / first date (YYYY-MM-DD) for the list view.', 'ar-net-logger' ),
 			'days'          => __( 'Number of days in the list view (default 30) or in [arnl_upcoming] (default 60).', 'ar-net-logger' ),
 			'limit'         => __( 'Maximum sessions in [arnl_upcoming] (default 5).', 'ar-net-logger' ),
-			'show_*'        => __( 'yes / no: show_cancelled, show_ncs, show_topic, show_time, show_frequency, show_legend, show_subscribe, show_filter, show_description, show_next, show_log.', 'ar-net-logger' ),
+			'show_filter'   => __( 'yes / no: visitor filter drop-downs (on by default in [arnl_calendar], off in [arnl_upcoming]).', 'ar-net-logger' ),
+			'filters'       => __( 'Which visitor filters to offer: net, type, mode, band (default all; a drop-down only appears when there are 2+ choices).', 'ar-net-logger' ),
+			'show_*'        => __( 'yes / no: show_cancelled, show_ncs, show_topic, show_time, show_frequency, show_legend, show_subscribe, show_description, show_next, show_log.', 'ar-net-logger' ),
 			'nav'           => __( 'yes / no: previous / next navigation.', 'ar-net-logger' ),
 			'link'          => __( 'yes / no: link sessions to their details and check-in form.', 'ar-net-logger' ),
 			'title'         => __( 'Heading text.', 'ar-net-logger' ),

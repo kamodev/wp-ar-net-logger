@@ -35,6 +35,7 @@ class ARNL_Settings {
 			'checkin_after'     => 15,
 			'public_log'        => 'callsign_name',
 			'validate_callsign' => 1,
+			'online_lookup'     => 1,
 			'rate_limit'        => 30,
 			'ics_enabled'       => 1,
 			'ics_past_days'     => 30,
@@ -86,7 +87,7 @@ class ARNL_Settings {
 		$defaults = self::defaults();
 		$out      = array();
 
-		foreach ( array( 'public_checkins', 'require_login', 'auto_approve', 'validate_callsign', 'ics_enabled', 'delete_data' ) as $key ) {
+		foreach ( array( 'public_checkins', 'require_login', 'auto_approve', 'validate_callsign', 'online_lookup', 'ics_enabled', 'delete_data' ) as $key ) {
 			$out[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
 		}
 
@@ -106,6 +107,27 @@ class ARNL_Settings {
 		$out['public_log'] = in_array( $public_log, array( 'none', 'callsign', 'callsign_name' ), true ) ? $public_log : $defaults['public_log'];
 
 		$out['event_page_id'] = isset( $input['event_page_id'] ) ? absint( $input['event_page_id'] ) : 0;
+
+		// The net permalink base is the slug of the "Nets" page, not a stored setting.
+		if ( isset( $input['net_base'] ) && current_user_can( 'manage_options' ) ) {
+			$base = sanitize_title( wp_unslash( $input['net_base'] ) );
+			if ( '' !== $base && ( ARNL_Permalinks::slug() !== $base || ! ARNL_Permalinks::available() ) ) {
+				ARNL_Permalinks::set_base( $base );
+				if ( ARNL_Permalinks::slug() !== $base && function_exists( 'add_settings_error' ) ) {
+					add_settings_error(
+						self::OPTION,
+						'arnl_net_base',
+						sprintf(
+							/* translators: 1: requested slug, 2: slug in use. */
+							__( '"%1$s" is already used by another page or post, so net pages use "%2$s" instead.', 'ar-net-logger' ),
+							$base,
+							ARNL_Permalinks::slug()
+						),
+						'warning'
+					);
+				}
+			}
+		}
 
 		self::flush();
 		return $out;

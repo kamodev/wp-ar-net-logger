@@ -25,6 +25,7 @@ class ARNL_Admin_Log {
 		add_action( 'admin_post_arnl_update_session', array( __CLASS__, 'handle_update_session' ) );
 		add_action( 'admin_post_arnl_export_checkins', array( __CLASS__, 'handle_export' ) );
 		add_action( 'wp_ajax_arnl_lookup_callsign', array( __CLASS__, 'ajax_lookup' ) );
+		add_action( 'wp_ajax_arnl_search_callsigns', array( __CLASS__, 'ajax_search' ) );
 	}
 
 	/**
@@ -82,8 +83,12 @@ class ARNL_Admin_Log {
 		$can_manage = current_user_can( ARNL_Install::CAP_MANAGE_NETS );
 		$public_url = '';
 		if ( 'active' === $net['status'] ) {
-			$page       = ARNL_ICal::event_page_url();
-			$public_url = '' !== $page ? arnl_event_url( $o, $page ) : '';
+			if ( (int) ARNL_Settings::get( 'event_page_id' ) || ARNL_Permalinks::available() ) {
+				$public_url = arnl_event_url( $o );
+			} else {
+				$page       = ARNL_ICal::event_page_url();
+				$public_url = '' !== $page ? arnl_event_url( $o, $page ) : '';
+			}
 		}
 		?>
 		<div class="wrap arnl-wrap arnl-log">
@@ -204,6 +209,12 @@ class ARNL_Admin_Log {
 			$c = array_merge( $c, $failed );
 		}
 		$disabled = $o->is_cancelled();
+		// Fields the callsign type-ahead fills in.
+		$fill = array(
+			'name'         => '#arnl-ci-name',
+			'location'     => '#arnl-ci-location',
+			'station_type' => '#arnl-ci-type',
+		);
 		?>
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="arnl-box arnl-checkin-admin" id="arnl-checkin-form">
 			<h2><?php echo esc_html( $editing ? __( 'Edit check-in', 'ar-net-logger' ) : __( 'Log a check-in', 'ar-net-logger' ) ); ?></h2>
@@ -218,7 +229,7 @@ class ARNL_Admin_Log {
 				<div class="arnl-grid">
 					<p>
 						<label for="arnl-ci-callsign"><?php esc_html_e( 'Callsign', 'ar-net-logger' ); ?> <span class="arnl-required">*</span></label>
-						<input type="text" id="arnl-ci-callsign" name="callsign" class="arnl-callsign-input" value="<?php echo esc_attr( $c['callsign'] ); ?>" maxlength="20" required autocomplete="off" spellcheck="false" <?php echo $editing ? '' : 'autofocus'; ?> data-arnl-lookup="1">
+						<input type="text" id="arnl-ci-callsign" name="callsign" class="arnl-callsign-input" value="<?php echo esc_attr( $c['callsign'] ); ?>" maxlength="20" required autocomplete="off" spellcheck="false" <?php echo $editing ? '' : 'autofocus'; ?> data-arnl-lookup="<?php echo esc_attr( wp_json_encode( $fill ) ); ?>">
 					</p>
 					<p>
 						<label for="arnl-ci-name"><?php esc_html_e( 'Name', 'ar-net-logger' ); ?></label>
@@ -234,7 +245,7 @@ class ARNL_Admin_Log {
 					</p>
 					<p>
 						<label for="arnl-ci-relay"><?php esc_html_e( 'Relayed by', 'ar-net-logger' ); ?></label>
-						<input type="text" id="arnl-ci-relay" name="relayed_by" class="arnl-callsign-input" value="<?php echo esc_attr( $c['relayed_by'] ); ?>" maxlength="20" autocomplete="off">
+						<input type="text" id="arnl-ci-relay" name="relayed_by" class="arnl-callsign-input" value="<?php echo esc_attr( $c['relayed_by'] ); ?>" maxlength="20" autocomplete="off" data-arnl-lookup="{}">
 					</p>
 					<?php if ( $editing ) : ?>
 						<p>
@@ -405,7 +416,7 @@ class ARNL_Admin_Log {
 			<p>
 				<label for="arnl-s-ncs"><?php esc_html_e( 'Net Control Station', 'ar-net-logger' ); ?></label>
 				<span class="arnl-pair">
-					<input type="text" id="arnl-s-ncs" name="ncs_callsign" class="arnl-callsign-input" value="<?php echo esc_attr( $o->ncs_callsign ); ?>" maxlength="20" placeholder="<?php esc_attr_e( 'Callsign', 'ar-net-logger' ); ?>">
+					<input type="text" id="arnl-s-ncs" name="ncs_callsign" class="arnl-callsign-input" value="<?php echo esc_attr( $o->ncs_callsign ); ?>" maxlength="20" placeholder="<?php esc_attr_e( 'Callsign', 'ar-net-logger' ); ?>" autocomplete="off" data-arnl-lookup="<?php echo esc_attr( wp_json_encode( array( 'name' => '#arnl-s-ncs-name' ) ) ); ?>">
 					<label class="screen-reader-text" for="arnl-s-ncs-name"><?php esc_html_e( 'NCS name', 'ar-net-logger' ); ?></label>
 					<input type="text" id="arnl-s-ncs-name" name="ncs_name" value="<?php echo esc_attr( $o->ncs_name ); ?>" maxlength="100" placeholder="<?php esc_attr_e( 'Name', 'ar-net-logger' ); ?>">
 				</span>
@@ -469,6 +480,7 @@ class ARNL_Admin_Log {
 			$notice = 'checkin_updated';
 		} else {
 			unset( $data['status'] );
+			$data   = self::fill_from_lookup( $data );
 			$result = ARNL_Checkins::insert(
 				array_merge(
 					$data,
@@ -486,6 +498,30 @@ class ARNL_Admin_Log {
 			ARNL_Admin::fail( $checkin_id ? add_query_arg( 'checkin', $checkin_id, $log_url ) : $log_url, $result, $data );
 		}
 		ARNL_Admin::redirect( $log_url . '#arnl-checkin-form', $notice );
+	}
+
+	/**
+	 * Fill an empty name / location from the station's previous check-in or the
+	 * online lookup, for check-ins logged without picking a suggestion.
+	 *
+	 * @param array $data Check-in fields.
+	 * @return array
+	 */
+	protected static function fill_from_lookup( array $data ) {
+		if ( '' !== $data['name'] && '' !== $data['location'] ) {
+			return $data;
+		}
+		$callsign = arnl_sanitize_callsign( $data['callsign'] );
+		$station  = '' !== $callsign ? ARNL_Checkins::last_by_callsign( $callsign ) : null;
+		if ( ! $station && '' !== $callsign ) {
+			$station = ARNL_Callsign_Lookup::lookup( $callsign );
+		}
+		foreach ( array( 'name', 'location' ) as $field ) {
+			if ( '' === $data[ $field ] && $station && ! empty( $station[ $field ] ) ) {
+				$data[ $field ] = $station[ $field ];
+			}
+		}
+		return $data;
 	}
 
 	/**
@@ -653,7 +689,7 @@ class ARNL_Admin_Log {
 	}
 
 	/**
-	 * AJAX: previous name / location for a callsign.
+	 * AJAX: previous name / location for a callsign, or the online lookup for new stations.
 	 */
 	public static function ajax_lookup() {
 		check_ajax_referer( 'arnl_lookup', 'nonce' );
@@ -662,16 +698,49 @@ class ARNL_Admin_Log {
 		}
 		$callsign = isset( $_GET['callsign'] ) ? arnl_sanitize_callsign( sanitize_text_field( wp_unslash( $_GET['callsign'] ) ) ) : '';
 		$last     = '' !== $callsign ? ARNL_Checkins::last_by_callsign( $callsign ) : null;
-		if ( ! $last ) {
-			wp_send_json_success( null );
+		if ( $last ) {
+			wp_send_json_success(
+				array(
+					'callsign'     => $last['callsign'],
+					'name'         => $last['name'],
+					'location'     => $last['location'],
+					'station_type' => $last['station_type'],
+					'source'       => 'log',
+				)
+			);
 		}
-		wp_send_json_success(
-			array(
-				'callsign'     => $last['callsign'],
-				'name'         => $last['name'],
-				'location'     => $last['location'],
-				'station_type' => $last['station_type'],
-			)
-		);
+		wp_send_json_success( '' !== $callsign ? ARNL_Callsign_Lookup::lookup( $callsign ) : null );
+	}
+
+	/**
+	 * AJAX: type-ahead suggestions for a callsign field.
+	 *
+	 * Stations from previous check-ins (callsign or name match), plus the
+	 * online lookup when the text is a complete callsign never logged before.
+	 */
+	public static function ajax_search() {
+		check_ajax_referer( 'arnl_lookup', 'nonce' );
+		if ( ! current_user_can( ARNL_Install::CAP_LOG ) ) {
+			wp_send_json_error( null, 403 );
+		}
+		$term = isset( $_GET['q'] ) ? sanitize_text_field( wp_unslash( $_GET['q'] ) ) : '';
+		if ( strlen( $term ) < 2 ) {
+			wp_send_json_success( array() );
+		}
+
+		$results = array();
+		foreach ( ARNL_Checkins::search_stations( $term, 8 ) as $station ) {
+			$station['source'] = 'log';
+			$results[]         = $station;
+		}
+
+		$base = arnl_base_callsign( $term );
+		if ( strlen( $base ) >= 4 && arnl_looks_like_callsign( $base ) && ! in_array( $base, wp_list_pluck( $results, 'callsign' ), true ) ) {
+			$online = ARNL_Callsign_Lookup::lookup( $base );
+			if ( $online ) {
+				array_unshift( $results, $online );
+			}
+		}
+		wp_send_json_success( $results );
 	}
 }

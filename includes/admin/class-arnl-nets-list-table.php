@@ -186,6 +186,7 @@ class ARNL_Nets_List_Table extends WP_List_Table {
 		$actions = array(
 			'edit'     => '<a href="' . esc_url( $edit ) . '">' . esc_html__( 'Edit', 'ar-net-logger' ) . '</a>',
 			'schedule' => '<a href="' . esc_url( ARNL_Admin::url( 'arnl-schedule', array( 'net' => $item['id'] ) ) ) . '">' . esc_html__( 'Sessions', 'ar-net-logger' ) . '</a>',
+			'view'     => 'active' === $item['status'] && '' !== arnl_net_url( $item ) ? '<a href="' . esc_url( arnl_net_url( $item ) ) . '">' . esc_html__( 'View', 'ar-net-logger' ) . '</a>' : '',
 			'delete'   => '<a class="arnl-confirm" data-arnl-confirm="' . esc_attr__( 'Delete this net together with all of its sessions and check-in logs?', 'ar-net-logger' ) . '" href="' . esc_url( ARNL_Admin::action_url( 'arnl_delete_net', array( 'id' => $item['id'] ), 'arnl_delete_net_' . $item['id'] ) ) . '">' . esc_html__( 'Delete', 'ar-net-logger' ) . '</a>',
 		);
 		return sprintf(
@@ -193,7 +194,7 @@ class ARNL_Nets_List_Table extends WP_List_Table {
 			esc_attr( $item['color'] ),
 			esc_url( $edit ),
 			esc_html( $item['name'] ),
-			$this->row_actions( $actions )
+			$this->row_actions( array_filter( $actions ) )
 		);
 	}
 

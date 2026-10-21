@@ -126,12 +126,12 @@ class ARNL_ICal {
 	 * VEVENT lines for one session.
 	 *
 	 * @param ARNL_Occurrence $o    Session.
-	 * @param string          $base Event page URL ('' to omit URLs).
+	 * @param string          $base Page for "?arnl_event=" links when net permalinks are not available ('' to omit URLs).
 	 * @return string[]
 	 */
 	public static function vevent( ARNL_Occurrence $o, $base = '' ) {
 		$utc      = new DateTimeZone( 'UTC' );
-		$url      = '' !== $base ? arnl_event_url( $o, $base ) : '';
+		$url      = self::session_link( $o, $base );
 		$location = arnl_describe_frequency( $o->net, $o->frequency );
 		$summary  = $o->title() . ( '' !== $o->topic ? ' – ' . $o->topic : '' );
 		if ( $o->is_cancelled() ) {
@@ -170,6 +170,21 @@ class ARNL_ICal {
 		 * @param ARNL_Occurrence $o     Session.
 		 */
 		return apply_filters( 'arnl_ics_vevent', $lines, $o );
+	}
+
+	/**
+	 * Public link of a session for calendar entries: the net permalink
+	 * (/net/{net-slug}/?p={id}) or the configured session details page.
+	 *
+	 * @param ARNL_Occurrence $o    Session.
+	 * @param string          $base Fallback page for "?arnl_event=" links.
+	 * @return string
+	 */
+	protected static function session_link( ARNL_Occurrence $o, $base ) {
+		if ( (int) ARNL_Settings::get( 'event_page_id' ) || ARNL_Permalinks::available() ) {
+			return arnl_event_url( $o );
+		}
+		return '' !== $base ? arnl_event_url( $o, $base ) : '';
 	}
 
 	/**

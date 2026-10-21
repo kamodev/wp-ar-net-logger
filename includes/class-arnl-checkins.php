@@ -203,6 +203,70 @@ class ARNL_Checkins {
 	}
 
 	/**
+	 * Stations from previous check-ins matching what the NCS is typing:
+	 * callsigns containing the text (prefix matches first) or names starting
+	 * with it. One entry per station, with its most recent details.
+	 *
+	 * @param string $term  Search text.
+	 * @param int    $limit Maximum number of stations.
+	 * @return array[] Each: callsign, name, location, station_type, last_seen, checkins.
+	 */
+	public static function search_stations( $term, $limit = 8 ) {
+		global $wpdb;
+		$term = trim( (string) $term );
+		if ( '' === $term ) {
+			return array();
+		}
+		$call  = arnl_sanitize_callsign( $term );
+		$table = self::table();
+		$where = array();
+		$args  = array();
+		if ( '' !== $call ) {
+			$where[] = 'callsign LIKE %s';
+			$args[]  = '%' . $wpdb->esc_like( $call ) . '%';
+		}
+		$where[] = 'name LIKE %s';
+		$args[]  = $wpdb->esc_like( $term ) . '%';
+		$sql     = "SELECT callsign, name, location, station_type, checkin_time FROM {$table} WHERE (" . implode( ' OR ', $where ) . ") AND status <> 'rejected' ORDER BY checkin_time DESC, id DESC LIMIT 300";
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
+		$rows = $wpdb->get_results( $wpdb->prepare( $sql, $args ), ARRAY_A );
+
+		$stations = array();
+		foreach ( (array) $rows as $row ) {
+			$base = arnl_base_callsign( $row['callsign'] );
+			if ( isset( $stations[ $base ] ) ) {
+				++$stations[ $base ]['checkins'];
+				foreach ( array( 'name', 'location' ) as $field ) {
+					if ( '' === $stations[ $base ][ $field ] && '' !== $row[ $field ] ) {
+						$stations[ $base ][ $field ] = $row[ $field ];
+					}
+				}
+				continue;
+			}
+			$stations[ $base ] = array(
+				'callsign'     => $base,
+				'name'         => (string) $row['name'],
+				'location'     => (string) $row['location'],
+				'station_type' => (string) $row['station_type'],
+				'last_seen'    => (string) $row['checkin_time'],
+				'checkins'     => 1,
+			);
+		}
+
+		// Callsigns starting with the typed text first, then other matches; most recent first within each.
+		$starts = array();
+		$others = array();
+		foreach ( $stations as $base => $station ) {
+			if ( '' !== $call && 0 === strpos( $base, $call ) ) {
+				$starts[] = $station;
+			} else {
+				$others[] = $station;
+			}
+		}
+		return array_slice( array_merge( $starts, $others ), 0, max( 1, (int) $limit ) );
+	}
+
+	/**
 	 * Create a check-in.
 	 *
 	 * @param array $data Field values.

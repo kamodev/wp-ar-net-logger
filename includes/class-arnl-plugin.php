@@ -24,6 +24,7 @@ class ARNL_Plugin {
 		add_action( 'update_option_' . ARNL_Settings::OPTION, array( 'ARNL_Settings', 'flush' ) );
 		add_action( 'wp_initialize_site', array( __CLASS__, 'new_site' ), 200 );
 
+		ARNL_Permalinks::init();
 		ARNL_ICal::init();
 		ARNL_Checkin_Handler::init();
 		ARNL_Shortcodes::init();

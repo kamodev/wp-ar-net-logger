@@ -49,13 +49,23 @@ class ARNL_Install {
 	}
 
 	/**
-	 * Create tables, roles and default options.
+	 * Create tables, roles, default options and the "Nets" page for net permalinks.
 	 */
 	public static function install() {
 		self::create_tables();
 		self::add_caps();
 		add_option( ARNL_Settings::OPTION, ARNL_Settings::defaults() );
+		// The page is created on "init", once WordPress has registered its post types.
+		update_option( 'arnl_create_page', 1 );
+		ARNL_Permalinks::schedule_flush();
 		update_option( 'arnl_db_version', ARNL_DB_VERSION );
+	}
+
+	/**
+	 * Deactivation: drop the net page rewrite rule.
+	 */
+	public static function deactivate() {
+		delete_option( 'rewrite_rules' );
 	}
 
 	/**

@@ -33,6 +33,85 @@
 	text-transform: uppercase;
 }
 
+/* Callsign type-ahead */
+.arnl-typeahead {
+	position: relative;
+	display: inline-block;
+	max-width: 100%;
+	vertical-align: middle;
+}
+
+.arnl-checkin-admin .arnl-grid .arnl-typeahead {
+	display: block;
+	width: 100%;
+}
+
+.arnl-session-box .arnl-pair .arnl-typeahead {
+	flex: 1;
+	min-width: 0;
+}
+
+.arnl-session-box .arnl-pair .arnl-typeahead input {
+	width: 100%;
+}
+
+.arnl-suggestions {
+	position: absolute;
+	z-index: 1000;
+	top: 100%;
+	left: 0;
+	width: max-content;
+	min-width: 100%;
+	max-width: min(440px, 90vw);
+	max-height: 320px;
+	margin: 2px 0 0;
+	padding: 4px 0;
+	overflow-y: auto;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	background: #fff;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+	list-style: none;
+}
+
+.arnl-suggestions[hidden] {
+	display: none;
+}
+
+.arnl-suggestion {
+	display: flex;
+	align-items: baseline;
+	gap: 0.6em;
+	margin: 0;
+	padding: 6px 10px;
+	cursor: pointer;
+}
+
+.arnl-suggestion:hover,
+.arnl-suggestion.is-active {
+	background: #2271b1;
+	color: #fff;
+}
+
+.arnl-suggestion-call {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 1.05em;
+}
+
+.arnl-suggestion-info {
+	flex: 1;
+}
+
+.arnl-suggestion-meta {
+	color: #646970;
+	white-space: nowrap;
+}
+
+.arnl-suggestion:hover .arnl-suggestion-meta,
+.arnl-suggestion.is-active .arnl-suggestion-meta {
+	color: #fff;
+}
+
 /* Schedule list */
 .arnl-filters {
 	display: flex;

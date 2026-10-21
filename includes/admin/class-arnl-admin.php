@@ -76,8 +76,12 @@ class ARNL_Admin {
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'arnl_lookup' ),
 				'i18n'    => array(
-					'confirm' => __( 'Are you sure?', 'ar-net-logger' ),
-					'found'   => __( 'Filled in from a previous check-in.', 'ar-net-logger' ),
+					'confirm'     => __( 'Are you sure?', 'ar-net-logger' ),
+					'found'       => __( 'Filled in from a previous check-in.', 'ar-net-logger' ),
+					'foundOnline' => __( 'Filled in from the license database.', 'ar-net-logger' ),
+					/* translators: %d: number of previous check-ins. */
+					'checkins'    => __( '%d check-ins', 'ar-net-logger' ),
+					'online'      => __( 'License lookup', 'ar-net-logger' ),
 				),
 			)
 		);
