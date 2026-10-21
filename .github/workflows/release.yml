@@ -1,10 +1,13 @@
 name: Release
 
-# Push a tag like v1.0.0 to build the plugin zip and publish a GitHub release with it.
+# Builds the plugin zip and publishes a GitHub release with it, either when a tag
+# like v1.0.0 is pushed or when run by hand from the Actions tab ("Run workflow"),
+# which tags the selected branch as v<Version from ar-net-logger.php>.
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -15,14 +18,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check the tag matches the plugin version
+      - name: Work out the release tag
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           version="$(sed -n 's/^ \* Version: *//p' ar-net-logger.php | tr -d '[:space:]')"
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+          tag="v$version"
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$GITHUB_REF_NAME" != "$tag" ]; then
             echo "::error::Tag $GITHUB_REF_NAME does not match the plugin version ($version) in ar-net-logger.php"
             exit 1
           fi
+          if gh release view "$tag" > /dev/null 2>&1; then
+            echo "::error::Release $tag already exists. Bump the version in ar-net-logger.php first."
+            exit 1
+          fi
           echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "TAG=$tag" >> "$GITHUB_ENV"
 
       - name: Build the plugin zip
         run: bash bin/build-zip.sh
@@ -31,7 +42,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" "dist/ar-net-logger-$VERSION.zip" \
+          gh release create "$TAG" "dist/ar-net-logger-$VERSION.zip" \
+            --target "$GITHUB_SHA" \
             --title "AR Net Logger $VERSION" \
             --generate-notes \
             --notes "**Install:** download \`ar-net-logger-$VERSION.zip\` below, then in WordPress go to *Plugins → Add New → Upload Plugin*. Requires WordPress 6.0+ and PHP 7.4+. See the [README](https://github.com/$GITHUB_REPOSITORY#readme) for setup, shortcodes and calendar feeds."
