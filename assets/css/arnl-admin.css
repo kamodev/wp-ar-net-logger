@@ -1,0 +1,324 @@
+/* AR Net Logger admin screens. */
+
+.arnl-wrap .arnl-subtitle {
+	margin-top: 0;
+	color: #50575e;
+}
+
+.arnl-wrap .arnl-required {
+	color: #d63638;
+}
+
+.arnl-wrap .arnl-muted {
+	color: #646970;
+}
+
+.arnl-wrap .arnl-checkboxes {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.3em 1.2em;
+}
+
+.arnl-wrap .arnl-checkboxes label {
+	white-space: nowrap;
+}
+
+.arnl-wrap code.arnl-copy {
+	cursor: copy;
+	user-select: all;
+}
+
+.arnl-wrap .arnl-callsign-input {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	text-transform: uppercase;
+}
+
+/* Schedule list */
+.arnl-filters {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5em;
+	margin: 1em 0;
+}
+
+.arnl-quick-ranges {
+	margin-left: 0.5em;
+}
+
+.arnl-schedule-table .arnl-actions {
+	white-space: nowrap;
+}
+
+.arnl-schedule-table .arnl-actions .button {
+	margin: 0 0.15em 0.2em 0;
+}
+
+.arnl-schedule-table tr.arnl-row-today td {
+	background: #f0f6fc;
+}
+
+.arnl-schedule-table tr.arnl-row-cancelled td {
+	color: #8c8f94;
+}
+
+.arnl-wrap .arnl-calendar {
+	max-width: 1200px;
+	margin-top: 0;
+	background: #fff;
+	padding: 1em;
+	border: 1px solid #dcdcde;
+}
+
+/* Net log */
+.arnl-log .arnl-breadcrumb {
+	margin: 0.5em 0 0;
+}
+
+.arnl-log h1 .arnl-swatch {
+	width: 0.7em;
+	height: 0.7em;
+}
+
+.arnl-log-header {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: 1em;
+	margin: 1em 0;
+}
+
+.arnl-log-when {
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+.arnl-log-buttons .button {
+	margin: 0 0.25em 0.4em 0;
+}
+
+.arnl-stats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5em;
+	margin: 0 0 1em;
+	padding: 0;
+	list-style: none;
+}
+
+.arnl-stats li {
+	margin: 0;
+	padding: 0.4em 0.9em;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.arnl-stats abbr {
+	text-decoration: none;
+}
+
+.arnl-stat-num {
+	margin-right: 0.2em;
+	font-size: 1.4em;
+	font-weight: 600;
+	vertical-align: -0.1em;
+}
+
+.arnl-stats .arnl-stat-pending {
+	border-color: #dba617;
+	background: #fcf9e8;
+}
+
+.arnl-log-columns {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 320px;
+	gap: 1.25em;
+	align-items: start;
+}
+
+@media (max-width: 1100px) {
+	.arnl-log-columns {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.arnl-box {
+	margin: 0 0 1.25em;
+	padding: 0.75em 1em 1em;
+	border: 1px solid #dcdcde;
+	background: #fff;
+}
+
+.arnl-box h2 {
+	display: flex;
+	align-items: center;
+	gap: 0.75em;
+	margin: 0.25em 0 0.75em;
+	font-size: 1.15em;
+}
+
+.arnl-box > summary {
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.arnl-preamble-text {
+	max-height: 360px;
+	overflow: auto;
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+.arnl-ncs-tips {
+	margin-left: 1.25em;
+}
+
+.arnl-checkin-admin fieldset {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.arnl-checkin-admin .arnl-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	gap: 0 0.75em;
+}
+
+.arnl-checkin-admin .arnl-grid p {
+	margin: 0 0 0.6em;
+}
+
+.arnl-checkin-admin label,
+.arnl-session-box label {
+	display: block;
+	margin-bottom: 0.2em;
+	font-weight: 600;
+}
+
+.arnl-checkin-admin .arnl-grid input,
+.arnl-checkin-admin .arnl-grid select {
+	width: 100%;
+}
+
+.arnl-checkin-admin #arnl-ci-callsign {
+	font-size: 1.25em;
+	font-weight: 600;
+}
+
+.arnl-inline-options {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.4em 1.25em;
+	margin: 0.25em 0 0.6em;
+}
+
+.arnl-inline-options label,
+.arnl-traffic-fields label {
+	display: inline;
+	font-weight: normal;
+}
+
+.arnl-traffic-fields[hidden] {
+	display: none;
+}
+
+.arnl-form-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.75em;
+	margin-bottom: 0;
+}
+
+.arnl-lookup-status {
+	color: #646970;
+	font-style: italic;
+}
+
+.arnl-session-box .arnl-pair {
+	display: flex;
+	gap: 0.4em;
+}
+
+.arnl-session-box .arnl-pair input {
+	min-width: 0;
+	flex: 1;
+}
+
+.arnl-checkins {
+	overflow-x: auto;
+}
+
+.arnl-checkins-table td {
+	vertical-align: top;
+}
+
+.arnl-checkins-table .arnl-callsign {
+	font-size: 1.1em;
+}
+
+.arnl-checkins-table tr.arnl-ci-pending td {
+	background: #fcf9e8;
+}
+
+.arnl-checkins-table tr.arnl-ci-rejected td {
+	color: #8c8f94;
+	text-decoration: line-through;
+}
+
+.arnl-checkins-table tr.arnl-ci-rejected td.arnl-actions {
+	text-decoration: none;
+}
+
+.arnl-checkins-table .arnl-comment {
+	margin-top: 0.2em;
+	white-space: pre-line;
+}
+
+.arnl-checkins-table .arnl-actions {
+	white-space: nowrap;
+}
+
+.arnl-checkins-table .arnl-delete-link {
+	color: #b32d2e;
+}
+
+.arnl-reference td:first-child {
+	width: 40%;
+}
+
+.arnl-feed-list code {
+	word-break: break-all;
+}
+
+@media print {
+	#adminmenumain,
+	#wpadminbar,
+	#wpfooter,
+	.notice,
+	.arnl-breadcrumb,
+	.arnl-log-buttons,
+	.arnl-checkin-admin,
+	.arnl-log-side,
+	.arnl-noprint,
+	.arnl-checkins h2 .button {
+		display: none !important;
+	}
+
+	#wpcontent,
+	#wpbody-content {
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+
+	.arnl-log-columns {
+		display: block;
+	}
+
+	.arnl-box {
+		border: 0;
+		padding: 0;
+	}
+}

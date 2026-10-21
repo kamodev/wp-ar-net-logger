@@ -1,0 +1,1796 @@
+# Copyright (C) 2026 kamodev
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: AR Net Logger 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-ar-net-logger\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-10-21T14:34:04+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: ar-net-logger\n"
+
+#. Plugin Name of the plugin
+#: ar-net-logger.php:3
+msgid "AR Net Logger"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: ar-net-logger.php:4
+msgid "https://github.com/kamodev/wp-ar-net-logger"
+msgstr ""
+
+#. Description of the plugin
+#: ar-net-logger.php:5
+msgid "Schedule, publish and log Amateur (ham) Radio nets: recurring net schedules, per-session overrides, a public calendar with shortcodes, iCalendar export, Net Control Station assignments and online / NCS-logged check-ins."
+msgstr ""
+
+#. Author of the plugin
+#: ar-net-logger.php:9
+msgid "kamodev"
+msgstr ""
+
+#. Author URI of the plugin
+#: ar-net-logger.php:10
+msgid "https://github.com/kamodev"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:39
+msgid "Session not found. It may have been rescheduled or deleted."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:90
+#: includes/admin/class-arnl-admin-schedule.php:139
+#: includes/admin/class-arnl-admin.php:50
+msgid "Net Schedule"
+msgstr ""
+
+#. translators: %s: original date.
+#: includes/admin/class-arnl-admin-log.php:110
+#: includes/admin/class-arnl-admin-schedule.php:246
+#, php-format
+msgid "Rescheduled from %s"
+msgstr ""
+
+#. translators: 1: open time, 2: close time.
+#: includes/admin/class-arnl-admin-log.php:120
+#, php-format
+msgid "Net opened %1$s, closed %2$s"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:131
+msgid "Open Net"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:133
+msgid "Close the net? Online check-ins will stop."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:133
+msgid "Close Net"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:135
+msgid "Re-open Net"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:137
+msgid "Restore Session"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:140
+msgid "Edit / Reschedule"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:143
+msgid "Export CSV"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:144
+msgid "Print Log"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:147
+msgid "Public Page"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:153
+msgid "Stations checked in"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:153
+msgid "Check-ins (QNI)"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:154
+msgid "Messages / traffic listed"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:154
+msgid "Traffic (QTC)"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:155
+#: includes/admin/class-arnl-admin-log.php:247
+#: includes/admin/class-arnl-admin-log.php:345
+#: includes/admin/class-arnl-admin-log.php:603
+msgid "Short time"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:156
+msgid "Mobile / portable"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:157
+msgid "Relayed"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:158
+msgid "Online"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:160
+#: includes/admin/class-arnl-admin-log.php:335
+msgid "Pending"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:173
+#: includes/admin/class-arnl-admin-nets.php:257
+msgid "Net preamble / script"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:178
+msgid "NCS quick reference"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:180
+msgid "Open the net on time: identify, read the preamble, state it is a directed net."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:181
+msgid "Ask for emergency or priority traffic first."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:182
+msgid "Call for short-time, mobile / portable, then general check-ins; take calls in small groups and acknowledge each."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:183
+msgid "Ask for relays of weak stations and for any website check-ins listed below."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:184
+msgid "Handle listed traffic, then go around the list for comments."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:185
+msgid "Call for late check-ins and last traffic, then close the net and identify."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:209
+msgid "Edit check-in"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:209
+msgid "Log a check-in"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:211
+msgid "This session is cancelled. Restore it to log check-ins."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:220
+#: includes/admin/class-arnl-admin-log.php:308
+#: includes/admin/class-arnl-admin-log.php:408
+#: includes/admin/class-arnl-admin-log.php:599
+#: includes/admin/class-arnl-admin-nets.php:250
+#: includes/admin/class-arnl-admin-schedule.php:446
+#: includes/class-arnl-checkin-handler.php:268
+msgid "Callsign"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:224
+#: includes/admin/class-arnl-admin-log.php:309
+#: includes/admin/class-arnl-admin-log.php:410
+#: includes/admin/class-arnl-admin-log.php:600
+#: includes/admin/class-arnl-admin-nets.php:252
+#: includes/admin/class-arnl-admin-schedule.php:448
+#: includes/class-arnl-checkin-handler.php:272
+msgid "Name"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:228
+#: includes/class-arnl-checkin-handler.php:276
+msgid "Location (QTH)"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:232
+#: includes/admin/class-arnl-admin-log.php:311
+#: includes/admin/class-arnl-admin-log.php:602
+#: includes/class-arnl-checkin-handler.php:280
+msgid "Station"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:236
+#: includes/admin/class-arnl-admin-log.php:607
+msgid "Relayed by"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:241
+#: includes/admin/class-arnl-admin-log.php:610
+#: includes/admin/class-arnl-admin-nets.php:278
+#: includes/admin/class-arnl-admin-schedule.php:182
+#: includes/admin/class-arnl-admin-schedule.php:214
+#: includes/admin/class-arnl-admin-schedule.php:464
+#: includes/admin/class-arnl-nets-list-table.php:96
+msgid "Status"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:248
+msgid "Acknowledged on air"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:249
+msgid "Has traffic"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:251
+#: includes/admin/class-arnl-admin-log.php:605
+msgid "Precedence"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:253
+#: includes/admin/class-arnl-admin-log.php:606
+msgid "Count"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:258
+msgid "Comments / traffic details"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:262
+msgid "Update Check-in"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:262
+msgid "Log Check-in"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:264
+#: includes/admin/class-arnl-admin-schedule.php:270
+msgid "Cancel"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:285
+#: includes/admin/class-arnl-admin-schedule.php:215
+msgid "Check-ins"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:300
+msgid "Approve all pending"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:307
+#: includes/admin/class-arnl-admin-log.php:598
+#: includes/admin/class-arnl-admin-nets.php:219
+#: includes/admin/class-arnl-admin-schedule.php:210
+#: includes/admin/class-arnl-admin-schedule.php:430
+msgid "Time"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:310
+#: includes/admin/class-arnl-admin-log.php:601
+msgid "Location"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:312
+msgid "Traffic / notes"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:313
+#: includes/admin/class-arnl-admin-log.php:609
+msgid "Source"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:314
+#: includes/admin/class-arnl-admin-schedule.php:216
+msgid "Actions"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:319
+msgid "No check-ins yet."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:337
+#: includes/functions.php:161
+msgid "Rejected"
+msgstr ""
+
+#. translators: 1: precedence, 2: count.
+#: includes/admin/class-arnl-admin-log.php:353
+#, php-format
+msgid "QTC %2$d %1$s"
+msgstr ""
+
+#. translators: %s: relay station callsign.
+#: includes/admin/class-arnl-admin-log.php:361
+#, php-format
+msgid "via %s"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:369
+msgid "Website"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:369
+#: includes/admin/class-arnl-admin-log.php:593
+msgid "NCS"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:372
+msgid "Approve"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:375
+msgid "Reject"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:378
+msgid "Acknowledged on the air by Net Control"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:379
+msgid "Un-ack"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:379
+msgid "Ack"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:382
+#: includes/admin/class-arnl-admin-schedule.php:265
+#: includes/admin/class-arnl-nets-list-table.php:187
+msgid "Edit"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:383
+msgid "Delete this check-in?"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:383
+#: includes/admin/class-arnl-admin-schedule.php:273
+#: includes/admin/class-arnl-nets-list-table.php:157
+#: includes/admin/class-arnl-nets-list-table.php:189
+msgid "Delete"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:401
+msgid "This session"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:406
+#: includes/admin/class-arnl-admin-schedule.php:444
+#: includes/class-arnl-shortcodes.php:636
+msgid "Net Control Station"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:409
+#: includes/admin/class-arnl-admin-nets.php:251
+#: includes/admin/class-arnl-admin-schedule.php:447
+msgid "NCS name"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:414
+#: includes/admin/class-arnl-admin-log.php:593
+#: includes/admin/class-arnl-admin-schedule.php:212
+#: includes/admin/class-arnl-admin-schedule.php:440
+#: includes/class-arnl-shortcodes.php:633
+msgid "Topic"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:418
+msgid "Log notes (private)"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:419
+msgid "Conditions, traffic passed, announcements, problems..."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:421
+msgid "Save Session Details"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:431
+#: includes/admin/class-arnl-admin-log.php:496
+msgid "You are not allowed to log check-ins."
+msgstr ""
+
+#. translators: %s: callsign.
+#: includes/admin/class-arnl-admin-log.php:458
+#, php-format
+msgid "%s is already on the log for this session."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:466
+#: includes/admin/class-arnl-admin-log.php:514
+#: includes/class-arnl-checkins.php:249
+msgid "Check-in not found."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:542
+#: includes/admin/class-arnl-admin-schedule.php:569
+msgid "You are not allowed to run nets."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:575
+msgid "You are not allowed to export logs."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:581
+#: includes/admin/class-arnl-admin-schedule.php:360
+#: includes/admin/class-arnl-admin-schedule.php:493
+#: includes/admin/class-arnl-admin-schedule.php:578
+#: includes/class-arnl-events.php:215
+#: includes/class-arnl-schedule.php:218
+msgid "Session not found."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:593
+#: includes/admin/class-arnl-admin-schedule.php:171
+#: includes/admin/class-arnl-admin-schedule.php:211
+#: includes/admin/class-arnl-admin-schedule.php:320
+#: includes/admin/class-arnl-admin-schedule.php:412
+#: includes/admin/class-arnl-nets-list-table.php:91
+msgid "Net"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:593
+#: includes/admin/class-arnl-admin-schedule.php:209
+#: includes/admin/class-arnl-admin-schedule.php:426
+msgid "Date"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:604
+msgid "Traffic"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:608
+msgid "Comments"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-log.php:611
+msgid "Acknowledged"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:58
+#: includes/admin/class-arnl-admin-nets.php:85
+#: includes/admin/class-arnl-admin-nets.php:306
+#: includes/admin/class-arnl-admin-nets.php:356
+msgid "You are not allowed to manage nets."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:95
+#: includes/class-arnl-nets.php:271
+msgid "Net not found."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:107
+#: includes/admin/class-arnl-admin.php:52
+#: includes/admin/class-arnl-admin.php:95
+#: includes/class-arnl-ical.php:77
+msgid "Nets"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:108
+#: includes/admin/class-arnl-admin-nets.php:135
+#: includes/admin/class-arnl-admin-schedule.php:142
+msgid "Add New Net"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:114
+msgid "Search nets"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:135
+msgid "Edit Net"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:139
+msgid "View sessions"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:148
+msgid "Net details"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:151
+msgid "Net name"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:152
+msgid "e.g. Tuesday Night 2m Club Net"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:155
+msgid "Slug"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:158
+msgid "Used in shortcodes and calendar feed URLs. Leave blank to generate it from the name."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:162
+#: includes/class-arnl-shortcodes.php:650
+msgid "Net type"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:166
+#: includes/admin/class-arnl-admin-schedule.php:453
+#: includes/class-arnl-shortcodes.php:479
+#: includes/class-arnl-shortcodes.php:647
+msgid "Frequency"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:168
+msgid "e.g. 146.940 MHz"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:172
+msgid "Mode / Band"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:174
+msgid "— Mode —"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:175
+msgid "Band"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:176
+msgid "— Band —"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:180
+msgid "Repeater / access info"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:182
+msgid "e.g. W1AW repeater, -0.600 offset, PL 100.0 Hz; EchoLink node 123456"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:186
+msgid "Description"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:189
+msgid "Shown publicly with the net and its sessions. Basic HTML allowed."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:194
+#: includes/admin/class-arnl-admin.php:50
+#: includes/admin/class-arnl-nets-list-table.php:92
+msgid "Schedule"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:197
+msgid "Repeats"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:201
+msgid "Day(s) of the week"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:205
+msgid "Week(s) of the month"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:208
+msgid "For example 1st and 3rd Tuesday, or Last Saturday of the month."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:212
+msgid "Month(s)"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:215
+msgid "Untick months when the net does not meet, e.g. a summer-only net or a winter break."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:222
+#: includes/admin/class-arnl-admin-schedule.php:180
+#: includes/admin/class-arnl-admin-schedule.php:433
+msgid "to"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:223
+#: includes/admin/class-arnl-admin-schedule.php:434
+msgid "End time"
+msgstr ""
+
+#. translators: %s: timezone name.
+#: includes/admin/class-arnl-admin-nets.php:228
+#, php-format
+msgid "Local time (%s), from Settings → General."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:234
+msgid "Runs from"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:237
+msgid "until"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:238
+msgid "End date"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:240
+msgid "Both optional. \"Every other week\" counts from the start date; a one-time net uses the start date."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:245
+#: includes/admin/class-arnl-admin-schedule.php:213
+#: includes/class-arnl-shortcodes.php:485
+msgid "Net Control"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:248
+msgid "Default Net Control Station"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:253
+msgid "Can be changed for each session on the schedule."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:259
+msgid "This is [callsign], net control for the ... net. This is a directed net. Is there any emergency or priority traffic? ..."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:260
+msgid "Shown to the NCS on the Net Log screen while running the net."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:265
+msgid "Display & check-ins"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:268
+msgid "Calendar color"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:272
+#: includes/admin/class-arnl-admin-settings.php:53
+msgid "Online check-ins"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:274
+msgid "Allow stations to check in from the website"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:284
+msgid "Active (shown on the calendar)"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:285
+msgid "Inactive (hidden, schedule paused)"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:295
+msgid "Create Net"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:295
+msgid "Save Net"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:79
+#: includes/admin/class-arnl-admin-schedule.php:292
+msgid "You are not allowed to view the net schedule."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:89
+#: includes/admin/class-arnl-admin-schedule.php:479
+#: includes/admin/class-arnl-admin-schedule.php:603
+msgid "You are not allowed to edit the schedule."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:141
+#: includes/admin/class-arnl-admin-schedule.php:387
+msgid "Add Special Session"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:156
+msgid "Export .ics"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:162
+msgid "No nets yet. Create a net with its regular day and time, and its sessions will appear here and on the calendar."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:164
+msgid "Add your first net"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:173
+#: includes/admin/class-arnl-admin-schedule.php:322
+#: includes/class-arnl-shortcodes.php:286
+msgid "All nets"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:175
+msgid "inactive"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:178
+msgid "From"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:183
+msgid "Any status"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:184
+#: includes/admin/class-arnl-admin-schedule.php:327
+#: includes/class-arnl-shortcodes.php:291
+msgid "Filter"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:186
+msgid "Upcoming"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:202
+msgid "Past 30 days"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:221
+msgid "No sessions in this period."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:235
+#: includes/class-arnl-calendar.php:205
+msgid "Today"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:250
+#: includes/class-arnl-calendar.php:316
+msgid "Special session"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:259
+#: includes/functions.php:160
+msgid "Pending review"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:263
+msgid "Net Log"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:268
+msgid "Restore"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:270
+msgid "Cancel this session? It will show as cancelled on the calendar."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:273
+msgid "Delete this session record and all of its check-ins? Regular sessions return to the net's default details."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:281
+msgid "Sessions are generated from each net's regular schedule. Edit a session to change its date, time, topic or Net Control for that date only; open its Net Log to record check-ins."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:315
+#: includes/admin/class-arnl-admin.php:51
+msgid "Net Calendar"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:342
+msgid "Click a session to open its Net Log. Add the calendar to any page with the [arnl_calendar] shortcode."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:365
+msgid "Create a net first."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:387
+msgid "Edit Session"
+msgstr ""
+
+#. translators: 1: net name, 2: date, 3: regular schedule.
+#: includes/admin/class-arnl-admin-schedule.php:394
+#, php-format
+msgid "This is the %1$s session regularly scheduled for %2$s (%3$s). Changes here apply to this date only."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:403
+msgid "Add a session outside a net's regular schedule, e.g. a special event net, a drill or a make-up session. To change a regular session, use Edit on the schedule instead."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:436
+msgid "Leave blank to use the net's regular time."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:441
+msgid "e.g. Winter antenna maintenance, SET drill, Swap & shop"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:449
+msgid "Leave blank to use the net's default Net Control Station."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:456
+msgid "Only if this session meets on a different frequency (e.g. back-up repeater)."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:460
+msgid "Public notes"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:468
+msgid "Save Session"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:468
+msgid "Add Session"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-schedule.php:573
+msgid "Unknown status."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:42
+msgid "You are not allowed to change these settings."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:48
+#: includes/admin/class-arnl-admin.php:54
+msgid "Net Logger Settings"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:56
+msgid "Website check-ins"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:58
+msgid "Let stations check in to a net from the website"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:59
+msgid "Only logged-in users can check in"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:60
+msgid "Approve website check-ins automatically (otherwise Net Control approves them on the Net Log)"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:61
+msgid "Require a valid amateur radio callsign format (untick to also accept e.g. GMRS or SWL identifiers)"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:65
+msgid "Check-in window"
+msgstr ""
+
+#. translators: 1: minutes-before input, 2: minutes-after input.
+#: includes/admin/class-arnl-admin-settings.php:70
+#, php-format
+msgid "Open %1$s minutes before the start until %2$s minutes after the scheduled end."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:71
+msgid "Minutes before"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:72
+msgid "Minutes after"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:75
+msgid "When the NCS clicks \"Open Net\", check-ins stay open until the net is closed, regardless of this window."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:79
+msgid "Public check-in list"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:85
+msgid "Show callsign and name"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:86
+msgid "Show callsign only"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:87
+msgid "Do not show"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:96
+msgid "Flood protection"
+msgstr ""
+
+#. translators: %s: seconds input.
+#: includes/admin/class-arnl-admin-settings.php:101
+#, php-format
+msgid "Allow one website check-in per visitor every %s seconds (0 to disable)."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:109
+#: includes/admin/class-arnl-admin.php:51
+msgid "Calendar"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:112
+msgid "Session details page"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:120
+msgid "— Same page as the calendar —"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:125
+msgid "Optional page containing [arnl_event]. Calendar links open session details (with the check-in form) there; by default they open on the page that shows the calendar."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:129
+msgid "Calendar export (iCal)"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:131
+msgid "Enable .ics downloads and subscribable calendar feeds"
+msgstr ""
+
+#. translators: 1: past days input, 2: future days input.
+#: includes/admin/class-arnl-admin-settings.php:136
+#, php-format
+msgid "Feeds include sessions from %1$s days ago to %2$s days ahead."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:137
+msgid "Days in the past"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:138
+msgid "Days ahead"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:146
+msgid "Uninstall"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:149
+msgid "Data"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:150
+msgid "Delete all nets, sessions, check-ins and settings when the plugin is deleted"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:168
+msgid "Month calendar of all active nets with previous / next navigation, color legend and subscribe links."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:169
+msgid "Agenda list for the next 60 days instead of a month grid."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:170
+msgid "Only the listed nets (slugs or IDs), with a drop-down so visitors can narrow it to one net."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:171
+msgid "Filter by net type, mode and band (comma-separated keys)."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:172
+msgid "Fixed month without navigation, hiding NCS and topic."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:173
+msgid "The next sessions with \"Check in\" buttons while check-in is open."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:174
+msgid "Directory of nets: schedule, frequency, NCS, next session and per-net subscribe links."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:175
+msgid "Details of a net's current or next session with the check-in form. Shows the selected session when linked from a calendar."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:176
+msgid "Just the online check-in form (and check-in list) for a net's current / next session."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:179
+msgid "Net slugs or IDs, comma-separated."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:183
+msgid "month (default) or list."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:184
+msgid "First month (YYYY-MM) for the month view / first date (YYYY-MM-DD) for the list view."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:185
+msgid "Number of days in the list view (default 30) or in [arnl_upcoming] (default 60)."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:186
+msgid "Maximum sessions in [arnl_upcoming] (default 5)."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:187
+msgid "yes / no: show_cancelled, show_ncs, show_topic, show_time, show_frequency, show_legend, show_subscribe, show_filter, show_description, show_next, show_log."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:188
+msgid "yes / no: previous / next navigation."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:189
+msgid "yes / no: link sessions to their details and check-in form."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:190
+msgid "Heading text."
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:194
+msgid "Shortcodes"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:202
+msgid "Filter attributes"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:210
+msgid "Calendar feeds"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-settings.php:211
+msgid "Subscribe in Google Calendar, Apple Calendar or Outlook. The same filters work as query parameters:"
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:42
+#: includes/admin/class-arnl-admin.php:43
+msgid "Net Logger"
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:54
+#: includes/admin/class-arnl-admin.php:96
+msgid "Settings"
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:79
+msgid "Are you sure?"
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:80
+msgid "Filled in from a previous check-in."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:196
+msgid "Net created."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:197
+msgid "Net saved."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:198
+msgid "Net deleted."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:199
+msgid "Nets deleted."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:200
+msgid "Nets updated."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:201
+msgid "Session saved."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:202
+msgid "Session added to the schedule."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:203
+msgid "Session record deleted. Regular schedule restored for that date."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:204
+msgid "Session cancelled."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:205
+msgid "Session restored to scheduled."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:206
+msgid "Net opened. Online check-ins are accepted until you close the net."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:207
+msgid "Net closed."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:208
+msgid "Check-in logged."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:209
+#: includes/admin/class-arnl-admin.php:212
+msgid "Check-in updated."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:210
+msgid "Check-in deleted."
+msgstr ""
+
+#: includes/admin/class-arnl-admin.php:211
+msgid "Pending check-ins approved."
+msgstr ""
+
+#: includes/admin/class-arnl-nets-list-table.php:93
+msgid "Frequency / Mode"
+msgstr ""
+
+#: includes/admin/class-arnl-nets-list-table.php:94
+#: includes/class-arnl-shortcodes.php:482
+msgid "Type"
+msgstr ""
+
+#: includes/admin/class-arnl-nets-list-table.php:95
+msgid "Default NCS"
+msgstr ""
+
+#: includes/admin/class-arnl-nets-list-table.php:97
+msgid "Shortcode"
+msgstr ""
+
+#: includes/admin/class-arnl-nets-list-table.php:125
+msgid "All"
+msgstr ""
+
+#: includes/admin/class-arnl-nets-list-table.php:126
+#: includes/admin/class-arnl-nets-list-table.php:219
+msgid "Active"
+msgstr ""
+
+#: includes/admin/class-arnl-nets-list-table.php:127
+#: includes/admin/class-arnl-nets-list-table.php:220
+msgid "Inactive"
+msgstr ""
+
+#: includes/admin/class-arnl-nets-list-table.php:155
+msgid "Activate"
+msgstr ""
+
+#: includes/admin/class-arnl-nets-list-table.php:156
+msgid "Deactivate"
+msgstr ""
+
+#. translators: %s: net name.
+#: includes/admin/class-arnl-nets-list-table.php:169
+#, php-format
+msgid "Select %s"
+msgstr ""
+
+#: includes/admin/class-arnl-nets-list-table.php:188
+msgid "Sessions"
+msgstr ""
+
+#: includes/admin/class-arnl-nets-list-table.php:189
+msgid "Delete this net together with all of its sessions and check-in logs?"
+msgstr ""
+
+#: includes/admin/class-arnl-nets-list-table.php:231
+msgid "No nets yet. Add your first net to start building the schedule."
+msgstr ""
+
+#: includes/class-arnl-calendar.php:33
+msgid "No nets scheduled for this period."
+msgstr ""
+
+#. translators: %s: NCS callsign.
+#. translators: %s: Net Control Station callsign and name.
+#: includes/class-arnl-calendar.php:165
+#: includes/class-arnl-calendar.php:341
+#, php-format
+msgid "NCS: %s"
+msgstr ""
+
+#: includes/class-arnl-calendar.php:246
+#: includes/class-arnl-checkin-handler.php:306
+msgid "Check in"
+msgstr ""
+
+#: includes/class-arnl-calendar.php:271
+msgid "Previous"
+msgstr ""
+
+#: includes/class-arnl-calendar.php:277
+msgid "Next"
+msgstr ""
+
+#: includes/class-arnl-calendar.php:307
+#: includes/functions.php:148
+msgid "Cancelled"
+msgstr ""
+
+#: includes/class-arnl-calendar.php:310
+msgid "On the air"
+msgstr ""
+
+#: includes/class-arnl-calendar.php:313
+msgid "Rescheduled"
+msgstr ""
+
+#. translators: 1: start time, 2: end time, 3: timezone abbreviation.
+#: includes/class-arnl-calendar.php:329
+#, php-format
+msgid "%1$s – %2$s %3$s"
+msgstr ""
+
+#. translators: %s: callsign.
+#: includes/class-arnl-checkin-handler.php:151
+#, php-format
+msgid "Thanks %s, you are checked in! 73."
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:153
+msgid "Thanks! Your check-in was received and will be listed once Net Control confirms it."
+msgstr ""
+
+#. translators: %s: callsign.
+#: includes/class-arnl-checkin-handler.php:156
+#, php-format
+msgid "%s is already checked in to this session."
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:158
+msgid "Online check-in is not open for this session."
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:160
+msgid "Please enter a valid amateur radio callsign."
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:162
+msgid "The form expired. Please reload the page and try again."
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:164
+msgid "Please wait a moment before submitting another check-in."
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:166
+msgid "Please log in to check in."
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:168
+msgid "Something went wrong. Please try again."
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:187
+msgid "Online check-in"
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:195
+msgid "This session has been cancelled."
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:197
+msgid "This net has closed. Thanks to everyone who checked in!"
+msgstr ""
+
+#. translators: 1: date, 2: time.
+#: includes/class-arnl-checkin-handler.php:206
+#, php-format
+msgid "Online check-in opens %1$s at %2$s."
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:213
+msgid "Online check-in for this session is closed."
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:219
+msgid "Log in to check in to this net."
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:255
+msgid "Listening in? Let Net Control know you are here. Stations heard on the air are logged by the NCS."
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:263
+msgid "Leave this field empty"
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:289
+msgid "Check-in options"
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:290
+msgid "Short time (checking in and out)"
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:291
+msgid "I have traffic / an announcement for the net"
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:294
+msgid "Traffic precedence"
+msgstr ""
+
+#: includes/class-arnl-checkin-handler.php:302
+msgid "Comments for Net Control (optional)"
+msgstr ""
+
+#. translators: %d: number of check-ins.
+#: includes/class-arnl-checkin-handler.php:333
+#, php-format
+msgid "%d check-in"
+msgid_plural "%d check-ins"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-arnl-checkins.php:225
+#: includes/class-arnl-checkins.php:261
+msgid "The check-in could not be saved."
+msgstr ""
+
+#: includes/class-arnl-checkins.php:300
+msgid "Unknown net session."
+msgstr ""
+
+#: includes/class-arnl-checkins.php:305
+msgid "Please enter a valid callsign."
+msgstr ""
+
+#: includes/class-arnl-events.php:179
+#: includes/class-arnl-events.php:195
+msgid "That scheduled session already has its own record."
+msgstr ""
+
+#: includes/class-arnl-events.php:197
+#: includes/class-arnl-events.php:224
+msgid "The session could not be saved."
+msgstr ""
+
+#: includes/class-arnl-events.php:254
+msgid "Please choose a net."
+msgstr ""
+
+#: includes/class-arnl-events.php:259
+msgid "Please enter a valid date."
+msgstr ""
+
+#. translators: %s: session title.
+#: includes/class-arnl-ical.php:139
+#, php-format
+msgid "CANCELLED: %s"
+msgstr ""
+
+#. translators: %s: topic.
+#: includes/class-arnl-ical.php:186
+#, php-format
+msgid "Topic: %s"
+msgstr ""
+
+#. translators: %s: frequency / mode.
+#: includes/class-arnl-ical.php:191
+#, php-format
+msgid "Frequency: %s"
+msgstr ""
+
+#. translators: %s: net type.
+#: includes/class-arnl-ical.php:197
+#, php-format
+msgid "Net type: %s"
+msgstr ""
+
+#. translators: %s: URL.
+#: includes/class-arnl-ical.php:206
+#, php-format
+msgid "Details and online check-in: %s"
+msgstr ""
+
+#: includes/class-arnl-install.php:186
+msgid "Net Control Operator"
+msgstr ""
+
+#: includes/class-arnl-nets.php:253
+#: includes/class-arnl-nets.php:280
+msgid "The net could not be saved."
+msgstr ""
+
+#: includes/class-arnl-nets.php:321
+msgid "Please enter a net name."
+msgstr ""
+
+#: includes/class-arnl-nets.php:352
+msgid "Choose at least one day of the week."
+msgstr ""
+
+#: includes/class-arnl-nets.php:355
+msgid "Choose at least one week of the month (1st, 2nd, ..., Last)."
+msgstr ""
+
+#: includes/class-arnl-nets.php:358
+msgid "A one-time net needs a date. Set the start date."
+msgstr ""
+
+#: includes/class-arnl-nets.php:365
+msgid "The end date must be on or after the start date."
+msgstr ""
+
+#: includes/class-arnl-nets.php:370
+msgid "Please enter a valid start time."
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:142
+msgid "That net session could not be found."
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:142
+msgid "&larr; Back"
+msgstr ""
+
+#. translators: 1: first date, 2: last date.
+#: includes/class-arnl-shortcodes.php:220
+#, php-format
+msgid "%1$s – %2$s"
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:284
+msgid "Show"
+msgstr ""
+
+#. translators: %s: timezone name.
+#: includes/class-arnl-shortcodes.php:326
+#, php-format
+msgid "Times are shown in %s."
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:340
+msgid "Add these nets to your calendar:"
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:341
+msgid "Subscribe (Apple / Outlook)"
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:342
+msgid "Google Calendar"
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:343
+#: includes/class-arnl-shortcodes.php:513
+msgid "Download .ics"
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:417
+msgid "No upcoming nets."
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:464
+msgid "No nets found."
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:476
+msgid "When"
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:489
+msgid "Next session"
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:511
+msgid "Subscribe to this net"
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:553
+msgid "Choose a net session from the calendar to see its details."
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:578
+msgid "[arnl_checkin] needs a valid net=\"slug\" attribute."
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:583
+msgid "There is no upcoming session of this net."
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:616
+msgid "&larr; Back to the calendar"
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:642
+msgid "To be announced"
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:653
+msgid "Originally scheduled"
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:657
+msgid "Regular schedule"
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:670
+msgid "Add to calendar:"
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:671
+msgid "Apple / Outlook (.ics)"
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:673
+msgid "Google"
+msgstr ""
+
+#: includes/class-arnl-shortcodes.php:675
+msgid "Outlook.com"
+msgstr ""
+
+#: includes/functions.php:19
+msgid "Directed"
+msgstr ""
+
+#: includes/functions.php:20
+msgid "Open / Informal"
+msgstr ""
+
+#: includes/functions.php:21
+msgid "Traffic (NTS)"
+msgstr ""
+
+#: includes/functions.php:22
+msgid "Emergency / ARES / RACES"
+msgstr ""
+
+#: includes/functions.php:23
+msgid "Weather / SKYWARN"
+msgstr ""
+
+#: includes/functions.php:24
+msgid "Technical"
+msgstr ""
+
+#: includes/functions.php:25
+msgid "Rag Chew / Social"
+msgstr ""
+
+#: includes/functions.php:26
+msgid "Training / Practice"
+msgstr ""
+
+#: includes/functions.php:27
+msgid "Swap / Trade"
+msgstr ""
+
+#: includes/functions.php:28
+#: includes/functions.php:55
+msgid "Other"
+msgstr ""
+
+#: includes/functions.php:42
+msgid "FM"
+msgstr ""
+
+#: includes/functions.php:43
+msgid "SSB"
+msgstr ""
+
+#: includes/functions.php:44
+msgid "CW"
+msgstr ""
+
+#: includes/functions.php:45
+msgid "AM"
+msgstr ""
+
+#: includes/functions.php:46
+msgid "Digital (FT8, JS8, PSK, RTTY, Winlink...)"
+msgstr ""
+
+#: includes/functions.php:47
+msgid "DMR"
+msgstr ""
+
+#: includes/functions.php:48
+msgid "D-STAR"
+msgstr ""
+
+#: includes/functions.php:49
+msgid "System Fusion (YSF)"
+msgstr ""
+
+#: includes/functions.php:50
+msgid "P25"
+msgstr ""
+
+#: includes/functions.php:51
+msgid "EchoLink"
+msgstr ""
+
+#: includes/functions.php:52
+msgid "AllStar"
+msgstr ""
+
+#: includes/functions.php:53
+msgid "IRLP"
+msgstr ""
+
+#: includes/functions.php:54
+msgid "Mixed / Linked"
+msgstr ""
+
+#: includes/functions.php:85
+msgid "Multiple bands"
+msgstr ""
+
+#: includes/functions.php:86
+msgid "Internet linked"
+msgstr ""
+
+#: includes/functions.php:98
+msgid "Weekly"
+msgstr ""
+
+#: includes/functions.php:99
+msgid "Every other week"
+msgstr ""
+
+#: includes/functions.php:100
+msgid "Monthly (by week of the month)"
+msgstr ""
+
+#: includes/functions.php:101
+msgid "One time only (on the start date)"
+msgstr ""
+
+#: includes/functions.php:102
+msgid "No automatic schedule (add sessions manually)"
+msgstr ""
+
+#: includes/functions.php:115
+msgid "Fixed / Home"
+msgstr ""
+
+#: includes/functions.php:116
+msgid "Mobile"
+msgstr ""
+
+#: includes/functions.php:117
+msgid "Portable"
+msgstr ""
+
+#: includes/functions.php:118
+msgid "Handheld"
+msgstr ""
+
+#: includes/functions.php:119
+msgid "Remote / Internet link"
+msgstr ""
+
+#: includes/functions.php:131
+msgid "Routine"
+msgstr ""
+
+#: includes/functions.php:132
+msgid "Welfare"
+msgstr ""
+
+#: includes/functions.php:133
+msgid "Priority"
+msgstr ""
+
+#: includes/functions.php:134
+msgid "Emergency"
+msgstr ""
+
+#: includes/functions.php:145
+msgid "Scheduled"
+msgstr ""
+
+#: includes/functions.php:146
+msgid "In Session"
+msgstr ""
+
+#: includes/functions.php:147
+msgid "Closed"
+msgstr ""
+
+#: includes/functions.php:159
+msgid "Approved"
+msgstr ""
+
+#: includes/functions.php:172
+msgid "1st"
+msgstr ""
+
+#: includes/functions.php:173
+msgid "2nd"
+msgstr ""
+
+#: includes/functions.php:174
+msgid "3rd"
+msgstr ""
+
+#: includes/functions.php:175
+msgid "4th"
+msgstr ""
+
+#: includes/functions.php:176
+msgid "5th"
+msgstr ""
+
+#: includes/functions.php:177
+msgid "Last"
+msgstr ""
+
+#. translators: %s: list of weekdays.
+#: includes/functions.php:410
+msgid "Daily"
+msgstr ""
+
+#. translators: %s: list of weekdays.
+#: includes/functions.php:410
+#, php-format
+msgid "Every %s"
+msgstr ""
+
+#. translators: %s: list of weekdays.
+#: includes/functions.php:414
+#, php-format
+msgid "Every other %s"
+msgstr ""
+
+#. translators: 1: list of ordinals such as "1st and 3rd", 2: list of weekdays.
+#: includes/functions.php:423
+#, php-format
+msgid "%1$s %2$s of the month"
+msgstr ""
+
+#. translators: %s: date.
+#: includes/functions.php:427
+#, php-format
+msgid "One time: %s"
+msgstr ""
+
+#. translators: %s: date.
+#: includes/functions.php:427
+msgid "date not set"
+msgstr ""
+
+#: includes/functions.php:430
+msgid "Sessions scheduled individually"
+msgstr ""
+
+#. translators: 1: schedule, 2: list of months.
+#: includes/functions.php:440
+#, php-format
+msgid "%1$s (%2$s)"
+msgstr ""
+
+#. translators: 1: schedule, 2: start time, 3: end time.
+#: includes/functions.php:445
+#, php-format
+msgid "%1$s, %2$s – %3$s"
+msgstr ""
