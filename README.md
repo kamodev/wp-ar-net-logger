@@ -4,7 +4,7 @@ A WordPress plugin for scheduling, publishing and logging **Amateur Radio (ham r
 
 - **Requires:** WordPress 6.0+, PHP 7.4+
 - **License:** GPL-2.0-or-later
-- **Download:** [`dist/ar-net-logger-1.2.2.zip`](dist/ar-net-logger-1.2.2.zip) or the [latest release](https://github.com/kamodev/wp-ar-net-logger/releases/latest), installable from *Plugins → Add New → Upload Plugin*
+- **Download:** [`dist/ar-net-logger-1.2.3.zip`](dist/ar-net-logger-1.2.3.zip) or the [latest release](https://github.com/kamodev/wp-ar-net-logger/releases/latest), installable from *Plugins → Add New → Upload Plugin*
 
 ---
 
@@ -29,7 +29,7 @@ The design follows standard net practice: ARRL NTS net procedures, common NCS sc
 
 ## Installation
 
-1. Download `dist/ar-net-logger-1.2.2.zip`, then go to **Plugins → Add New → Upload Plugin** and activate it. (Or clone this repository into `wp-content/plugins/`.)
+1. Download `dist/ar-net-logger-1.2.3.zip`, then go to **Plugins → Add New → Upload Plugin** and activate it. (Or clone this repository into `wp-content/plugins/`.)
 2. Go to **Net Logger → Nets → Add New Net**: enter the name, frequency / mode / band, days and time, default NCS and the net script (or start from the sample script). Optionally add a logo, digital rooms, the linked repeater system and the net's own check-in window.
 3. Add `[arnl_calendar]` to a page.
 
@@ -150,7 +150,7 @@ Events use UTC times and stable UIDs, so a rescheduled session updates the origi
 
 - Open from **15 minutes before** the start to **15 minutes after** the end by default, or any time the NCS has the net **In Session**. Closed for cancelled and closed sessions and for nets with online check-ins turned off.
 - **Check-in window:** the site default is set under *Settings → Check-in window*, and each net can set its own under *Nets → Edit → Online check-ins*: opening at the start time or 5–60 minutes before it, and closing at the end time or 5–60 minutes after it (an hour at most either way). The session page says when check-in opens.
-- **Announcements:** stations can tick **I have an announcement for the net** and optionally type it. The Net Log flags those stations with 📢 *Announcement* (with the text), counts them, and includes them in the CSV export; Discord posts include them (*Settings → Discord → Include → Announcements*). Net Control can also tick *Has an announcement* when logging a station.
+- **Announcements:** stations can tick **I have an announcement for the net** and optionally type it. The Net Log flags those stations with 📢 *Announcement* (with the text), counts them, and includes them in the CSV export; Discord posts include them (*Nets → Edit → Discord → Include → Announcements*). Net Control can also tick *Has an announcement* when logging a station.
 - Callsign format validation, with an optional prefix / suffix such as `VE3/W1AW/M`. It can be turned off for GMRS or SWL check-ins.
 - Duplicate check-ins of the same station (ignoring `/M`, `/P`, ...) are refused.
 - Spam protection: nonce, honeypot field, and per-visitor rate limit.
@@ -203,14 +203,17 @@ Callsign fields on the Net Log (the check-in callsign, *Relayed by*, the session
 
 ## Discord & Facebook
 
+Discord and Facebook are set up **for each net**, under **Nets → Edit → Discord** and **Nets → Edit → Facebook Page**, so every net can post to its own Discord channel and its own Facebook Page with its own options (or not post at all). *Settings → Discord & Facebook* shows which nets post where, with any delivery errors.
+
 ### Discord: check-ins as they happen
 
-Each check-in is posted to a Discord channel as it is logged, whether by Net Control or from the website (website check-ins post once approved).
+Each check-in is posted to the net's Discord channel as it is logged, whether by Net Control or from the website (website check-ins post once approved).
 
-Setup:
+Setup, for each net:
 
 1. In Discord: *Server Settings → Integrations → Webhooks → New Webhook*, pick the channel, then **Copy Webhook URL**.
-2. In WordPress: *Net Logger → Settings → Discord*, paste it as the **Default webhook URL**, save, then click **Send a test message**.
+2. In WordPress: *Nets → Edit → Discord*, tick **Post this net to a Discord channel**, paste the **Webhook URL**, then click **Save and send a test message**.
+3. Other nets can post to the same channel without pasting the URL again: choose **Or post to the same channel as → (net)**.
 
 What gets posted:
 
@@ -221,21 +224,21 @@ What gets posted:
 
 More options:
 
-- Each kind of post can be turned off. *Post as* sets the bot name.
-- **Per net:** *Nets → Edit → Sharing* can send a net to its own channel (its own webhook) or turn Discord off for that net.
+- Per net: which posts to send (check-ins; open / close), which check-in details to include (name, location, announcements, comments) and the *Post as* bot name. Untick *Post this net to a Discord channel* to pause a net without losing its webhook.
 - **Safe by design:**
   - Messages go out after the page is answered, so logging is never slowed down.
   - User text is escaped, and `@everyone` or role mentions are never triggered.
   - The webhook URL is never shown again after saving.
-  - Delivery errors (e.g. a deleted webhook) appear under the setting.
+  - Delivery errors (e.g. a deleted webhook) appear on the net's edit screen and in *Settings → Discord & Facebook*.
 
 ### Facebook Page: session announcements
 
-Facebook's API supports **posting to a Page**, so each upcoming session is announced as a Page post. The post includes the net, date and time, frequency, NCS, topic and a link to the session page; the text is editable with placeholders.
+Facebook's API supports **posting to a Page**, so each upcoming session is announced as a post on the net's Facebook Page. The post includes the net, date and time, frequency, NCS, topic and a link to the session page; the text is editable with placeholders.
 
-- **Automatic** posts go out *N* hours before each session (default 24, checked hourly by WP-Cron). **Manual** posting uses *Post to Facebook* on the schedule or on the Net Log's Share box. Set *N* to 0 for manual only.
+- Per net (*Nets → Edit → Facebook Page*): tick **Announce this net's sessions on a Facebook Page**, enter the **Page ID** and **Page access token** (see below), then click **Save and test the connection**. Other nets can use the same Page with **Or post to the same Page as → (net)**, or a different Page of their own.
+- **Automatic** posts go out *N* hours before each session (set per net, default 24, checked hourly by WP-Cron). **Manual** posting uses *Post to Facebook* on the schedule or on the Net Log's Share box. Set *N* to 0 for manual only.
+- **Post text** is set per net, with placeholders.
 - Each session is posted once. If a posted session is **cancelled**, the post is edited to start with "❌ CANCELLED".
-- **Per net:** *Nets → Edit → Sharing → Do not post this net to Facebook*.
 
 **Facebook Events and Groups:** Facebook does not let apps **create events** (the Events API has been limited to approved partners for years), and it **removed posting to Groups** in April 2024. Instead, every session's Net Log has a **Share** box with the event name, start, end, location and details, plus a **Copy** button, ready to paste into *Create event* on your Page or Group.
 
@@ -248,7 +251,7 @@ Meta changes these screens from time to time. In outline:
 3. **User token:** in the [Graph API Explorer](https://developers.facebook.com/tools/explorer/), select the app and add the permissions `pages_show_list`, `pages_read_engagement` and `pages_manage_posts`. Click *Generate Access Token* and allow access to your Page.
 4. **Long-lived token:** in the [Access Token Debugger](https://developers.facebook.com/tools/debug/accesstoken/), click *Extend Access Token* to get a long-lived user token.
 5. **Page token:** back in the Explorer, with that long-lived token, run `GET me/accounts`. Copy your Page's `access_token`; a Page token obtained this way does not expire while you remain a Page admin.
-6. **Connect:** paste the Page ID and Page token under *Net Logger → Settings → Facebook Page*, save, and click **Test the connection**.
+6. **Connect:** paste the Page ID and Page token under *Nets → Edit → Facebook Page* and click **Save and test the connection**.
 
 If posts are only visible to you, check the app's mode (Development / Live) and its permissions in the Meta App Dashboard.
 

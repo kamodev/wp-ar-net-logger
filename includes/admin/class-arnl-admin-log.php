@@ -483,10 +483,10 @@ class ARNL_Admin_Log {
 				<?php
 				if ( '' === $webhook ) {
 					esc_html_e( 'not posting this net.', 'ar-net-logger' );
-				} elseif ( ARNL_Settings::get( 'discord_checkins' ) ) {
-					esc_html_e( 'check-ins are posted to the channel as they are logged.', 'ar-net-logger' );
+				} elseif ( ARNL_Discord::posts( $o->net, 'checkins' ) ) {
+					esc_html_e( 'check-ins are posted to the net\'s channel as they are logged.', 'ar-net-logger' );
 				} else {
-					esc_html_e( 'check-in posts are turned off in the settings.', 'ar-net-logger' );
+					esc_html_e( 'check-in posts are turned off for this net.', 'ar-net-logger' );
 				}
 				?>
 			</p>
@@ -496,8 +496,8 @@ class ARNL_Admin_Log {
 				$button = ARNL_Admin_Schedule::facebook_button( $o );
 				if ( '' !== $button ) {
 					echo $button; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in the helper.
-				} elseif ( ! ARNL_Facebook::configured() ) {
-					esc_html_e( 'not connected.', 'ar-net-logger' );
+				} elseif ( ! ARNL_Facebook::enabled_for( $o->net ) ) {
+					esc_html_e( 'not posting this net.', 'ar-net-logger' );
 				} else {
 					esc_html_e( 'not posted.', 'ar-net-logger' );
 				}

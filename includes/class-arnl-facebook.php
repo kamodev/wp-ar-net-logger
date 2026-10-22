@@ -2,9 +2,10 @@
 /**
  * Facebook: announces net sessions on a Facebook Page.
  *
- * Sessions are published as Page posts through the Graph API, automatically a
- * set number of hours before they start (hourly WP-Cron check) or on demand
- * from the schedule. Cancelling a posted session edits the post.
+ * Each net can post to its own Facebook Page. Sessions are published as Page
+ * posts through the Graph API, automatically a set number of hours before they
+ * start (hourly WP-Cron check) or on demand from the schedule. Cancelling a
+ * posted session edits the post.
  *
  * Facebook does not let apps create Page or Group events, and it removed
  * posting to Groups in 2024, so the Net Log offers ready-to-paste event
@@ -20,10 +21,10 @@ defined( 'ABSPATH' ) || exit;
  */
 class ARNL_Facebook {
 
-	const POSTS_OPTION = 'arnl_fb_posts';
-	const ERROR_OPTION = 'arnl_fb_last_error';
-	const GRAPH        = 'https://graph.facebook.com/';
-	const CRON_HOOK    = 'arnl_hourly';
+	const POSTS_OPTION  = 'arnl_fb_posts';
+	const ERRORS_OPTION = 'arnl_fb_errors';
+	const GRAPH         = 'https://graph.facebook.com/';
+	const CRON_HOOK     = 'arnl_hourly';
 
 	/**
 	 * Register hooks.
@@ -53,22 +54,34 @@ class ARNL_Facebook {
 	}
 
 	/**
-	 * Whether a Page and access token are set.
+	 * Whether a net has a Page ID and access token.
 	 *
+	 * @param array $net Net.
 	 * @return bool
 	 */
-	public static function configured() {
-		return '' !== (string) ARNL_Settings::get( 'facebook_page_id' ) && '' !== (string) ARNL_Settings::get( 'facebook_token' );
+	public static function configured( array $net ) {
+		return ! empty( $net['facebook_page_id'] ) && ! empty( $net['facebook_token'] );
 	}
 
 	/**
-	 * Whether a net's sessions are posted.
+	 * Whether a net's sessions are posted to its Facebook Page.
 	 *
 	 * @param array $net Net.
 	 * @return bool
 	 */
 	public static function enabled_for( array $net ) {
-		return self::configured() && 'active' === $net['status'] && ( ! isset( $net['facebook_mode'] ) || 'off' !== $net['facebook_mode'] );
+		return 'active' === $net['status'] && isset( $net['facebook_mode'] ) && 'on' === $net['facebook_mode'] && self::configured( $net );
+	}
+
+	/**
+	 * Last Facebook error of a net, or null.
+	 *
+	 * @param int $net_id Net ID.
+	 * @return array{time:string,message:string}|null
+	 */
+	public static function last_error( $net_id ) {
+		$errors = get_option( self::ERRORS_OPTION, array() );
+		return is_array( $errors ) && isset( $errors[ (int) $net_id ]['message'] ) ? $errors[ (int) $net_id ] : null;
 	}
 
 	/**
@@ -137,7 +150,7 @@ class ARNL_Facebook {
 	 * @return string
 	 */
 	public static function message( ARNL_Occurrence $o ) {
-		$template = (string) ARNL_Settings::get( 'facebook_template' );
+		$template = isset( $o->net['facebook_template'] ) ? (string) $o->net['facebook_template'] : '';
 		$message  = self::render_template( '' !== trim( $template ) ? $template : self::default_template(), self::values( $o ) );
 		/**
 		 * Filters the Facebook post text of a session.
@@ -186,8 +199,8 @@ class ARNL_Facebook {
 	 * @return string|WP_Error Post ID.
 	 */
 	public static function post( ARNL_Occurrence $o ) {
-		if ( ! self::configured() ) {
-			return new WP_Error( 'arnl_facebook', __( 'Set the Facebook Page ID and access token in the settings first.', 'ar-net-logger' ) );
+		if ( ! self::configured( $o->net ) ) {
+			return new WP_Error( 'arnl_facebook', __( 'Set this net\'s Facebook Page ID and access token first (Nets → Edit → Facebook Page).', 'ar-net-logger' ) );
 		}
 		$existing = self::posted( $o );
 		if ( '' !== $existing ) {
@@ -198,12 +211,12 @@ class ARNL_Facebook {
 		if ( '' !== $values['url'] ) {
 			$params['link'] = $values['url'];
 		}
-		$result = self::api( 'POST', rawurlencode( (string) ARNL_Settings::get( 'facebook_page_id' ) ) . '/feed', $params );
+		$result = self::api( 'POST', rawurlencode( (string) $o->net['facebook_page_id'] ) . '/feed', $params, $o->net );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 		if ( empty( $result['id'] ) ) {
-			return self::failed( __( 'Facebook did not return a post ID.', 'ar-net-logger' ) );
+			return self::failed( __( 'Facebook did not return a post ID.', 'ar-net-logger' ), $o->net_id );
 		}
 		$posts              = self::posts();
 		$posts[ $o->uid() ] = array(
@@ -217,25 +230,31 @@ class ARNL_Facebook {
 	}
 
 	/**
-	 * Hourly: post sessions starting within the configured lead time.
+	 * Hourly: post sessions starting within each net's lead time.
 	 *
 	 * @return int Number of posts made.
 	 */
 	public static function auto_post() {
-		$lead = (int) ARNL_Settings::get( 'facebook_lead_hours' );
-		if ( ! self::configured() || $lead <= 0 ) {
+		$lead = array();
+		foreach ( ARNL_Nets::query( array( 'status' => 'active' ) ) as $net ) {
+			if ( self::enabled_for( $net ) && $net['facebook_lead_hours'] > 0 ) {
+				$lead[ $net['id'] ] = (int) $net['facebook_lead_hours'];
+			}
+		}
+		if ( ! $lead ) {
 			return 0;
 		}
-		$now   = arnl_now();
-		$until = $now->modify( '+' . $lead . ' hours' );
-		$made  = 0;
+		$now  = arnl_now();
+		$made = 0;
 		foreach ( ARNL_Schedule::occurrences(
 			array(
+				'net'               => array_keys( $lead ),
 				'from'              => $now->format( 'Y-m-d' ),
-				'to'                => $until->format( 'Y-m-d' ),
+				'to'                => $now->modify( '+' . max( $lead ) . ' hours' )->format( 'Y-m-d' ),
 				'include_cancelled' => false,
 			)
 		) as $o ) {
+			$until = $now->modify( '+' . ( isset( $lead[ $o->net_id ] ) ? $lead[ $o->net_id ] : 0 ) . ' hours' );
 			if ( 'completed' === $o->status || $o->start() <= $now || $o->start() > $until || ! self::enabled_for( $o->net ) || '' !== self::posted( $o ) ) {
 				continue;
 			}
@@ -255,11 +274,11 @@ class ARNL_Facebook {
 	 * @param string $new_status New status.
 	 */
 	public static function status_changed( $event_id, $old_status, $new_status ) {
-		if ( 'cancelled' !== $new_status || ! self::configured() ) {
+		if ( 'cancelled' !== $new_status ) {
 			return;
 		}
 		$o = ARNL_Schedule::find( 'e' . (int) $event_id );
-		if ( ! $o ) {
+		if ( ! $o || ! self::configured( $o->net ) ) {
 			return;
 		}
 		$post_id = self::posted( $o );
@@ -268,7 +287,7 @@ class ARNL_Facebook {
 			return;
 		}
 		/* translators: %s: original post text. */
-		$result = self::api( 'POST', rawurlencode( $post_id ), array( 'message' => sprintf( __( "❌ CANCELLED\n\n%s", 'ar-net-logger' ), self::message( $o ) ) ) );
+		$result = self::api( 'POST', rawurlencode( $post_id ), array( 'message' => sprintf( __( "❌ CANCELLED\n\n%s", 'ar-net-logger' ), self::message( $o ) ) ), $o->net );
 		if ( ! is_wp_error( $result ) ) {
 			$posts[ $o->uid() ]['cancelled'] = true;
 			update_option( self::POSTS_OPTION, $posts, false );
@@ -276,19 +295,20 @@ class ARNL_Facebook {
 	}
 
 	/**
-	 * Check the Page ID and token: returns the Page name.
+	 * Check a net's Page ID and token: returns the Page name.
 	 *
+	 * @param array $net Net.
 	 * @return string|WP_Error
 	 */
-	public static function test() {
-		if ( ! self::configured() ) {
-			return new WP_Error( 'arnl_facebook', __( 'Set the Facebook Page ID and access token first.', 'ar-net-logger' ) );
+	public static function test( array $net ) {
+		if ( ! self::configured( $net ) ) {
+			return new WP_Error( 'arnl_facebook', __( 'Set this net\'s Facebook Page ID and access token first.', 'ar-net-logger' ) );
 		}
-		$result = self::api( 'GET', rawurlencode( (string) ARNL_Settings::get( 'facebook_page_id' ) ), array( 'fields' => 'name' ) );
+		$result = self::api( 'GET', rawurlencode( (string) $net['facebook_page_id'] ), array( 'fields' => 'name' ), $net );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
-		return isset( $result['name'] ) ? (string) $result['name'] : (string) ARNL_Settings::get( 'facebook_page_id' );
+		return isset( $result['name'] ) ? (string) $result['name'] : (string) $net['facebook_page_id'];
 	}
 
 	/**
@@ -296,11 +316,13 @@ class ARNL_Facebook {
 	 *
 	 * @param string $method GET or POST.
 	 * @param string $path   Path after graph.facebook.com/.
-	 * @param array  $params Parameters (the access token is added).
+	 * @param array  $params Parameters (the net's access token is added).
+	 * @param array  $net    Net whose Page is used.
 	 * @return array|WP_Error Decoded response.
 	 */
-	public static function api( $method, $path, array $params ) {
-		$params['access_token'] = (string) ARNL_Settings::get( 'facebook_token' );
+	public static function api( $method, $path, array $params, array $net ) {
+		$net_id                 = isset( $net['id'] ) ? (int) $net['id'] : 0;
+		$params['access_token'] = isset( $net['facebook_token'] ) ? (string) $net['facebook_token'] : '';
 		$url                    = self::GRAPH . $path;
 		$args                   = array( 'timeout' => 15 );
 		if ( 'GET' === $method ) {
@@ -309,35 +331,58 @@ class ARNL_Facebook {
 			$response = wp_remote_post( $url, array_merge( $args, array( 'body' => $params ) ) );
 		}
 		if ( is_wp_error( $response ) ) {
-			return self::failed( $response->get_error_message() );
+			return self::failed( $response->get_error_message(), $net_id );
 		}
 		$data = json_decode( (string) wp_remote_retrieve_body( $response ), true );
 		$code = (int) wp_remote_retrieve_response_code( $response );
 		if ( $code < 200 || $code >= 300 || ! is_array( $data ) || isset( $data['error'] ) ) {
 			$message = isset( $data['error']['message'] ) ? (string) $data['error']['message'] : 'HTTP ' . $code;
-			return self::failed( $message );
+			return self::failed( $message, $net_id );
 		}
-		delete_option( self::ERROR_OPTION );
+		self::note_error( $net_id, null );
 		return $data;
 	}
 
 	/**
-	 * Remember an error for the settings screen.
+	 * Remember an error for the net's edit screen.
 	 *
 	 * @param string $message Error.
+	 * @param int    $net_id  Net ID.
 	 * @return WP_Error
 	 */
-	protected static function failed( $message ) {
-		update_option(
-			self::ERROR_OPTION,
+	protected static function failed( $message, $net_id ) {
+		self::note_error(
+			$net_id,
 			array(
 				'time'    => current_time( 'mysql' ),
 				'message' => (string) $message,
-			),
-			false
+			)
 		);
 		/* translators: %s: error from Facebook. */
 		return new WP_Error( 'arnl_facebook', sprintf( __( 'Facebook: %s', 'ar-net-logger' ), $message ) );
+	}
+
+	/**
+	 * Store (or clear, with null) a net's last error.
+	 *
+	 * @param int        $net_id Net ID.
+	 * @param array|null $error  Error.
+	 */
+	protected static function note_error( $net_id, $error ) {
+		if ( ! $net_id ) {
+			return;
+		}
+		$errors = get_option( self::ERRORS_OPTION, array() );
+		$errors = is_array( $errors ) ? $errors : array();
+		if ( null === $error && ! isset( $errors[ $net_id ] ) ) {
+			return;
+		}
+		if ( null === $error ) {
+			unset( $errors[ $net_id ] );
+		} else {
+			$errors[ $net_id ] = $error;
+		}
+		update_option( self::ERRORS_OPTION, $errors, false );
 	}
 
 	/**

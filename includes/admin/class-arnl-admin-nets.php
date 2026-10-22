@@ -344,47 +344,111 @@ class ARNL_Admin_Nets {
 					</tr>
 				</table>
 
-				<h2 class="title"><?php esc_html_e( 'Sharing', 'ar-net-logger' ); ?></h2>
+				<?php
+				$discord_sources  = self::sharing_sources( $net, 'discord' );
+				$facebook_sources = self::sharing_sources( $net, 'facebook' );
+				$discord_error    = $net['id'] ? ARNL_Discord::last_error( $net['id'] ) : null;
+				$facebook_error   = $net['id'] ? ARNL_Facebook::last_error( $net['id'] ) : null;
+				?>
+				<h2 class="title" id="arnl-discord"><?php esc_html_e( 'Discord', 'ar-net-logger' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
-						<th scope="row"><label for="arnl-discord-mode"><?php esc_html_e( 'Discord', 'ar-net-logger' ); ?></label></th>
+						<th scope="row"><?php esc_html_e( 'Post to Discord', 'ar-net-logger' ); ?></th>
 						<td>
-							<?php
-							ARNL_Admin::select(
-								'discord_mode',
-								array(
-									'default' => '' !== (string) ARNL_Settings::get( 'discord_webhook' ) ? __( 'Post check-ins to the default Discord channel', 'ar-net-logger' ) : __( 'Use the default Discord webhook (none set yet)', 'ar-net-logger' ),
-									'custom'  => __( 'Post check-ins to this net\'s own Discord channel', 'ar-net-logger' ),
-									'off'     => __( 'Do not post this net to Discord', 'ar-net-logger' ),
-								),
-								$net['discord_mode'],
-								array( 'id' => 'arnl-discord-mode' )
-							);
-							?>
-							<p class="arnl-row-discord-webhook">
-								<label for="arnl-discord-webhook"><?php esc_html_e( 'Webhook URL for this net', 'ar-net-logger' ); ?></label><br>
-								<input type="password" id="arnl-discord-webhook" name="discord_webhook" class="large-text code" value="" autocomplete="off" placeholder="<?php echo esc_attr( '' !== $net['discord_webhook'] ? __( 'Saved – leave blank to keep it', 'ar-net-logger' ) : 'https://discord.com/api/webhooks/…' ); ?>">
-							</p>
-							<p class="description"><?php esc_html_e( 'In Discord: Server Settings → Integrations → Webhooks → New Webhook, choose the channel, then Copy Webhook URL.', 'ar-net-logger' ); ?></p>
+							<label><input type="checkbox" id="arnl-discord-on" name="discord_mode" value="on" data-arnl-toggle="arnl-discord-fields" <?php checked( 'on', $net['discord_mode'] ); ?>> <?php esc_html_e( 'Post this net to a Discord channel', 'ar-net-logger' ); ?></label>
+							<div id="arnl-discord-fields" class="arnl-subfields">
+								<p>
+									<label for="arnl-discord-webhook"><?php esc_html_e( 'Webhook URL', 'ar-net-logger' ); ?></label><br>
+									<input type="password" id="arnl-discord-webhook" name="discord_webhook" class="large-text code" value="" autocomplete="off" placeholder="<?php echo esc_attr( '' !== $net['discord_webhook'] ? __( 'Saved – leave blank to keep it', 'ar-net-logger' ) : 'https://discord.com/api/webhooks/…' ); ?>">
+									<?php if ( '' !== $net['discord_webhook'] ) : ?>
+										<br><label><input type="checkbox" name="discord_webhook_clear" value="1"> <?php esc_html_e( 'Remove the saved webhook', 'ar-net-logger' ); ?></label>
+									<?php endif; ?>
+								</p>
+								<?php if ( $discord_sources ) : ?>
+									<p>
+										<label for="arnl-discord-copy"><?php esc_html_e( 'Or post to the same channel as', 'ar-net-logger' ); ?></label>
+										<?php ARNL_Admin::select( 'discord_copy_from', array( '' => __( '— another net —', 'ar-net-logger' ) ) + $discord_sources, '', array( 'id' => 'arnl-discord-copy' ) ); ?>
+									</p>
+								<?php endif; ?>
+								<p class="description"><?php esc_html_e( 'In Discord: Server Settings → Integrations → Webhooks → New Webhook, choose the channel, then Copy Webhook URL. The URL is a password: it is not shown again after saving.', 'ar-net-logger' ); ?></p>
+								<fieldset>
+									<legend><?php esc_html_e( 'Post', 'ar-net-logger' ); ?></legend>
+									<?php foreach ( ARNL_Discord::post_options() as $key => $label ) : ?>
+										<label><input type="checkbox" name="discord_post[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $net['discord_post'], true ) ); ?>> <?php echo esc_html( $label ); ?></label><br>
+									<?php endforeach; ?>
+								</fieldset>
+								<fieldset>
+									<legend><?php esc_html_e( 'Include in check-in posts', 'ar-net-logger' ); ?></legend>
+									<?php foreach ( ARNL_Discord::include_options() as $key => $label ) : ?>
+										<label><input type="checkbox" name="discord_include[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $net['discord_include'], true ) ); ?>> <?php echo esc_html( $label ); ?></label> &nbsp;
+									<?php endforeach; ?>
+									<p class="description"><?php esc_html_e( 'Callsign, station type, traffic and relays are always included. Mentions such as @everyone are never triggered.', 'ar-net-logger' ); ?></p>
+								</fieldset>
+								<p>
+									<label for="arnl-discord-username"><?php esc_html_e( 'Post as', 'ar-net-logger' ); ?></label><br>
+									<input type="text" id="arnl-discord-username" name="discord_username" class="regular-text" value="<?php echo esc_attr( $net['discord_username'] ); ?>" maxlength="80" placeholder="<?php esc_attr_e( 'The webhook\'s own name', 'ar-net-logger' ); ?>">
+								</p>
+								<?php if ( $discord_error ) : ?>
+									<p class="arnl-error-text">
+										<?php
+										/* translators: 1: date and time, 2: error message. */
+										echo esc_html( sprintf( __( 'Last error (%1$s): %2$s', 'ar-net-logger' ), $discord_error['time'], $discord_error['message'] ) );
+										?>
+									</p>
+								<?php endif; ?>
+								<p><button type="submit" class="button" name="arnl_after_save" value="discord_test"><?php esc_html_e( 'Save and send a test message', 'ar-net-logger' ); ?></button></p>
+							</div>
 						</td>
 					</tr>
+				</table>
+
+				<h2 class="title" id="arnl-facebook"><?php esc_html_e( 'Facebook Page', 'ar-net-logger' ); ?></h2>
+				<table class="form-table" role="presentation">
 					<tr>
-						<th scope="row"><label for="arnl-facebook-mode"><?php esc_html_e( 'Facebook', 'ar-net-logger' ); ?></label></th>
+						<th scope="row"><?php esc_html_e( 'Post to Facebook', 'ar-net-logger' ); ?></th>
 						<td>
-							<?php
-							ARNL_Admin::select(
-								'facebook_mode',
-								array(
-									'default' => __( 'Announce sessions on the Facebook Page', 'ar-net-logger' ),
-									'off'     => __( 'Do not post this net to Facebook', 'ar-net-logger' ),
-								),
-								$net['facebook_mode'],
-								array( 'id' => 'arnl-facebook-mode' )
-							);
-							?>
-							<?php if ( ! ARNL_Facebook::configured() ) : ?>
-								<p class="description"><?php esc_html_e( 'Connect a Facebook Page under Net Logger → Settings first.', 'ar-net-logger' ); ?></p>
-							<?php endif; ?>
+							<label><input type="checkbox" id="arnl-facebook-on" name="facebook_mode" value="on" data-arnl-toggle="arnl-facebook-fields" <?php checked( 'on', $net['facebook_mode'] ); ?>> <?php esc_html_e( 'Announce this net\'s sessions on a Facebook Page', 'ar-net-logger' ); ?></label>
+							<div id="arnl-facebook-fields" class="arnl-subfields">
+								<p class="description"><?php esc_html_e( 'Sessions are posted on the Page. Facebook does not allow apps to create Page or Group events, or to post in Groups, so the Net Log of each session shows ready-to-paste event details for creating those by hand.', 'ar-net-logger' ); ?></p>
+								<p>
+									<label for="arnl-facebook-page"><?php esc_html_e( 'Page ID', 'ar-net-logger' ); ?></label><br>
+									<input type="text" id="arnl-facebook-page" name="facebook_page_id" class="regular-text code" value="<?php echo esc_attr( $net['facebook_page_id'] ); ?>" inputmode="numeric" maxlength="64">
+								</p>
+								<p>
+									<label for="arnl-facebook-token"><?php esc_html_e( 'Page access token', 'ar-net-logger' ); ?></label><br>
+									<input type="password" id="arnl-facebook-token" name="facebook_token" class="large-text code" value="" autocomplete="off" placeholder="<?php echo esc_attr( '' !== $net['facebook_token'] ? __( 'Saved – leave blank to keep it', 'ar-net-logger' ) : '' ); ?>">
+									<?php if ( '' !== $net['facebook_token'] ) : ?>
+										<br><label><input type="checkbox" name="facebook_token_clear" value="1"> <?php esc_html_e( 'Remove the saved token', 'ar-net-logger' ); ?></label>
+									<?php endif; ?>
+								</p>
+								<?php if ( $facebook_sources ) : ?>
+									<p>
+										<label for="arnl-facebook-copy"><?php esc_html_e( 'Or post to the same Page as', 'ar-net-logger' ); ?></label>
+										<?php ARNL_Admin::select( 'facebook_copy_from', array( '' => __( '— another net —', 'ar-net-logger' ) ) + $facebook_sources, '', array( 'id' => 'arnl-facebook-copy' ) ); ?>
+									</p>
+								<?php endif; ?>
+								<p class="description"><?php esc_html_e( 'A Page access token with the pages_manage_posts permission (see the plugin README for the steps). It is not shown again after saving.', 'ar-net-logger' ); ?></p>
+								<p>
+									<label for="arnl-facebook-lead"><?php esc_html_e( 'Announce', 'ar-net-logger' ); ?></label>
+									<input type="number" id="arnl-facebook-lead" name="facebook_lead_hours" min="0" max="336" class="small-text" value="<?php echo (int) $net['facebook_lead_hours']; ?>">
+									<?php esc_html_e( 'hours before each session', 'ar-net-logger' ); ?>
+									<span class="description"><?php esc_html_e( '(0 = only when you click "Post to Facebook" on the schedule; checked hourly)', 'ar-net-logger' ); ?></span>
+								</p>
+								<p>
+									<label for="arnl-facebook-template"><?php esc_html_e( 'Post text', 'ar-net-logger' ); ?></label><br>
+									<textarea id="arnl-facebook-template" name="facebook_template" rows="8" class="large-text"><?php echo esc_textarea( '' !== $net['facebook_template'] ? $net['facebook_template'] : ARNL_Facebook::default_template() ); ?></textarea>
+									<span class="description"><?php esc_html_e( 'Placeholders: {net} {date} {time} {end_time} {timezone} {frequency} {digital} {system} {system_url} {ncs} {topic} {type} {description} {url}. Lines whose placeholders are all empty are left out. A cancelled session\'s post is marked CANCELLED.', 'ar-net-logger' ); ?></span>
+								</p>
+								<?php if ( $facebook_error ) : ?>
+									<p class="arnl-error-text">
+										<?php
+										/* translators: 1: date and time, 2: error message. */
+										echo esc_html( sprintf( __( 'Last error (%1$s): %2$s', 'ar-net-logger' ), $facebook_error['time'], $facebook_error['message'] ) );
+										?>
+									</p>
+								<?php endif; ?>
+								<p><button type="submit" class="button" name="arnl_after_save" value="facebook_test"><?php esc_html_e( 'Save and test the connection', 'ar-net-logger' ); ?></button></p>
+							</div>
 						</td>
 					</tr>
 				</table>
@@ -475,18 +539,41 @@ class ARNL_Admin_Nets {
 			$data[ $field ] = empty( $_POST[ $field ] ) ? 0 : 1;
 		}
 		$data['logo_id'] = isset( $_POST['logo_id'] ) ? absint( $_POST['logo_id'] ) : 0;
+		// Discord and Facebook for this net.
 		foreach ( array( 'discord_mode', 'facebook_mode' ) as $field ) {
-			$data[ $field ] = isset( $_POST[ $field ] ) ? sanitize_key( wp_unslash( $_POST[ $field ] ) ) : 'default';
+			$data[ $field ] = empty( $_POST[ $field ] ) ? 'off' : 'on';
 		}
-		// The webhook is a secret and not shown again: blank keeps the saved one; other modes clear it.
+		foreach ( array( 'discord_post', 'discord_include' ) as $field ) {
+			$data[ $field ] = isset( $_POST[ $field ] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST[ $field ] ) ) : array();
+		}
+		foreach ( array( 'discord_username', 'facebook_page_id', 'facebook_lead_hours' ) as $field ) {
+			$data[ $field ] = isset( $_POST[ $field ] ) ? sanitize_text_field( wp_unslash( $_POST[ $field ] ) ) : '';
+		}
+		$data['facebook_template'] = isset( $_POST['facebook_template'] ) ? sanitize_textarea_field( wp_unslash( $_POST['facebook_template'] ) ) : '';
+
+		// The webhook and token are secrets and are not shown again: a blank field
+		// keeps the saved one, and another net's can be reused without showing it.
+		$saved   = $id ? ARNL_Nets::get( $id ) : null;
+		$sources = array();
+		foreach ( array( 'discord', 'facebook' ) as $service ) {
+			$from                = isset( $_POST[ $service . '_copy_from' ] ) ? absint( $_POST[ $service . '_copy_from' ] ) : 0;
+			$sources[ $service ] = $from && $from !== $id && isset( self::sharing_sources( $saved ? $saved : array( 'id' => 0 ), $service )[ $from ] ) ? ARNL_Nets::get( $from ) : null;
+		}
 		$webhook = isset( $_POST['discord_webhook'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['discord_webhook'] ) ) ) : '';
-		if ( 'custom' !== $data['discord_mode'] ) {
-			$webhook = '';
-		} elseif ( '' === $webhook && $id ) {
-			$saved   = ARNL_Nets::get( $id );
-			$webhook = $saved ? $saved['discord_webhook'] : '';
+		if ( '' === $webhook && $sources['discord'] ) {
+			$webhook = $sources['discord']['discord_webhook'];
+		} elseif ( '' === $webhook && empty( $_POST['discord_webhook_clear'] ) && $saved ) {
+			$webhook = $saved['discord_webhook'];
 		}
 		$data['discord_webhook'] = $webhook;
+		$token                   = isset( $_POST['facebook_token'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['facebook_token'] ) ) ) : '';
+		if ( '' === $token && $sources['facebook'] ) {
+			$token                    = $sources['facebook']['facebook_token'];
+			$data['facebook_page_id'] = $sources['facebook']['facebook_page_id'];
+		} elseif ( '' === $token && empty( $_POST['facebook_token_clear'] ) && $saved ) {
+			$token = $saved['facebook_token'];
+		}
+		$data['facebook_token'] = $token;
 
 		$result = $id ? ARNL_Nets::update( $id, $data ) : ARNL_Nets::insert( $data );
 		$form   = ARNL_Admin::url(
@@ -497,20 +584,60 @@ class ARNL_Admin_Nets {
 			) : array( 'action' => 'new' )
 		);
 		if ( is_wp_error( $result ) ) {
+			// Never keep the secrets in the form state.
+			unset( $data['discord_webhook'], $data['facebook_token'] );
 			ARNL_Admin::fail( $form, $result, $data );
 		}
 
-		$id = $id ? $id : (int) $result;
-		ARNL_Admin::redirect(
-			ARNL_Admin::url(
-				'arnl-nets',
-				array(
-					'action' => 'edit',
-					'id'     => $id,
-				)
-			),
-			true === $result ? 'net_saved' : 'net_created'
+		$id   = $id ? $id : (int) $result;
+		$edit = ARNL_Admin::url(
+			'arnl-nets',
+			array(
+				'action' => 'edit',
+				'id'     => $id,
+			)
 		);
+		$test = isset( $_POST['arnl_after_save'] ) ? sanitize_key( wp_unslash( $_POST['arnl_after_save'] ) ) : '';
+		if ( 'discord_test' === $test ) {
+			ARNL_Nets::flush_cache();
+			$sent = ARNL_Discord::test( ARNL_Nets::get( $id ) );
+			if ( is_wp_error( $sent ) ) {
+				/* translators: %s: error message. */
+				ARNL_Admin::fail( $edit . '#arnl-discord', sprintf( __( 'The net was saved, but the Discord test failed: %s', 'ar-net-logger' ), $sent->get_error_message() ) );
+			}
+			ARNL_Admin::redirect( $edit . '#arnl-discord', 'discord_test_sent' );
+		}
+		if ( 'facebook_test' === $test ) {
+			ARNL_Nets::flush_cache();
+			$page = ARNL_Facebook::test( ARNL_Nets::get( $id ) );
+			if ( is_wp_error( $page ) ) {
+				/* translators: %s: error message. */
+				ARNL_Admin::fail( $edit . '#arnl-facebook', sprintf( __( 'The net was saved, but the Facebook test failed: %s', 'ar-net-logger' ), $page->get_error_message() ) );
+			}
+			ARNL_Admin::redirect( add_query_arg( 'arnl_page', rawurlencode( $page ), $edit ) . '#arnl-facebook', 'facebook_connected' );
+		}
+		ARNL_Admin::redirect( $edit, true === $result ? 'net_saved' : 'net_created' );
+	}
+
+	/**
+	 * Other nets whose Discord channel / Facebook Page can be reused: ID => name.
+	 *
+	 * @param array  $net     Net being edited.
+	 * @param string $service "discord" or "facebook".
+	 * @return array<int,string>
+	 */
+	protected static function sharing_sources( array $net, $service ) {
+		$sources = array();
+		foreach ( ARNL_Nets::query( array( 'status' => 'any' ) ) as $other ) {
+			if ( (int) $other['id'] === (int) $net['id'] ) {
+				continue;
+			}
+			$ready = 'discord' === $service ? ARNL_Discord::valid_webhook( $other['discord_webhook'] ) : ARNL_Facebook::configured( $other );
+			if ( $ready ) {
+				$sources[ (int) $other['id'] ] = $other['name'];
+			}
+		}
+		return $sources;
 	}
 
 	/**

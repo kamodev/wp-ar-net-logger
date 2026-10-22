@@ -47,14 +47,6 @@
 		$( '#arnl-recurrence' ).on( 'change', syncRecurrence );
 	}
 
-	// Net form: the per-net webhook only matters for "this net's own channel".
-	var syncDiscord = function () {
-		$( '.arnl-row-discord-webhook' ).toggle( $( '#arnl-discord-mode' ).val() === 'custom' );
-	};
-	if ( $( '#arnl-discord-mode' ).length ) {
-		syncDiscord();
-		$( '#arnl-discord-mode' ).on( 'change', syncDiscord );
-	}
 
 	if ( $.fn.wpColorPicker ) {
 		$( '.arnl-color-picker' ).wpColorPicker();

@@ -625,3 +625,26 @@
 	margin-top: 0.2em;
 	white-space: pre-line;
 }
+
+/* Net form: Discord / Facebook option groups; settings overview. */
+.arnl-subfields fieldset {
+	margin: 0.75em 0;
+}
+
+.arnl-subfields legend {
+	margin-bottom: 0.25em;
+	font-weight: 600;
+}
+
+.arnl-error-text {
+	color: #b32d2e;
+}
+
+.arnl-sharing-overview {
+	max-width: 760px;
+}
+
+.arnl-on {
+	color: #00a32a;
+	font-weight: 600;
+}
