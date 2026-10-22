@@ -4,7 +4,7 @@ Tags: ham radio, amateur radio, net control, calendar, discord
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,7 +14,8 @@ Schedule, publish and log Amateur Radio nets: recurring schedules, a public cale
 
 AR Net Logger helps radio clubs, ARES / RACES groups and net managers run their on-air nets from WordPress.
 
-* **Nets**: name, type (directed, traffic / NTS, ARES, SKYWARN, rag chew, ...), frequency, mode, band, repeater / access info, description, calendar color.
+* **Nets**: name, type (directed, traffic / NTS, ARES, SKYWARN, rag chew, ...), frequency, mode, band, repeater / access info, description, logo, calendar color.
+* **Digital and linked nets**: YSF room, Wires-X room, D-STAR reflector and XLX reflector for digital nets; the linked repeater system and its website for 2 m / 70 cm nets.
 * **Net script**: a formatted preamble / script for Net Control, written in the WordPress visual editor, with per-session placeholders ({ncs_callsign}, {frequency}, {topic}, ...) and a sample directed-net script.
 * **Schedules**: weekly, every other week, monthly by week of the month (1st–5th or last), one-time, or manual. Days of the week, months, start / end dates, start / end times.
 * **Session overrides**: change the date, time, topic, Net Control Station or frequency of any single session, cancel it, or add special sessions.
@@ -24,7 +25,7 @@ AR Net Logger helps radio clubs, ARES / RACES groups and net managers run their 
 * **Net Log** for the Net Control Station: the net script (formatted, read-only, or in its own window), open / close net, quick check-in entry with a callsign type-ahead that fills in name, QTH and station type from previous check-ins or the US license database (callook.info), short-time, mobile / portable, relays, traffic precedence and count, acknowledgements, QNI / QTC counts that update in the background, CSV export and print.
 * **Discord**: each check-in posted to a channel as it is logged (plus "on the air" and closing-summary posts), per-net channels, privacy options.
 * **Facebook Page**: upcoming sessions announced automatically (or on demand); cancelled sessions marked; ready-to-paste details for Facebook Page / Group events.
-* **Online check-ins** from the website during a configurable window, with callsign validation, duplicate detection, honeypot, rate limiting and optional moderation. The public check-in list shows which stations Net Control has acknowledged on the air and updates itself while the net runs.
+* **Online check-ins** from the website during a window of up to an hour before and after the net (site default or per net), with announcements, callsign validation, duplicate detection, honeypot, rate limiting and optional moderation. The public check-in list shows which stations Net Control has acknowledged on the air and updates itself while the net runs.
 * **Net Control Operator** role that can run nets and log check-ins without editing the site.
 
 == Installation ==
@@ -71,11 +72,27 @@ When Net Control clicks "Ack" in the Net Log (or ticks "Acknowledged on air"), t
 
 {ncs_callsign}, {ncs_name}, {ncs}, {net}, {type}, {date}, {time}, {end_time}, {timezone}, {frequency}, {topic}, {url} and {site}. They are filled in for each session on the Net Log.
 
+= How do I add a logo to a net? =
+
+Nets → Edit → Display & check-ins → Logo → Choose logo, and pick an image from the Media Library.
+
+= When does online check-in open? =
+
+By default 15 minutes before the start until 15 minutes after the end (Settings → Check-in window). Each net can open up to 60 minutes before and close up to 60 minutes after (Nets → Edit → Online check-ins). While Net Control has the net open, check-ins are always open.
+
 = Can I accept check-ins from non-amateur stations? =
 
 Untick "Require a valid amateur radio callsign format" in the settings.
 
 == Changelog ==
+
+= 1.2.2 =
+* Net logo: choose an image from the Media Library for each net. Shown on net and session pages, the nets directory, the Net Log and as the Discord post thumbnail.
+* Digital nets: YSF room, Wires-X room, D-STAR reflector and XLX reflector fields, shown on net and session pages, the Net Log, calendar exports, Discord, Facebook posts and the {digital} script placeholder.
+* Linked repeater systems: for 2 m / 70 cm nets, the system's name and website, linked from the net and session pages (also {system} and {system_url}).
+* Check-in window per net: open online check-in at the start or 5-60 minutes before, and close it at the end or 5-60 minutes after; the site default is now limited to 60 minutes too.
+* Announcements: "I have an announcement for the net" checkbox and text on the online check-in form, and "Has an announcement" in the Net Log. Flagged and counted in the Net Log, in the CSV export and in Discord posts. The sample net script calls for announcements.
+* New filters: arnl_digital_rooms, arnl_linked_system_bands.
 
 = 1.2.0 =
 * Discord: post each check-in to a Discord channel through a webhook as it is logged (NCS or website), plus "net is on the air" and closing-summary posts. Per-net channel or opt-out, name / location / comments options, test message, delivery errors shown in the settings.

@@ -78,20 +78,22 @@ class ARNL_Checkin_Handler {
 		foreach ( $fields as $field ) {
 			$data[ $field ] = isset( $_POST[ $field ] ) ? sanitize_text_field( wp_unslash( $_POST[ $field ] ) ) : '';
 		}
-		$data['comments'] = isset( $_POST['comments'] ) ? sanitize_textarea_field( wp_unslash( $_POST['comments'] ) ) : '';
+		$data['comments']     = isset( $_POST['comments'] ) ? sanitize_textarea_field( wp_unslash( $_POST['comments'] ) ) : '';
+		$data['announcement'] = ! empty( $_POST['has_announcement'] ) && isset( $_POST['announcement'] ) ? sanitize_textarea_field( wp_unslash( $_POST['announcement'] ) ) : '';
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$status = ARNL_Settings::get( 'auto_approve' ) ? 'approved' : 'pending';
 		$data   = array_merge(
 			$data,
 			array(
-				'event_id'    => $occurrence->event_id,
-				'callsign'    => $callsign,
-				'short_time'  => ! empty( $_POST['short_time'] ), // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				'has_traffic' => ! empty( $_POST['has_traffic'] ), // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				'source'      => 'online',
-				'status'      => $status,
-				'user_id'     => get_current_user_id(),
+				'event_id'         => $occurrence->event_id,
+				'callsign'         => $callsign,
+				'short_time'       => ! empty( $_POST['short_time'] ), // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				'has_traffic'      => ! empty( $_POST['has_traffic'] ), // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				'has_announcement' => ! empty( $_POST['has_announcement'] ), // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				'source'           => 'online',
+				'status'           => $status,
+				'user_id'          => get_current_user_id(),
 			)
 		);
 
@@ -296,8 +298,14 @@ class ARNL_Checkin_Handler {
 			<fieldset class="arnl-field arnl-field--options">
 				<legend class="screen-reader-text"><?php esc_html_e( 'Check-in options', 'ar-net-logger' ); ?></legend>
 				<label><input type="checkbox" name="short_time" value="1"> <?php esc_html_e( 'Short time (checking in and out)', 'ar-net-logger' ); ?></label>
-				<label><input type="checkbox" name="has_traffic" value="1" data-arnl-toggle="<?php echo esc_attr( $uid ); ?>-traffic"> <?php esc_html_e( 'I have traffic / an announcement for the net', 'ar-net-logger' ); ?></label>
+				<label><input type="checkbox" name="has_traffic" value="1" data-arnl-toggle="<?php echo esc_attr( $uid ); ?>-traffic"> <?php esc_html_e( 'I have traffic (a message) for the net', 'ar-net-logger' ); ?></label>
+				<label><input type="checkbox" name="has_announcement" value="1" data-arnl-toggle="<?php echo esc_attr( $uid ); ?>-announcement"> <?php esc_html_e( 'I have an announcement for the net', 'ar-net-logger' ); ?></label>
 			</fieldset>
+			<p class="arnl-field arnl-field--announcement" id="<?php echo esc_attr( $uid ); ?>-announcement">
+				<label for="<?php echo esc_attr( $uid ); ?>-announcement-text"><?php esc_html_e( 'Announcement', 'ar-net-logger' ); ?></label>
+				<textarea id="<?php echo esc_attr( $uid ); ?>-announcement-text" name="announcement" rows="3" maxlength="500" placeholder="<?php esc_attr_e( 'e.g. Club meeting Saturday 10 am at the fire station; hamfest tickets on sale.', 'ar-net-logger' ); ?>"></textarea>
+				<span class="arnl-help"><?php esc_html_e( 'Optional: write it here for Net Control, or leave it blank and give it on the air when called.', 'ar-net-logger' ); ?></span>
+			</p>
 			<p class="arnl-field arnl-field--traffic" id="<?php echo esc_attr( $uid ); ?>-traffic">
 				<label for="<?php echo esc_attr( $uid ); ?>-precedence"><?php esc_html_e( 'Traffic precedence', 'ar-net-logger' ); ?></label>
 				<select id="<?php echo esc_attr( $uid ); ?>-precedence" name="traffic_precedence">

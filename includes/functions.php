@@ -486,6 +486,163 @@ function arnl_describe_frequency( array $net, $frequency = '' ) {
 }
 
 /**
+ * Minutes before the start and after the end of a net during which online
+ * check-ins are open: the net's own window, or the site default (0-60 each).
+ *
+ * @param array $net Net.
+ * @return int[] Before, after.
+ */
+function arnl_checkin_minutes( array $net ) {
+	$minutes = array();
+	foreach ( array( 'checkin_before', 'checkin_after' ) as $key ) {
+		$value     = isset( $net[ $key ] ) && (int) $net[ $key ] >= 0 ? (int) $net[ $key ] : (int) ARNL_Settings::get( $key );
+		$minutes[] = max( 0, min( ARNL_Settings::MAX_CHECKIN_WINDOW, $value ) );
+	}
+	return $minutes;
+}
+
+/**
+ * Choices for a net's own check-in window: minutes => label. -1 uses the site default.
+ *
+ * @param string $edge "before" or "after".
+ * @return array<int,string>
+ */
+function arnl_checkin_window_options( $edge ) {
+	$default = max( 0, min( ARNL_Settings::MAX_CHECKIN_WINDOW, (int) ARNL_Settings::get( 'before' === $edge ? 'checkin_before' : 'checkin_after' ) ) );
+	$options = array(
+		/* translators: %d: minutes. */
+		-1 => sprintf( _n( 'Site default (%d minute)', 'Site default (%d minutes)', $default, 'ar-net-logger' ), $default ),
+		0  => 'before' === $edge ? __( 'At the start time', 'ar-net-logger' ) : __( 'At the end time', 'ar-net-logger' ),
+	);
+	foreach ( array( 5, 10, 15, 20, 30, 45, 60 ) as $minutes ) {
+		$options[ $minutes ] = 'before' === $edge
+			/* translators: %d: minutes. */
+			? sprintf( _n( '%d minute before the start', '%d minutes before the start', $minutes, 'ar-net-logger' ), $minutes )
+			/* translators: %d: minutes. */
+			: sprintf( _n( '%d minute after the end', '%d minutes after the end', $minutes, 'ar-net-logger' ), $minutes );
+	}
+	return $options;
+}
+
+/**
+ * Bands on which a net can run over a linked repeater system.
+ *
+ * @return string[]
+ */
+function arnl_linked_system_bands() {
+	return (array) apply_filters( 'arnl_linked_system_bands', array( '2m', '1.25m', '70cm', 'multi', 'internet' ) );
+}
+
+/**
+ * Digital rooms / reflectors of a digital net: key => array( label, value ).
+ *
+ * @param array $net Net.
+ * @return array<string,string[]>
+ */
+function arnl_digital_rooms( array $net ) {
+	if ( empty( $net['is_digital'] ) ) {
+		return array();
+	}
+	$fields = array(
+		'ysf_room'        => __( 'YSF room', 'ar-net-logger' ),
+		'wiresx_room'     => __( 'Wires-X room', 'ar-net-logger' ),
+		'dstar_reflector' => __( 'D-STAR reflector', 'ar-net-logger' ),
+		'xlx_reflector'   => __( 'XLX reflector', 'ar-net-logger' ),
+	);
+	$rooms  = array();
+	foreach ( $fields as $key => $label ) {
+		if ( isset( $net[ $key ] ) && '' !== (string) $net[ $key ] ) {
+			$rooms[ $key ] = array( $label, (string) $net[ $key ] );
+		}
+	}
+	/**
+	 * Filters the digital rooms / reflectors shown for a net.
+	 *
+	 * @param array $rooms Key => array( label, value ).
+	 * @param array $net   Net.
+	 */
+	return (array) apply_filters( 'arnl_digital_rooms', $rooms, $net );
+}
+
+/**
+ * One-line description of a net's digital rooms, e.g. "YSF room: US-Colorado 12345 · XLX reflector: XLX307 C".
+ *
+ * @param array $net Net.
+ * @return string
+ */
+function arnl_describe_digital( array $net ) {
+	$parts = array();
+	foreach ( arnl_digital_rooms( $net ) as $room ) {
+		$parts[] = $room[0] . ': ' . $room[1];
+	}
+	return implode( ' · ', $parts );
+}
+
+/**
+ * The linked repeater system a net runs on, or null.
+ *
+ * @param array $net Net.
+ * @return array{name:string,url:string}|null
+ */
+function arnl_linked_system( array $net ) {
+	if ( empty( $net['linked_system'] ) || ! in_array( $net['band'], arnl_linked_system_bands(), true ) ) {
+		return null;
+	}
+	$name = (string) $net['system_name'];
+	$url  = (string) $net['system_url'];
+	if ( '' === $name && '' === $url ) {
+		return null;
+	}
+	if ( '' === $name ) {
+		$name = preg_replace( '/^www\./i', '', (string) wp_parse_url( $url, PHP_URL_HOST ) );
+	}
+	return array(
+		'name' => $name,
+		'url'  => $url,
+	);
+}
+
+/**
+ * A net's logo image, or ''.
+ *
+ * @param array        $net   Net.
+ * @param string|int[] $size      Image size.
+ * @param string       $css_class CSS class.
+ * @return string
+ */
+function arnl_net_logo( array $net, $size = 'thumbnail', $css_class = 'arnl-net-logo' ) {
+	if ( empty( $net['logo_id'] ) ) {
+		return '';
+	}
+	return (string) wp_get_attachment_image(
+		(int) $net['logo_id'],
+		$size,
+		false,
+		array(
+			'class'   => $css_class,
+			/* translators: %s: net name. */
+			'alt'     => sprintf( __( '%s logo', 'ar-net-logger' ), $net['name'] ),
+			'loading' => 'lazy',
+		)
+	);
+}
+
+/**
+ * URL of a net's logo, or ''.
+ *
+ * @param array  $net  Net.
+ * @param string $size Image size.
+ * @return string
+ */
+function arnl_net_logo_url( array $net, $size = 'medium' ) {
+	if ( empty( $net['logo_id'] ) ) {
+		return '';
+	}
+	$url = wp_get_attachment_image_url( (int) $net['logo_id'], $size );
+	return $url ? (string) $url : '';
+}
+
+/**
  * Short timezone label for the site, e.g. "EDT" or "UTC+2".
  *
  * @param int|null $timestamp Moment to evaluate (for DST).
@@ -585,6 +742,9 @@ function arnl_script_placeholders() {
 		'end_time'     => __( 'End time', 'ar-net-logger' ),
 		'timezone'     => __( 'Time zone', 'ar-net-logger' ),
 		'frequency'    => __( 'Frequency / repeater', 'ar-net-logger' ),
+		'digital'      => __( 'Digital rooms / reflectors', 'ar-net-logger' ),
+		'system'       => __( 'Linked repeater system', 'ar-net-logger' ),
+		'system_url'   => __( 'Repeater system website', 'ar-net-logger' ),
 		'topic'        => __( 'Topic', 'ar-net-logger' ),
 		'type'         => __( 'Net type', 'ar-net-logger' ),
 		'url'          => __( 'Session web page', 'ar-net-logger' ),
@@ -600,6 +760,7 @@ function arnl_script_placeholders() {
  */
 function arnl_script_values( ARNL_Occurrence $o ) {
 	$url    = arnl_event_url( $o );
+	$system = arnl_linked_system( $o->net );
 	$values = array(
 		'ncs_callsign' => $o->ncs_callsign,
 		'ncs_name'     => $o->ncs_name,
@@ -610,6 +771,9 @@ function arnl_script_values( ARNL_Occurrence $o ) {
 		'end_time'     => arnl_format_time( $o->end_time ),
 		'timezone'     => arnl_timezone_label( $o->start()->getTimestamp() ),
 		'frequency'    => arnl_describe_frequency( $o->net, $o->frequency ),
+		'digital'      => arnl_describe_digital( $o->net ),
+		'system'       => $system ? $system['name'] : '',
+		'system_url'   => $system ? $system['url'] : '',
 		'topic'        => $o->topic,
 		'type'         => arnl_label( arnl_net_types(), $o->net['net_type'] ),
 		'url'          => 0 === strpos( $url, 'http' ) ? $url : '',
@@ -694,9 +858,11 @@ function arnl_sample_script() {
 		'<p>' . esc_html__( 'Net Control will now take check-ins. Please give your callsign phonetically, your name and location, and say if you are mobile or portable or have traffic for the net.', 'ar-net-logger' ) . '</p>',
 		'<ul><li>' . esc_html__( 'Short-time and mobile stations, please call now.', 'ar-net-logger' ) . '</li><li>' . esc_html__( 'All other stations, please call now.', 'ar-net-logger' ) . '</li><li>' . esc_html__( 'Are there any relays for stations Net Control could not hear?', 'ar-net-logger' ) . '</li></ul>',
 		$cue( __( '(Acknowledge each station by callsign, and acknowledge the website check-ins in the Net Log. Identify at least every 10 minutes.)', 'ar-net-logger' ) ),
-		'<h3>' . esc_html__( 'Topic and traffic', 'ar-net-logger' ) . '</h3>',
+		'<h3>' . esc_html__( 'Topic, traffic and announcements', 'ar-net-logger' ) . '</h3>',
 		'<p>' . esc_html__( 'Topic for this session: {topic}', 'ar-net-logger' ) . '</p>',
 		'<p>' . esc_html__( 'Stations with traffic for the net, please call now. Net Control will then go down the list for comments.', 'ar-net-logger' ) . '</p>',
+		'<p>' . esc_html__( 'Are there any announcements for the net? Please call now.', 'ar-net-logger' ) . '</p>',
+		$cue( __( '(Read the announcements from the Net Log: stations marked with an announcement.)', 'ar-net-logger' ) ),
 		'<h3>' . esc_html__( 'Closing', 'ar-net-logger' ) . '</h3>',
 		'<p>' . esc_html__( 'Are there any late check-ins, comments or traffic before the net closes?', 'ar-net-logger' ) . '</p>',
 		$cue( __( '(Pause.)', 'ar-net-logger' ) ),

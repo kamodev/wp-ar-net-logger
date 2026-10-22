@@ -104,11 +104,26 @@ class ARNL_Admin_Log {
 
 			<div class="arnl-log-header">
 				<div class="arnl-log-when">
+					<?php echo arnl_net_logo( $net ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_get_attachment_image(). ?>
+					<div>
 					<strong><?php echo esc_html( arnl_format_date( $o->date, 'l, ' . get_option( 'date_format' ) ) ); ?></strong>
 					&middot; <?php echo esc_html( ARNL_Calendar::time_range( $o ) ); ?>
 					<?php $freq = arnl_describe_frequency( $net, $o->frequency ); ?>
 					<?php if ( '' !== $freq ) : ?>
 						<br><?php echo esc_html( $freq ); ?>
+					<?php endif; ?>
+					<?php $digital = arnl_describe_digital( $net ); ?>
+					<?php if ( '' !== $digital ) : ?>
+						<br><?php echo esc_html( $digital ); ?>
+					<?php endif; ?>
+					<?php $system = arnl_linked_system( $net ); ?>
+					<?php if ( $system ) : ?>
+						<br><?php esc_html_e( 'Linked system:', 'ar-net-logger' ); ?>
+						<?php if ( '' !== $system['url'] ) : ?>
+							<a href="<?php echo esc_url( $system['url'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $system['name'] ); ?></a>
+						<?php else : ?>
+							<?php echo esc_html( $system['name'] ); ?>
+						<?php endif; ?>
 					<?php endif; ?>
 					<?php if ( $o->is_rescheduled() ) : ?>
 						<br><small class="arnl-muted">
@@ -132,6 +147,7 @@ class ARNL_Admin_Log {
 							?>
 						</small>
 					<?php endif; ?>
+					</div>
 				</div>
 				<div class="arnl-log-buttons">
 					<?php if ( 'scheduled' === $o->status ) : ?>
@@ -259,7 +275,12 @@ class ARNL_Admin_Log {
 						<label for="arnl-ci-count"><?php esc_html_e( 'Count', 'ar-net-logger' ); ?></label>
 						<input type="number" id="arnl-ci-count" name="traffic_count" value="<?php echo (int) max( 1, $c['traffic_count'] ); ?>" min="0" max="999" class="small-text">
 					</span>
+					<label><input type="checkbox" name="has_announcement" value="1" <?php checked( $c['has_announcement'] ); ?> data-arnl-toggle="arnl-ci-announcement-row"> <?php esc_html_e( 'Has an announcement', 'ar-net-logger' ); ?></label>
 				</div>
+				<p id="arnl-ci-announcement-row">
+					<label for="arnl-ci-announcement"><?php esc_html_e( 'Announcement', 'ar-net-logger' ); ?></label>
+					<textarea id="arnl-ci-announcement" name="announcement" rows="2" class="large-text" maxlength="500" placeholder="<?php esc_attr_e( 'Optional: the announcement, if the station gave it here or you want to note it.', 'ar-net-logger' ); ?>"><?php echo esc_textarea( $c['announcement'] ); ?></textarea>
+				</p>
 				<p>
 					<label for="arnl-ci-comments"><?php esc_html_e( 'Comments / traffic details', 'ar-net-logger' ); ?></label>
 					<textarea id="arnl-ci-comments" name="comments" rows="2" class="large-text"><?php echo esc_textarea( $c['comments'] ); ?></textarea>
@@ -290,6 +311,7 @@ class ARNL_Admin_Log {
 			<li><span class="arnl-stat-num"><?php echo (int) $stats['mobile']; ?></span> <?php esc_html_e( 'Mobile / portable', 'ar-net-logger' ); ?></li>
 			<li><span class="arnl-stat-num"><?php echo (int) $stats['relayed']; ?></span> <?php esc_html_e( 'Relayed', 'ar-net-logger' ); ?></li>
 			<li><span class="arnl-stat-num"><?php echo (int) $stats['online']; ?></span> <?php esc_html_e( 'Online', 'ar-net-logger' ); ?></li>
+			<li><span class="arnl-stat-num"><?php echo (int) $stats['announcements']; ?></span> <?php esc_html_e( 'Announcements', 'ar-net-logger' ); ?></li>
 			<?php if ( $stats['pending'] ) : ?>
 				<li class="arnl-stat-pending"><span class="arnl-stat-num"><?php echo (int) $stats['pending']; ?></span> <?php esc_html_e( 'Pending', 'ar-net-logger' ); ?></li>
 			<?php endif; ?>
@@ -404,6 +426,14 @@ class ARNL_Admin_Log {
 										echo esc_html( sprintf( __( 'via %s', 'ar-net-logger' ), $c['relayed_by'] ) );
 										?>
 									</span>
+								<?php endif; ?>
+								<?php if ( $c['has_announcement'] ) : ?>
+									<div class="arnl-announcement">
+										<span class="arnl-announce-badge"><span aria-hidden="true">📢</span> <?php esc_html_e( 'Announcement', 'ar-net-logger' ); ?></span>
+										<?php if ( '' !== $c['announcement'] ) : ?>
+											<span class="arnl-announce-text"><?php echo esc_html( $c['announcement'] ); ?></span>
+										<?php endif; ?>
+									</div>
 								<?php endif; ?>
 								<?php if ( '' !== $c['comments'] ) : ?>
 									<div class="arnl-comment"><?php echo esc_html( $c['comments'] ); ?></div>
@@ -681,10 +711,11 @@ class ARNL_Admin_Log {
 			$data[ $field ] = isset( $_POST[ $field ] ) ? sanitize_text_field( wp_unslash( $_POST[ $field ] ) ) : '';
 		}
 		$data['comments'] = isset( $_POST['comments'] ) ? sanitize_textarea_field( wp_unslash( $_POST['comments'] ) ) : '';
-		foreach ( array( 'short_time', 'has_traffic', 'acknowledged' ) as $flag ) {
+		foreach ( array( 'short_time', 'has_traffic', 'has_announcement', 'acknowledged' ) as $flag ) {
 			$data[ $flag ] = empty( $_POST[ $flag ] ) ? 0 : 1;
 		}
-		$checkin_id = isset( $_POST['checkin_id'] ) ? absint( $_POST['checkin_id'] ) : 0;
+		$data['announcement'] = $data['has_announcement'] && isset( $_POST['announcement'] ) ? sanitize_textarea_field( wp_unslash( $_POST['announcement'] ) ) : '';
+		$checkin_id           = isset( $_POST['checkin_id'] ) ? absint( $_POST['checkin_id'] ) : 0;
 
 		$duplicate = ARNL_Checkins::find_duplicate( $o->event_id, $data['callsign'], $checkin_id );
 		if ( $duplicate ) {
@@ -866,6 +897,8 @@ class ARNL_Admin_Log {
 				__( 'Precedence', 'ar-net-logger' ),
 				__( 'Count', 'ar-net-logger' ),
 				__( 'Relayed by', 'ar-net-logger' ),
+				__( 'Announcement', 'ar-net-logger' ),
+				__( 'Announcement text', 'ar-net-logger' ),
 				__( 'Comments', 'ar-net-logger' ),
 				__( 'Source', 'ar-net-logger' ),
 				__( 'Status', 'ar-net-logger' ),
@@ -888,6 +921,8 @@ class ARNL_Admin_Log {
 					$c['has_traffic'] ? arnl_label( $prec, $c['traffic_precedence'] ) : '',
 					$c['has_traffic'] ? max( 1, $c['traffic_count'] ) : '',
 					$c['relayed_by'],
+					$c['has_announcement'] ? 'Y' : '',
+					$c['announcement'],
 					$c['comments'],
 					$c['source'],
 					$c['status'],

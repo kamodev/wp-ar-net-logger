@@ -348,6 +348,71 @@ a.arnl-cal-event-link:focus {
 	margin: 0 0 0.5em;
 }
 
+/* Net logo beside the net name / session title. */
+.arnl-net-head,
+.arnl-event-header.has-logo {
+	display: flex;
+	align-items: center;
+	gap: 0.75em;
+}
+
+.arnl-net-head {
+	margin: 0 0 0.5em;
+}
+
+.arnl-net-head .arnl-net-name {
+	margin: 0;
+}
+
+.arnl-net-logo {
+	flex: none;
+	width: 56px;
+	height: 56px;
+	object-fit: contain;
+	border-radius: 4px;
+}
+
+.arnl-net-page > .arnl-net .arnl-net-logo,
+.arnl-event-header .arnl-net-logo {
+	width: 88px;
+	height: 88px;
+}
+
+.arnl-event-header.has-logo {
+	margin-bottom: 1em;
+}
+
+.arnl-event-header.has-logo .arnl-event-when {
+	margin-bottom: 0;
+}
+
+/* Digital rooms / reflectors. */
+.arnl-rooms {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.arnl-rooms li {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	column-gap: 0.75em;
+	margin: 0 0 0.15em;
+}
+
+.arnl-room-label {
+	flex: 0 0 8.5em;
+	opacity: 0.8;
+	font-size: 0.9em;
+}
+
+.arnl-room-value {
+	flex: 1 1 10em;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
 .arnl-details {
 	display: grid;
 	grid-template-columns: max-content 1fr;
@@ -457,8 +522,16 @@ a.arnl-cal-event-link:focus {
 	font-weight: normal;
 }
 
-.arnl-js .arnl-field--traffic[hidden] {
+.arnl-js .arnl-field--traffic[hidden],
+.arnl-js .arnl-field--announcement[hidden] {
 	display: none;
+}
+
+.arnl-help {
+	display: block;
+	margin-top: 0.25em;
+	font-size: 0.85em;
+	opacity: 0.8;
 }
 
 .arnl-required {

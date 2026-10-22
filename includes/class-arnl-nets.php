@@ -58,6 +58,17 @@ class ARNL_Nets {
 			'preamble'        => '',
 			'color'           => '#2271b1',
 			'allow_checkins'  => 1,
+			'checkin_before'  => -1,
+			'checkin_after'   => -1,
+			'logo_id'         => 0,
+			'is_digital'      => 0,
+			'ysf_room'        => '',
+			'xlx_reflector'   => '',
+			'dstar_reflector' => '',
+			'wiresx_room'     => '',
+			'linked_system'   => 0,
+			'system_name'     => '',
+			'system_url'      => '',
 			'discord_mode'    => 'default',
 			'discord_webhook' => '',
 			'facebook_mode'   => 'default',
@@ -377,6 +388,22 @@ class ARNL_Nets {
 			$errors->add( 'arnl_discord_webhook', __( 'Enter the Discord webhook URL for this net, or choose the default webhook.', 'ar-net-logger' ) );
 		}
 
+		$band          = array_key_exists( (string) $data['band'], arnl_bands() ) ? (string) $data['band'] : '';
+		$linked_system = ! empty( $data['linked_system'] ) && in_array( $band, arnl_linked_system_bands(), true ) ? 1 : 0;
+		$system_url    = trim( (string) $data['system_url'] );
+		if ( '' !== $system_url ) {
+			$system_url = esc_url_raw( false === strpos( $system_url, '://' ) ? 'https://' . $system_url : $system_url, array( 'http', 'https' ) );
+			$host       = '' !== $system_url ? (string) wp_parse_url( $system_url, PHP_URL_HOST ) : '';
+			if ( '' === $host || false === strpos( $host, '.' ) ) {
+				$errors->add( 'arnl_system_url', __( 'Enter the repeater system website as a web address, for example https://example.org/', 'ar-net-logger' ) );
+			}
+		}
+
+		$logo_id = absint( $data['logo_id'] );
+		if ( $logo_id && ! wp_attachment_is_image( $logo_id ) ) {
+			$logo_id = 0;
+		}
+
 		$start_time = arnl_sanitize_time( $data['start_time'], '' );
 		if ( '' === $start_time ) {
 			$errors->add( 'arnl_start_time', __( 'Please enter a valid start time.', 'ar-net-logger' ) );
@@ -404,7 +431,7 @@ class ARNL_Nets {
 			'description'     => wp_kses_post( (string) $data['description'] ),
 			'net_type'        => array_key_exists( (string) $data['net_type'], arnl_net_types() ) ? (string) $data['net_type'] : 'other',
 			'mode'            => array_key_exists( (string) $data['mode'], arnl_modes() ) ? (string) $data['mode'] : '',
-			'band'            => array_key_exists( (string) $data['band'], arnl_bands() ) ? (string) $data['band'] : '',
+			'band'            => $band,
 			'frequency'       => substr( sanitize_text_field( (string) $data['frequency'] ), 0, 100 ),
 			'access_info'     => substr( sanitize_text_field( (string) $data['access_info'] ), 0, 255 ),
 			'start_time'      => $start_time,
@@ -420,11 +447,35 @@ class ARNL_Nets {
 			'preamble'        => wp_kses_post( (string) $data['preamble'] ),
 			'color'           => $color ? $color : '#2271b1',
 			'allow_checkins'  => empty( $data['allow_checkins'] ) ? 0 : 1,
+			'checkin_before'  => self::window_minutes( $data['checkin_before'] ),
+			'checkin_after'   => self::window_minutes( $data['checkin_after'] ),
+			'logo_id'         => $logo_id,
+			'is_digital'      => empty( $data['is_digital'] ) ? 0 : 1,
+			'ysf_room'        => substr( sanitize_text_field( (string) $data['ysf_room'] ), 0, 100 ),
+			'xlx_reflector'   => substr( sanitize_text_field( (string) $data['xlx_reflector'] ), 0, 100 ),
+			'dstar_reflector' => substr( sanitize_text_field( (string) $data['dstar_reflector'] ), 0, 100 ),
+			'wiresx_room'     => substr( sanitize_text_field( (string) $data['wiresx_room'] ), 0, 100 ),
+			'linked_system'   => $linked_system,
+			'system_name'     => substr( sanitize_text_field( (string) $data['system_name'] ), 0, 100 ),
+			'system_url'      => substr( $system_url, 0, 255 ),
 			'discord_mode'    => $discord_mode,
 			'discord_webhook' => $discord_webhook,
 			'facebook_mode'   => 'off' === (string) $data['facebook_mode'] ? 'off' : 'default',
 			'status'          => 'inactive' === $data['status'] ? 'inactive' : 'active',
 		);
+	}
+
+	/**
+	 * Minutes of a net's own online check-in window: -1 for the site default, otherwise 0-60.
+	 *
+	 * @param mixed $value Submitted value.
+	 * @return int
+	 */
+	public static function window_minutes( $value ) {
+		if ( '' === $value || null === $value || ! is_numeric( $value ) || (int) $value < 0 ) {
+			return -1;
+		}
+		return min( ARNL_Settings::MAX_CHECKIN_WINDOW, (int) $value );
 	}
 
 	/**
@@ -457,13 +508,16 @@ class ARNL_Nets {
 
 		$net['id']             = (int) $net['id'];
 		$net['allow_checkins'] = (int) $net['allow_checkins'];
-		$net['description']    = (string) $net['description'];
-		$net['preamble']       = (string) $net['preamble'];
-		$net['start_date']     = (string) $net['start_date'];
-		$net['end_date']       = (string) $net['end_date'];
-		$net['days_of_week']   = array_map( 'intval', arnl_parse_list( $net['days_of_week'] ) );
-		$net['months']         = array_map( 'intval', arnl_parse_list( $net['months'] ) );
-		$weeks                 = array();
+		foreach ( array( 'checkin_before', 'checkin_after', 'logo_id', 'is_digital', 'linked_system' ) as $key ) {
+			$net[ $key ] = (int) $net[ $key ];
+		}
+		$net['description']  = (string) $net['description'];
+		$net['preamble']     = (string) $net['preamble'];
+		$net['start_date']   = (string) $net['start_date'];
+		$net['end_date']     = (string) $net['end_date'];
+		$net['days_of_week'] = array_map( 'intval', arnl_parse_list( $net['days_of_week'] ) );
+		$net['months']       = array_map( 'intval', arnl_parse_list( $net['months'] ) );
+		$weeks               = array();
 		foreach ( arnl_parse_list( $net['weeks_of_month'] ) as $w ) {
 			$weeks[] = 'last' === $w ? 'last' : (int) $w;
 		}

@@ -270,6 +270,12 @@ class ARNL_Discord {
 			/* translators: %s: relay station callsign. */
 			$lines[] = '🔁 ' . self::escape( sprintf( __( 'Relayed by %s', 'ar-net-logger' ), $c['relayed_by'] ) );
 		}
+		if ( $c['has_announcement'] && ARNL_Settings::get( 'discord_include_announcements' ) ) {
+			$lines[] = '📢 ' . ( '' !== $c['announcement']
+				/* translators: %s: announcement text. */
+				? self::escape( sprintf( __( 'Announcement: %s', 'ar-net-logger' ), $c['announcement'] ) )
+				: __( 'Has an announcement for the net', 'ar-net-logger' ) );
+		}
 		if ( ARNL_Settings::get( 'discord_include_comments' ) && '' !== $c['comments'] ) {
 			$lines[] = '💬 ' . self::escape( $c['comments'] );
 		}
@@ -294,7 +300,22 @@ class ARNL_Discord {
 		if ( '' !== $url ) {
 			$embed['url'] = $url;
 		}
-		return array( 'embeds' => array( self::clean( $embed ) ) );
+		return array( 'embeds' => array( self::clean( self::with_logo( $embed, $o->net ) ) ) );
+	}
+
+	/**
+	 * Add the net's logo to an embed as its thumbnail (Discord needs a public http(s) URL).
+	 *
+	 * @param array $embed Embed.
+	 * @param array $net   Net.
+	 * @return array
+	 */
+	public static function with_logo( array $embed, array $net ) {
+		$logo = arnl_net_logo_url( $net, 'thumbnail' );
+		if ( 0 === strpos( $logo, 'http' ) ) {
+			$embed['thumbnail'] = array( 'url' => $logo );
+		}
+		return $embed;
 	}
 
 	/**
@@ -308,6 +329,14 @@ class ARNL_Discord {
 		$freq  = arnl_describe_frequency( $o->net, $o->frequency );
 		if ( '' !== $freq ) {
 			$lines[] = '📡 ' . self::escape( $freq );
+		}
+		$digital = arnl_describe_digital( $o->net );
+		if ( '' !== $digital ) {
+			$lines[] = '💻 ' . self::escape( $digital );
+		}
+		$system = arnl_linked_system( $o->net );
+		if ( $system ) {
+			$lines[] = '🔗 ' . ( '' !== $system['url'] ? '[' . self::escape( $system['name'] ) . '](' . esc_url_raw( $system['url'] ) . ')' : self::escape( $system['name'] ) );
 		}
 		if ( '' !== $o->ncs_callsign ) {
 			$lines[] = '🎙 ' . self::escape( ARNL_Calendar::ncs_label( $o ) );
@@ -331,7 +360,7 @@ class ARNL_Discord {
 		if ( '' !== $url ) {
 			$embed['url'] = $url;
 		}
-		return array( 'embeds' => array( self::clean( $embed ) ) );
+		return array( 'embeds' => array( self::clean( self::with_logo( $embed, $o->net ) ) ) );
 	}
 
 	/**
@@ -347,6 +376,10 @@ class ARNL_Discord {
 			/* translators: 1: check-ins, 2: traffic count. */
 			sprintf( __( 'Check-ins (QNI): %1$d · Traffic (QTC): %2$d', 'ar-net-logger' ), $stats['approved'], $stats['traffic_count'] ),
 		);
+		if ( $stats['announcements'] ) {
+			/* translators: %d: number of announcements. */
+			$lines[] = '📢 ' . sprintf( _n( '%d announcement', '%d announcements', $stats['announcements'], 'ar-net-logger' ), $stats['announcements'] );
+		}
 		if ( $checkins ) {
 			$lines[] = self::escape( implode( ', ', wp_list_pluck( $checkins, 'callsign' ) ) );
 		}
@@ -362,7 +395,7 @@ class ARNL_Discord {
 		if ( '' !== $url ) {
 			$embed['url'] = $url;
 		}
-		return array( 'embeds' => array( self::clean( $embed ) ) );
+		return array( 'embeds' => array( self::clean( self::with_logo( $embed, $o->net ) ) ) );
 	}
 
 	/**

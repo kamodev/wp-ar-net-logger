@@ -41,6 +41,8 @@ class ARNL_Checkins {
 			'traffic_count'      => 0,
 			'relayed_by'         => '',
 			'comments'           => '',
+			'has_announcement'   => 0,
+			'announcement'       => '',
 			'source'             => 'admin',
 			'status'             => 'approved',
 			'acknowledged'       => 0,
@@ -136,6 +138,7 @@ class ARNL_Checkins {
 			'mobile'           => 0,
 			'relayed'          => 0,
 			'online'           => 0,
+			'announcements'    => 0,
 		);
 		foreach ( $checkins as $c ) {
 			if ( 'rejected' === $c['status'] ) {
@@ -151,10 +154,11 @@ class ARNL_Checkins {
 				++$stats['traffic_stations'];
 				$stats['traffic_count'] += max( 1, $c['traffic_count'] );
 			}
-			$stats['short_time'] += $c['short_time'];
-			$stats['mobile']     += in_array( $c['station_type'], array( 'mobile', 'portable', 'handheld' ), true ) ? 1 : 0;
-			$stats['relayed']    += '' !== $c['relayed_by'] ? 1 : 0;
-			$stats['online']     += 'online' === $c['source'] ? 1 : 0;
+			$stats['short_time']    += $c['short_time'];
+			$stats['mobile']        += in_array( $c['station_type'], array( 'mobile', 'portable', 'handheld' ), true ) ? 1 : 0;
+			$stats['relayed']       += '' !== $c['relayed_by'] ? 1 : 0;
+			$stats['online']        += 'online' === $c['source'] ? 1 : 0;
+			$stats['announcements'] += $c['has_announcement'];
 		}
 		return $stats;
 	}
@@ -384,6 +388,10 @@ class ARNL_Checkins {
 		$checkin_time = trim( (string) $data['checkin_time'] );
 		$parsed       = DateTimeImmutable::createFromFormat( 'Y-m-d H:i:s', $checkin_time );
 
+		// An announcement for the net: the box alone (to be given on the air) or with its text.
+		$announcement     = substr( sanitize_textarea_field( (string) $data['announcement'] ), 0, 500 );
+		$has_announcement = empty( $data['has_announcement'] ) && '' === $announcement ? 0 : 1;
+
 		return array(
 			'event_id'           => $event_id,
 			'callsign'           => $callsign,
@@ -396,6 +404,8 @@ class ARNL_Checkins {
 			'traffic_count'      => $has_traffic ? min( 999, absint( $data['traffic_count'] ) ) : 0,
 			'relayed_by'         => arnl_sanitize_callsign( $data['relayed_by'] ),
 			'comments'           => substr( sanitize_textarea_field( (string) $data['comments'] ), 0, 1000 ),
+			'has_announcement'   => $has_announcement,
+			'announcement'       => $has_announcement ? $announcement : '',
 			'source'             => 'online' === $data['source'] ? 'online' : 'admin',
 			'status'             => array_key_exists( (string) $data['status'], arnl_checkin_statuses() ) ? (string) $data['status'] : 'approved',
 			'acknowledged'       => empty( $data['acknowledged'] ) ? 0 : 1,
@@ -412,10 +422,11 @@ class ARNL_Checkins {
 	 */
 	public static function hydrate( array $row ) {
 		$c = array_merge( self::defaults(), $row );
-		foreach ( array( 'id', 'event_id', 'short_time', 'has_traffic', 'traffic_count', 'acknowledged', 'user_id' ) as $key ) {
+		foreach ( array( 'id', 'event_id', 'short_time', 'has_traffic', 'traffic_count', 'has_announcement', 'acknowledged', 'user_id' ) as $key ) {
 			$c[ $key ] = (int) $c[ $key ];
 		}
-		$c['comments'] = (string) $c['comments'];
+		$c['comments']     = (string) $c['comments'];
+		$c['announcement'] = (string) $c['announcement'];
 		return $c;
 	}
 }

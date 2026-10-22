@@ -47,6 +47,8 @@ class ARNL_Admin_Nets {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- routing only.
 		$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
 		if ( in_array( $action, array( 'edit', 'new' ), true ) ) {
+			// Media library for the net logo.
+			add_action( 'admin_enqueue_scripts', 'wp_enqueue_media' );
 			return;
 		}
 
@@ -191,6 +193,47 @@ class ARNL_Admin_Nets {
 						<th scope="row"><label for="arnl-access"><?php esc_html_e( 'Repeater / access info', 'ar-net-logger' ); ?></label></th>
 						<td>
 							<input type="text" id="arnl-access" name="access_info" class="large-text" value="<?php echo esc_attr( $net['access_info'] ); ?>" maxlength="255" placeholder="<?php esc_attr_e( 'e.g. W1AW repeater, -0.600 offset, PL 100.0 Hz; EchoLink node 123456', 'ar-net-logger' ); ?>">
+						</td>
+					</tr>
+					<tr class="arnl-row-linked" data-arnl-bands="<?php echo esc_attr( implode( ',', arnl_linked_system_bands() ) ); ?>">
+						<th scope="row"><?php esc_html_e( 'Linked repeater system', 'ar-net-logger' ); ?></th>
+						<td>
+							<label><input type="checkbox" name="linked_system" value="1" data-arnl-toggle="arnl-linked-fields" <?php checked( $net['linked_system'] ); ?>> <?php esc_html_e( 'This net runs on a linked repeater system', 'ar-net-logger' ); ?></label>
+							<div id="arnl-linked-fields" class="arnl-subfields">
+								<p>
+									<label for="arnl-system-name"><?php esc_html_e( 'System name', 'ar-net-logger' ); ?></label><br>
+									<input type="text" id="arnl-system-name" name="system_name" class="regular-text" value="<?php echo esc_attr( $net['system_name'] ); ?>" maxlength="100" placeholder="<?php esc_attr_e( 'e.g. Colorado Connection', 'ar-net-logger' ); ?>">
+								</p>
+								<p>
+									<label for="arnl-system-url"><?php esc_html_e( 'System website', 'ar-net-logger' ); ?></label><br>
+									<input type="url" id="arnl-system-url" name="system_url" class="regular-text" value="<?php echo esc_attr( $net['system_url'] ); ?>" maxlength="255" placeholder="https://">
+								</p>
+								<p class="description"><?php esc_html_e( 'For 2 m and 70 cm nets carried by a network of linked repeaters. The website (repeater list, coverage map) is linked from the net and session pages.', 'ar-net-logger' ); ?></p>
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Digital net', 'ar-net-logger' ); ?></th>
+						<td>
+							<label><input type="checkbox" id="arnl-is-digital" name="is_digital" value="1" data-arnl-toggle="arnl-digital-fields" <?php checked( $net['is_digital'] ); ?>> <?php esc_html_e( 'This is a digital net (or is also carried on digital modes)', 'ar-net-logger' ); ?></label>
+							<div id="arnl-digital-fields" class="arnl-subfields arnl-digital-grid">
+								<p>
+									<label for="arnl-ysf-room"><?php esc_html_e( 'YSF room', 'ar-net-logger' ); ?></label>
+									<input type="text" id="arnl-ysf-room" name="ysf_room" value="<?php echo esc_attr( $net['ysf_room'] ); ?>" maxlength="100" placeholder="<?php esc_attr_e( 'e.g. US-Colorado-Link 12345', 'ar-net-logger' ); ?>">
+								</p>
+								<p>
+									<label for="arnl-wiresx-room"><?php esc_html_e( 'Wires-X room', 'ar-net-logger' ); ?></label>
+									<input type="text" id="arnl-wiresx-room" name="wiresx_room" value="<?php echo esc_attr( $net['wiresx_room'] ); ?>" maxlength="100" placeholder="<?php esc_attr_e( 'e.g. COLORADO-LINK 28733', 'ar-net-logger' ); ?>">
+								</p>
+								<p>
+									<label for="arnl-dstar-reflector"><?php esc_html_e( 'D-STAR reflector', 'ar-net-logger' ); ?></label>
+									<input type="text" id="arnl-dstar-reflector" name="dstar_reflector" value="<?php echo esc_attr( $net['dstar_reflector'] ); ?>" maxlength="100" placeholder="<?php esc_attr_e( 'e.g. REF030 C', 'ar-net-logger' ); ?>">
+								</p>
+								<p>
+									<label for="arnl-xlx-reflector"><?php esc_html_e( 'XLX reflector', 'ar-net-logger' ); ?></label>
+									<input type="text" id="arnl-xlx-reflector" name="xlx_reflector" value="<?php echo esc_attr( $net['xlx_reflector'] ); ?>" maxlength="100" placeholder="<?php esc_attr_e( 'e.g. XLX307 module D', 'ar-net-logger' ); ?>">
+								</p>
+							</div>
 						</td>
 					</tr>
 					<tr>
@@ -349,13 +392,38 @@ class ARNL_Admin_Nets {
 				<h2 class="title"><?php esc_html_e( 'Display & check-ins', 'ar-net-logger' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
+						<th scope="row"><?php esc_html_e( 'Logo', 'ar-net-logger' ); ?></th>
+						<td>
+							<?php $logo = arnl_net_logo( $net, 'thumbnail', 'arnl-logo-preview-img' ); ?>
+							<div class="arnl-logo-field<?php echo '' !== $logo ? ' has-logo' : ''; ?>">
+								<span class="arnl-logo-preview"><?php echo $logo; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_get_attachment_image(). ?></span>
+								<input type="hidden" id="arnl-logo-id" name="logo_id" value="<?php echo (int) $net['logo_id']; ?>">
+								<button type="button" class="button arnl-logo-choose" data-title="<?php esc_attr_e( 'Net logo', 'ar-net-logger' ); ?>" data-button="<?php esc_attr_e( 'Use this logo', 'ar-net-logger' ); ?>">
+									<span class="arnl-logo-add"><?php esc_html_e( 'Choose logo', 'ar-net-logger' ); ?></span>
+									<span class="arnl-logo-change"><?php esc_html_e( 'Change logo', 'ar-net-logger' ); ?></span>
+								</button>
+								<button type="button" class="button-link arnl-logo-remove"><?php esc_html_e( 'Remove logo', 'ar-net-logger' ); ?></button>
+							</div>
+							<p class="description"><?php esc_html_e( 'From the Media Library. Shown on the net and session pages, the nets directory, the Net Log and in Discord posts. A square image of at least 300 × 300 pixels works best.', 'ar-net-logger' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row"><label for="arnl-color"><?php esc_html_e( 'Calendar color', 'ar-net-logger' ); ?></label></th>
 						<td><input type="text" id="arnl-color" name="color" class="arnl-color-picker" value="<?php echo esc_attr( $net['color'] ); ?>" data-default-color="#2271b1"></td>
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Online check-ins', 'ar-net-logger' ); ?></th>
 						<td>
-							<label><input type="checkbox" name="allow_checkins" value="1" <?php checked( $net['allow_checkins'] ); ?>> <?php esc_html_e( 'Allow stations to check in from the website', 'ar-net-logger' ); ?></label>
+							<label><input type="checkbox" name="allow_checkins" value="1" data-arnl-toggle="arnl-window-fields" <?php checked( $net['allow_checkins'] ); ?>> <?php esc_html_e( 'Allow stations to check in from the website', 'ar-net-logger' ); ?></label>
+							<div id="arnl-window-fields" class="arnl-subfields">
+								<p>
+									<label for="arnl-checkin-before"><?php esc_html_e( 'Check-in opens', 'ar-net-logger' ); ?></label>
+									<?php ARNL_Admin::select( 'checkin_before', arnl_checkin_window_options( 'before' ), (string) $net['checkin_before'], array( 'id' => 'arnl-checkin-before' ) ); ?>
+									<label for="arnl-checkin-after"><?php esc_html_e( 'and closes', 'ar-net-logger' ); ?></label>
+									<?php ARNL_Admin::select( 'checkin_after', arnl_checkin_window_options( 'after' ), (string) $net['checkin_after'], array( 'id' => 'arnl-checkin-after' ) ); ?>
+								</p>
+								<p class="description"><?php esc_html_e( 'Up to an hour before the start and after the end. While Net Control has the net open, check-ins stay open regardless.', 'ar-net-logger' ); ?></p>
+							</div>
 						</td>
 					</tr>
 					<tr>
@@ -392,7 +460,7 @@ class ARNL_Admin_Nets {
 		$id = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
 		check_admin_referer( 'arnl_save_net_' . $id );
 
-		$text = array( 'name', 'slug', 'net_type', 'mode', 'band', 'frequency', 'access_info', 'recurrence', 'start_time', 'end_time', 'start_date', 'end_date', 'ncs_callsign', 'ncs_name', 'color', 'status' );
+		$text = array( 'name', 'slug', 'net_type', 'mode', 'band', 'frequency', 'access_info', 'recurrence', 'start_time', 'end_time', 'start_date', 'end_date', 'ncs_callsign', 'ncs_name', 'color', 'status', 'system_name', 'system_url', 'ysf_room', 'xlx_reflector', 'dstar_reflector', 'wiresx_room', 'checkin_before', 'checkin_after' );
 		$data = array();
 		foreach ( $text as $field ) {
 			$data[ $field ] = isset( $_POST[ $field ] ) ? sanitize_text_field( wp_unslash( $_POST[ $field ] ) ) : '';
@@ -403,7 +471,10 @@ class ARNL_Admin_Nets {
 		foreach ( array( 'days_of_week', 'weeks_of_month', 'months' ) as $field ) {
 			$data[ $field ] = isset( $_POST[ $field ] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST[ $field ] ) ) : array();
 		}
-		$data['allow_checkins'] = empty( $_POST['allow_checkins'] ) ? 0 : 1;
+		foreach ( array( 'allow_checkins', 'linked_system', 'is_digital' ) as $field ) {
+			$data[ $field ] = empty( $_POST[ $field ] ) ? 0 : 1;
+		}
+		$data['logo_id'] = isset( $_POST['logo_id'] ) ? absint( $_POST['logo_id'] ) : 0;
 		foreach ( array( 'discord_mode', 'facebook_mode' ) as $field ) {
 			$data[ $field ] = isset( $_POST[ $field ] ) ? sanitize_key( wp_unslash( $_POST[ $field ] ) ) : 'default';
 		}

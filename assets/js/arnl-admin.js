@@ -60,6 +60,59 @@
 		$( '.arnl-color-picker' ).wpColorPicker();
 	}
 
+	// Net form: the linked repeater system only applies to repeater bands (2 m, 70 cm, ...).
+	var syncLinked = function () {
+		var $row = $( '.arnl-row-linked' );
+		var bands = String( $row.data( 'arnl-bands' ) || '' ).split( ',' );
+		$row.toggle( bands.indexOf( $( '#arnl-band' ).val() ) !== -1 );
+	};
+	if ( $( '.arnl-row-linked' ).length ) {
+		syncLinked();
+		$( '#arnl-band' ).on( 'change', syncLinked );
+	}
+
+	// Net form: choosing a digital voice mode marks the net as digital.
+	$( '#arnl-mode' ).on( 'change', function () {
+		var $box = $( '#arnl-is-digital' );
+		if ( [ 'dstar', 'ysf', 'dmr', 'p25' ].indexOf( $( this ).val() ) !== -1 && ! $box.prop( 'checked' ) ) {
+			$box.prop( 'checked', true ).trigger( 'change' );
+		}
+	} );
+
+	// Net form: logo from the media library.
+	var logoFrame;
+	$( '.arnl-logo-choose' ).on( 'click', function () {
+		var $button = $( this );
+		var $field = $button.closest( '.arnl-logo-field' );
+		if ( ! window.wp || ! window.wp.media ) {
+			return;
+		}
+		if ( ! logoFrame ) {
+			logoFrame = window.wp.media( {
+				title: $button.data( 'title' ),
+				button: { text: $button.data( 'button' ) },
+				library: { type: 'image' },
+				multiple: false,
+			} );
+			logoFrame.on( 'select', function () {
+				var image = logoFrame.state().get( 'selection' ).first().toJSON();
+				var size = image.sizes && ( image.sizes.thumbnail || image.sizes.medium ) ? ( image.sizes.thumbnail || image.sizes.medium ) : image;
+				$field.find( '#arnl-logo-id' ).val( image.id );
+				$field.find( '.arnl-logo-preview' ).empty().append(
+					$( '<img class="arnl-logo-preview-img" alt="">' ).attr( 'src', size.url )
+				);
+				$field.addClass( 'has-logo' );
+			} );
+		}
+		logoFrame.open();
+	} );
+	$( '.arnl-logo-remove' ).on( 'click', function () {
+		var $field = $( this ).closest( '.arnl-logo-field' );
+		$field.find( '#arnl-logo-id' ).val( '0' );
+		$field.find( '.arnl-logo-preview' ).empty();
+		$field.removeClass( 'has-logo' );
+	} );
+
 	// Net form: the script editor (visual or text tab).
 	function scriptEditor() {
 		var editor = window.tinymce && window.tinymce.get( 'arnl_preamble' );

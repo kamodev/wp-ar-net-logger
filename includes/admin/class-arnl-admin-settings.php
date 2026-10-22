@@ -77,11 +77,11 @@ class ARNL_Admin_Settings {
 							printf(
 								/* translators: 1: minutes-before input, 2: minutes-after input. */
 								esc_html__( 'Open %1$s minutes before the start until %2$s minutes after the scheduled end.', 'ar-net-logger' ),
-								'<input type="number" min="0" max="1440" class="small-text" name="' . esc_attr( $name ) . '[checkin_before]" value="' . (int) $s['checkin_before'] . '" aria-label="' . esc_attr__( 'Minutes before', 'ar-net-logger' ) . '">',
-								'<input type="number" min="0" max="1440" class="small-text" name="' . esc_attr( $name ) . '[checkin_after]" value="' . (int) $s['checkin_after'] . '" aria-label="' . esc_attr__( 'Minutes after', 'ar-net-logger' ) . '">'
+								'<input type="number" min="0" max="' . (int) ARNL_Settings::MAX_CHECKIN_WINDOW . '" class="small-text" name="' . esc_attr( $name ) . '[checkin_before]" value="' . (int) $s['checkin_before'] . '" aria-label="' . esc_attr__( 'Minutes before', 'ar-net-logger' ) . '">',
+								'<input type="number" min="0" max="' . (int) ARNL_Settings::MAX_CHECKIN_WINDOW . '" class="small-text" name="' . esc_attr( $name ) . '[checkin_after]" value="' . (int) $s['checkin_after'] . '" aria-label="' . esc_attr__( 'Minutes after', 'ar-net-logger' ) . '">'
 							);
 							?>
-							<p class="description"><?php esc_html_e( 'When the NCS clicks "Open Net", check-ins stay open until the net is closed, regardless of this window.', 'ar-net-logger' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Up to 60 minutes each way. This is the default; each net can set its own window (Nets → Edit → Online check-in). When the NCS clicks "Open Net", check-ins stay open until the net is closed, regardless of the window.', 'ar-net-logger' ); ?></p>
 						</td>
 					</tr>
 					<tr>
@@ -229,6 +229,7 @@ class ARNL_Admin_Settings {
 						<td>
 							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[discord_include_name]" value="1" <?php checked( $s['discord_include_name'] ); ?>> <?php esc_html_e( 'Name', 'ar-net-logger' ); ?></label> &nbsp;
 							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[discord_include_location]" value="1" <?php checked( $s['discord_include_location'] ); ?>> <?php esc_html_e( 'Location', 'ar-net-logger' ); ?></label> &nbsp;
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[discord_include_announcements]" value="1" <?php checked( $s['discord_include_announcements'] ); ?>> <?php esc_html_e( 'Announcements', 'ar-net-logger' ); ?></label> &nbsp;
 							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[discord_include_comments]" value="1" <?php checked( $s['discord_include_comments'] ); ?>> <?php esc_html_e( 'Comments', 'ar-net-logger' ); ?></label>
 							<p class="description"><?php esc_html_e( 'Callsign, station type, traffic and relays are always included. Mentions such as @everyone are never triggered.', 'ar-net-logger' ); ?></p>
 						</td>
@@ -289,7 +290,7 @@ class ARNL_Admin_Settings {
 						<td>
 							<textarea id="arnl-facebook-template" name="<?php echo esc_attr( $name ); ?>[facebook_template]" rows="7" class="large-text"><?php echo esc_textarea( '' !== $s['facebook_template'] ? $s['facebook_template'] : ARNL_Facebook::default_template() ); ?></textarea>
 							<p class="description">
-								<?php esc_html_e( 'Placeholders: {net} {date} {time} {end_time} {timezone} {frequency} {ncs} {topic} {type} {description} {url}. Lines whose placeholders are all empty are left out.', 'ar-net-logger' ); ?>
+								<?php esc_html_e( 'Placeholders: {net} {date} {time} {end_time} {timezone} {frequency} {digital} {system} {system_url} {ncs} {topic} {type} {description} {url}. Lines whose placeholders are all empty are left out.', 'ar-net-logger' ); ?>
 							</p>
 						</td>
 					</tr>
