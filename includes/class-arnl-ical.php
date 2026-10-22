@@ -205,6 +205,14 @@ class ARNL_ICal {
 			/* translators: %s: frequency / mode. */
 			$parts[] = sprintf( __( 'Frequency: %s', 'ar-net-logger' ), $freq );
 		}
+		foreach ( arnl_digital_rooms( $o->net ) as $room ) {
+			$parts[] = $room[0] . ': ' . $room[1];
+		}
+		$system = arnl_linked_system( $o->net );
+		if ( $system ) {
+			/* translators: 1: system name, 2: website (may be empty). */
+			$parts[] = trim( sprintf( __( 'Linked repeater system: %1$s %2$s', 'ar-net-logger' ), $system['name'], '' !== $system['url'] && $system['url'] !== $system['name'] ? $system['url'] : '' ) );
+		}
 		if ( '' !== $o->ncs_callsign ) {
 			$parts[] = ARNL_Calendar::ncs_label( $o );
 		}

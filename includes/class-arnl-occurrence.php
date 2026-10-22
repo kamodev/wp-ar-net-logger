@@ -241,8 +241,7 @@ class ARNL_Occurrence {
 	 * @return DateTimeImmutable[] Open and close moments.
 	 */
 	public function checkin_window() {
-		$before = (int) ARNL_Settings::get( 'checkin_before' );
-		$after  = (int) ARNL_Settings::get( 'checkin_after' );
+		list( $before, $after ) = arnl_checkin_minutes( $this->net );
 		return array(
 			$this->start()->modify( '-' . $before . ' minutes' ),
 			$this->end()->modify( '+' . $after . ' minutes' ),

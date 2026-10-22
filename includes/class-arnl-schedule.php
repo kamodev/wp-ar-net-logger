@@ -234,7 +234,8 @@ class ARNL_Schedule {
 				'include_cancelled' => false,
 			)
 		);
-		$after = (int) ARNL_Settings::get( 'checkin_after' );
+		$net   = ARNL_Nets::get( $net_id );
+		$after = $net ? arnl_checkin_minutes( $net )[1] : 0;
 		foreach ( $list as $occurrence ) {
 			if ( 'completed' === $occurrence->status ) {
 				continue;

@@ -530,3 +530,98 @@
 		padding: 0;
 	}
 }
+
+/* Net form: fields revealed by a checkbox, digital rooms, logo picker. */
+.arnl-subfields {
+	margin-top: 0.5em;
+	padding-left: 1.75em;
+}
+
+.arnl-subfields p {
+	margin: 0.4em 0;
+}
+
+.arnl-digital-grid:not([hidden]) {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	gap: 0 1em;
+}
+
+.arnl-digital-grid label {
+	display: block;
+}
+
+.arnl-digital-grid input {
+	width: 100%;
+}
+
+.arnl-logo-field {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5em 1em;
+}
+
+.arnl-logo-preview:empty {
+	display: none;
+}
+
+.arnl-logo-preview-img {
+	display: block;
+	width: 80px;
+	height: 80px;
+	object-fit: contain;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.arnl-logo-field .arnl-logo-change,
+.arnl-logo-field.has-logo .arnl-logo-add,
+.arnl-logo-field:not(.has-logo) .arnl-logo-remove {
+	display: none;
+}
+
+.arnl-logo-field.has-logo .arnl-logo-change {
+	display: inline;
+}
+
+.arnl-logo-remove {
+	color: #b32d2e;
+}
+
+/* Net Log header: logo beside the session details. */
+.arnl-log-when {
+	display: flex;
+	align-items: flex-start;
+	gap: 1em;
+}
+
+.arnl-log-when .arnl-net-logo {
+	flex: none;
+	width: 64px;
+	height: 64px;
+	object-fit: contain;
+}
+
+.arnl-net-extra {
+	margin-top: 0.15em;
+}
+
+.arnl-announce-badge {
+	display: inline-block;
+	white-space: nowrap;
+	margin: 0.2em 0;
+	padding: 0.1em 0.5em;
+	border-radius: 3px;
+	background: #fcf9e8;
+	border: 1px solid #dba617;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.arnl-announce-text {
+	display: block;
+	margin-top: 0.2em;
+	white-space: pre-line;
+}

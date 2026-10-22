@@ -15,6 +15,11 @@ class ARNL_Settings {
 	const OPTION = 'arnl_settings';
 
 	/**
+	 * Longest online check-in window, in minutes, before the start or after the end of a net.
+	 */
+	const MAX_CHECKIN_WINDOW = 60;
+
+	/**
 	 * Request-level cache.
 	 *
 	 * @var array|null
@@ -28,33 +33,34 @@ class ARNL_Settings {
 	 */
 	public static function defaults() {
 		return array(
-			'public_checkins'          => 1,
-			'require_login'            => 0,
-			'auto_approve'             => 1,
-			'checkin_before'           => 15,
-			'checkin_after'            => 15,
-			'public_log'               => 'callsign_name',
-			'validate_callsign'        => 1,
-			'online_lookup'            => 1,
-			'rate_limit'               => 30,
-			'ics_enabled'              => 1,
-			'ics_past_days'            => 30,
-			'ics_future_days'          => 180,
-			'event_page_id'            => 0,
-			'delete_data'              => 0,
+			'public_checkins'               => 1,
+			'require_login'                 => 0,
+			'auto_approve'                  => 1,
+			'checkin_before'                => 15,
+			'checkin_after'                 => 15,
+			'public_log'                    => 'callsign_name',
+			'validate_callsign'             => 1,
+			'online_lookup'                 => 1,
+			'rate_limit'                    => 30,
+			'ics_enabled'                   => 1,
+			'ics_past_days'                 => 30,
+			'ics_future_days'               => 180,
+			'event_page_id'                 => 0,
+			'delete_data'                   => 0,
 			// Discord.
-			'discord_webhook'          => '',
-			'discord_username'         => '',
-			'discord_checkins'         => 1,
-			'discord_open_close'       => 1,
-			'discord_include_name'     => 1,
-			'discord_include_location' => 1,
-			'discord_include_comments' => 0,
+			'discord_webhook'               => '',
+			'discord_username'              => '',
+			'discord_checkins'              => 1,
+			'discord_open_close'            => 1,
+			'discord_include_name'          => 1,
+			'discord_include_location'      => 1,
+			'discord_include_comments'      => 0,
+			'discord_include_announcements' => 1,
 			// Facebook Page.
-			'facebook_page_id'         => '',
-			'facebook_token'           => '',
-			'facebook_lead_hours'      => 24,
-			'facebook_template'        => '',
+			'facebook_page_id'              => '',
+			'facebook_token'                => '',
+			'facebook_lead_hours'           => 24,
+			'facebook_template'             => '',
 		);
 	}
 
@@ -113,13 +119,13 @@ class ARNL_Settings {
 		$current  = self::all();
 		$out      = array();
 
-		foreach ( array( 'public_checkins', 'require_login', 'auto_approve', 'validate_callsign', 'online_lookup', 'ics_enabled', 'delete_data', 'discord_checkins', 'discord_open_close', 'discord_include_name', 'discord_include_location', 'discord_include_comments' ) as $key ) {
+		foreach ( array( 'public_checkins', 'require_login', 'auto_approve', 'validate_callsign', 'online_lookup', 'ics_enabled', 'delete_data', 'discord_checkins', 'discord_open_close', 'discord_include_name', 'discord_include_location', 'discord_include_comments', 'discord_include_announcements' ) as $key ) {
 			$out[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
 		}
 
 		$ranges = array(
-			'checkin_before'      => array( 0, 1440 ),
-			'checkin_after'       => array( 0, 1440 ),
+			'checkin_before'      => array( 0, self::MAX_CHECKIN_WINDOW ),
+			'checkin_after'       => array( 0, self::MAX_CHECKIN_WINDOW ),
 			'rate_limit'          => array( 0, 3600 ),
 			'ics_past_days'       => array( 0, 3650 ),
 			'ics_future_days'     => array( 1, 730 ),

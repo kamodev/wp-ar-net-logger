@@ -49,7 +49,7 @@ class ARNL_Facebook {
 	 * @return string
 	 */
 	public static function default_template() {
-		return __( "📻 {net}\n🗓 {date}, {time} – {end_time} {timezone}\n📡 {frequency}\n🎙 Net Control: {ncs}\n{topic}\nAll licensed amateurs are welcome to check in. Details and online check-in: {url}", 'ar-net-logger' );
+		return __( "📻 {net}\n🗓 {date}, {time} – {end_time} {timezone}\n📡 {frequency}\n💻 {digital}\n🔗 {system} {system_url}\n🎙 Net Control: {ncs}\n{topic}\nAll licensed amateurs are welcome to check in. Details and online check-in: {url}", 'ar-net-logger' );
 	}
 
 	/**
@@ -109,7 +109,8 @@ class ARNL_Facebook {
 	 * @return array
 	 */
 	public static function values( ARNL_Occurrence $o ) {
-		$url = arnl_event_url( $o );
+		$url    = arnl_event_url( $o );
+		$system = arnl_linked_system( $o->net );
 		return array(
 			'net'         => $o->title(),
 			'date'        => arnl_format_date( $o->date, 'l, ' . get_option( 'date_format' ) ),
@@ -117,6 +118,9 @@ class ARNL_Facebook {
 			'end_time'    => arnl_format_time( $o->end_time ),
 			'timezone'    => arnl_timezone_label( $o->start()->getTimestamp() ),
 			'frequency'   => arnl_describe_frequency( $o->net, $o->frequency ),
+			'digital'     => arnl_describe_digital( $o->net ),
+			'system'      => $system ? $system['name'] : '',
+			'system_url'  => $system ? $system['url'] : '',
 			'ncs'         => '' !== $o->ncs_callsign ? trim( $o->ncs_callsign . ( '' !== $o->ncs_name ? ' (' . $o->ncs_name . ')' : '' ) ) : '',
 			/* translators: %s: topic. */
 			'topic'       => '' !== $o->topic ? sprintf( __( 'Topic: %s', 'ar-net-logger' ), $o->topic ) : '',

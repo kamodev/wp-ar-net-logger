@@ -595,14 +595,17 @@ class ARNL_Shortcodes {
 		$heading = in_array( $heading, array( 'h2', 'h3', 'h4' ), true ) ? $heading : 'h3';
 		ob_start();
 		?>
-		<section class="arnl-net arnl-type-<?php echo esc_attr( $net['net_type'] ); ?>" style="--arnl-color: <?php echo esc_attr( $net['color'] ); ?>">
-			<<?php echo esc_html( $heading ); ?> class="arnl-net-name">
-				<?php if ( '' !== $net_url ) : ?>
-					<a href="<?php echo esc_url( $net_url ); ?>"><?php echo esc_html( $net['name'] ); ?></a>
-				<?php else : ?>
-					<?php echo esc_html( $net['name'] ); ?>
-				<?php endif; ?>
-			</<?php echo esc_html( $heading ); ?>>
+		<section class="arnl-net arnl-type-<?php echo esc_attr( $net['net_type'] ); ?><?php echo $net['logo_id'] ? ' has-logo' : ''; ?>" style="--arnl-color: <?php echo esc_attr( $net['color'] ); ?>">
+			<div class="arnl-net-head">
+				<?php echo arnl_net_logo( $net, 'h2' === $heading ? 'medium' : 'thumbnail' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_get_attachment_image(). ?>
+				<<?php echo esc_html( $heading ); ?> class="arnl-net-name">
+					<?php if ( '' !== $net_url ) : ?>
+						<a href="<?php echo esc_url( $net_url ); ?>"><?php echo esc_html( $net['name'] ); ?></a>
+					<?php else : ?>
+						<?php echo esc_html( $net['name'] ); ?>
+					<?php endif; ?>
+				</<?php echo esc_html( $heading ); ?>>
+			</div>
 			<dl class="arnl-details">
 				<dt><?php esc_html_e( 'When', 'ar-net-logger' ); ?></dt>
 				<dd><?php echo esc_html( arnl_describe_schedule( $net ) . ' ' . arnl_timezone_label() ); ?></dd>
@@ -610,6 +613,7 @@ class ARNL_Shortcodes {
 					<dt><?php esc_html_e( 'Frequency', 'ar-net-logger' ); ?></dt>
 					<dd><?php echo esc_html( $freq ); ?></dd>
 				<?php endif; ?>
+				<?php self::net_access_details( $net ); ?>
 				<dt><?php esc_html_e( 'Type', 'ar-net-logger' ); ?></dt>
 				<dd><?php echo esc_html( arnl_label( arnl_net_types(), $net['net_type'] ) ); ?></dd>
 				<?php if ( self::yes( $atts['show_ncs'] ) && '' !== $net['ncs_callsign'] ) : ?>
@@ -647,6 +651,32 @@ class ARNL_Shortcodes {
 		</section>
 		<?php
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Digital rooms and linked repeater system of a net, as <dt>/<dd> pairs.
+	 *
+	 * @param array $net Net.
+	 */
+	protected static function net_access_details( array $net ) {
+		$rooms  = arnl_digital_rooms( $net );
+		$system = arnl_linked_system( $net );
+		if ( $rooms ) {
+			echo '<dt>' . esc_html__( 'Digital', 'ar-net-logger' ) . '</dt><dd><ul class="arnl-rooms">';
+			foreach ( $rooms as $key => $room ) {
+				echo '<li class="arnl-room arnl-room--' . esc_attr( $key ) . '"><span class="arnl-room-label">' . esc_html( $room[0] ) . '</span> <span class="arnl-room-value">' . esc_html( $room[1] ) . '</span></li>';
+			}
+			echo '</ul></dd>';
+		}
+		if ( $system ) {
+			echo '<dt>' . esc_html__( 'Linked repeater system', 'ar-net-logger' ) . '</dt><dd>';
+			if ( '' !== $system['url'] ) {
+				echo '<a href="' . esc_url( $system['url'] ) . '" rel="noopener" target="_blank">' . esc_html( $system['name'] ) . '</a>';
+			} else {
+				echo esc_html( $system['name'] );
+			}
+			echo '</dd>';
+		}
 	}
 
 	/**
@@ -848,7 +878,9 @@ class ARNL_Shortcodes {
 			<?php if ( '' !== $back ) : ?>
 				<p class="arnl-back"><a href="<?php echo esc_url( $back ); ?>"><?php esc_html_e( '&larr; Back to the calendar', 'ar-net-logger' ); ?></a></p>
 			<?php endif; ?>
-			<header class="arnl-event-header">
+			<header class="arnl-event-header<?php echo $net['logo_id'] ? ' has-logo' : ''; ?>">
+				<?php echo arnl_net_logo( $net, 'medium' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_get_attachment_image(). ?>
+				<div class="arnl-event-heading">
 				<h2 class="arnl-event-title">
 					<?php echo esc_html( $o->title() ); ?>
 					<?php if ( $badge ) : ?>
@@ -860,6 +892,7 @@ class ARNL_Shortcodes {
 						<?php echo esc_html( arnl_format_date( $o->date, 'l, ' . get_option( 'date_format' ) ) . ' · ' . ARNL_Calendar::time_range( $o ) ); ?>
 					</time>
 				</p>
+				</div>
 			</header>
 			<dl class="arnl-details">
 				<?php if ( '' !== $o->topic ) : ?>
@@ -880,6 +913,7 @@ class ARNL_Shortcodes {
 					<dt><?php esc_html_e( 'Frequency', 'ar-net-logger' ); ?></dt>
 					<dd><?php echo esc_html( $freq ); ?></dd>
 				<?php endif; ?>
+				<?php self::net_access_details( $net ); ?>
 				<dt><?php esc_html_e( 'Net type', 'ar-net-logger' ); ?></dt>
 				<dd><?php echo esc_html( arnl_label( arnl_net_types(), $net['net_type'] ) ); ?></dd>
 				<?php if ( $o->is_rescheduled() ) : ?>
