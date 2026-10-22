@@ -211,6 +211,7 @@ class ARNL_Install {
   xlx_reflector varchar(100) NOT NULL DEFAULT '',
   dstar_reflector varchar(100) NOT NULL DEFAULT '',
   wiresx_room varchar(100) NOT NULL DEFAULT '',
+  dmr_talkgroup varchar(100) NOT NULL DEFAULT '',
   linked_system tinyint(1) NOT NULL DEFAULT 0,
   system_name varchar(100) NOT NULL DEFAULT '',
   system_url varchar(255) NOT NULL DEFAULT '',

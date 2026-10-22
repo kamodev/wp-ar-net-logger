@@ -19,7 +19,7 @@
 defined( 'ABSPATH' ) || exit;
 
 define( 'ARNL_VERSION', '1.2.3' );
-define( 'ARNL_DB_VERSION', '5' );
+define( 'ARNL_DB_VERSION', '6' );
 define( 'ARNL_FILE', __FILE__ );
 define( 'ARNL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ARNL_URL', plugin_dir_url( __FILE__ ) );

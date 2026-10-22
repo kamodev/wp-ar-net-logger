@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-22T05:25:02+00:00\n"
+"POT-Creation-Date: 2026-10-22T06:35:26+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: ar-net-logger\n"
@@ -154,7 +154,7 @@ msgstr ""
 #: includes/admin/class-arnl-admin-log.php:373
 #: includes/admin/class-arnl-admin-log.php:674
 #: includes/admin/class-arnl-admin-log.php:891
-#: includes/admin/class-arnl-admin-nets.php:304
+#: includes/admin/class-arnl-admin-nets.php:308
 #: includes/admin/class-arnl-admin-schedule.php:491
 #: includes/class-arnl-checkin-handler.php:278
 msgid "Callsign"
@@ -164,7 +164,7 @@ msgstr ""
 #: includes/admin/class-arnl-admin-log.php:374
 #: includes/admin/class-arnl-admin-log.php:676
 #: includes/admin/class-arnl-admin-log.php:892
-#: includes/admin/class-arnl-admin-nets.php:306
+#: includes/admin/class-arnl-admin-nets.php:310
 #: includes/admin/class-arnl-admin-schedule.php:493
 #: includes/class-arnl-checkin-handler.php:282
 #: includes/class-arnl-discord.php:71
@@ -190,7 +190,7 @@ msgstr ""
 
 #: includes/admin/class-arnl-admin-log.php:263
 #: includes/admin/class-arnl-admin-log.php:904
-#: includes/admin/class-arnl-admin-nets.php:494
+#: includes/admin/class-arnl-admin-nets.php:498
 #: includes/admin/class-arnl-admin-schedule.php:226
 #: includes/admin/class-arnl-admin-schedule.php:258
 #: includes/admin/class-arnl-admin-schedule.php:509
@@ -296,7 +296,7 @@ msgstr ""
 
 #: includes/admin/class-arnl-admin-log.php:350
 #: includes/admin/class-arnl-admin-schedule.php:259
-#: includes/functions.php:857
+#: includes/functions.php:858
 msgid "Check-ins"
 msgstr ""
 
@@ -306,7 +306,7 @@ msgstr ""
 
 #: includes/admin/class-arnl-admin-log.php:372
 #: includes/admin/class-arnl-admin-log.php:890
-#: includes/admin/class-arnl-admin-nets.php:273
+#: includes/admin/class-arnl-admin-nets.php:277
 #: includes/admin/class-arnl-admin-schedule.php:254
 #: includes/admin/class-arnl-admin-schedule.php:475
 msgid "Time"
@@ -445,7 +445,7 @@ msgstr ""
 
 #: includes/admin/class-arnl-admin-log.php:531
 #: includes/admin/class-arnl-admin-log.php:538
-#: includes/admin/class-arnl-admin-nets.php:311
+#: includes/admin/class-arnl-admin-nets.php:315
 msgid "Net script"
 msgstr ""
 
@@ -495,7 +495,7 @@ msgid "Net Control Station"
 msgstr ""
 
 #: includes/admin/class-arnl-admin-log.php:675
-#: includes/admin/class-arnl-admin-nets.php:305
+#: includes/admin/class-arnl-admin-nets.php:309
 #: includes/admin/class-arnl-admin-schedule.php:492
 msgid "NCS name"
 msgstr ""
@@ -505,7 +505,7 @@ msgstr ""
 #: includes/admin/class-arnl-admin-schedule.php:256
 #: includes/admin/class-arnl-admin-schedule.php:485
 #: includes/class-arnl-shortcodes.php:899
-#: includes/functions.php:748
+#: includes/functions.php:749
 msgid "Topic"
 msgstr ""
 
@@ -572,7 +572,7 @@ msgstr ""
 #: includes/admin/class-arnl-admin-log.php:885
 #: includes/admin/class-arnl-admin-schedule.php:253
 #: includes/admin/class-arnl-admin-schedule.php:471
-#: includes/functions.php:740
+#: includes/functions.php:741
 msgid "Date"
 msgstr ""
 
@@ -596,13 +596,13 @@ msgstr ""
 
 #: includes/admin/class-arnl-admin-nets.php:60
 #: includes/admin/class-arnl-admin-nets.php:87
-#: includes/admin/class-arnl-admin-nets.php:522
-#: includes/admin/class-arnl-admin-nets.php:650
+#: includes/admin/class-arnl-admin-nets.php:526
+#: includes/admin/class-arnl-admin-nets.php:654
 msgid "You are not allowed to manage nets."
 msgstr ""
 
 #: includes/admin/class-arnl-admin-nets.php:97
-#: includes/class-arnl-nets.php:292
+#: includes/class-arnl-nets.php:293
 #: includes/class-arnl-shortcodes.php:705
 msgid "Net not found."
 msgstr ""
@@ -646,7 +646,7 @@ msgid "Net details"
 msgstr ""
 
 #: includes/admin/class-arnl-admin-nets.php:164
-#: includes/functions.php:739
+#: includes/functions.php:740
 msgid "Net name"
 msgstr ""
 
@@ -664,7 +664,7 @@ msgstr ""
 
 #: includes/admin/class-arnl-admin-nets.php:175
 #: includes/class-arnl-shortcodes.php:917
-#: includes/functions.php:749
+#: includes/functions.php:750
 msgid "Net type"
 msgstr ""
 
@@ -706,7 +706,7 @@ msgstr ""
 
 #: includes/admin/class-arnl-admin-nets.php:199
 #: includes/class-arnl-shortcodes.php:672
-#: includes/functions.php:746
+#: includes/functions.php:747
 msgid "Linked repeater system"
 msgstr ""
 
@@ -774,325 +774,334 @@ msgstr ""
 msgid "e.g. XLX307 module D"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:240
+#: includes/admin/class-arnl-admin-nets.php:237
+#: includes/functions.php:551
+msgid "DMR talkgroup"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:238
+msgid "e.g. BrandMeister TG 31088, TS2"
+msgstr ""
+
+#: includes/admin/class-arnl-admin-nets.php:244
 msgid "Description"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:243
+#: includes/admin/class-arnl-admin-nets.php:247
 msgid "Shown publicly with the net and its sessions. Basic HTML allowed."
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:248
+#: includes/admin/class-arnl-admin-nets.php:252
 #: includes/admin/class-arnl-admin.php:50
 #: includes/admin/class-arnl-nets-list-table.php:92
 msgid "Schedule"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:251
+#: includes/admin/class-arnl-admin-nets.php:255
 msgid "Repeats"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:255
+#: includes/admin/class-arnl-admin-nets.php:259
 msgid "Day(s) of the week"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:259
+#: includes/admin/class-arnl-admin-nets.php:263
 msgid "Week(s) of the month"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:262
+#: includes/admin/class-arnl-admin-nets.php:266
 msgid "For example 1st and 3rd Tuesday, or Last Saturday of the month."
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:266
+#: includes/admin/class-arnl-admin-nets.php:270
 msgid "Month(s)"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:269
+#: includes/admin/class-arnl-admin-nets.php:273
 msgid "Untick months when the net does not meet, e.g. a summer-only net or a winter break."
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:276
+#: includes/admin/class-arnl-admin-nets.php:280
 #: includes/admin/class-arnl-admin-schedule.php:224
 #: includes/admin/class-arnl-admin-schedule.php:478
 msgid "to"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:277
+#: includes/admin/class-arnl-admin-nets.php:281
 #: includes/admin/class-arnl-admin-schedule.php:479
-#: includes/functions.php:742
+#: includes/functions.php:743
 msgid "End time"
 msgstr ""
 
 #. translators: %s: timezone name.
-#: includes/admin/class-arnl-admin-nets.php:282
+#: includes/admin/class-arnl-admin-nets.php:286
 #, php-format
 msgid "Local time (%s), from Settings → General."
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:288
+#: includes/admin/class-arnl-admin-nets.php:292
 msgid "Runs from"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:291
+#: includes/admin/class-arnl-admin-nets.php:295
 msgid "until"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:292
+#: includes/admin/class-arnl-admin-nets.php:296
 msgid "End date"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:294
+#: includes/admin/class-arnl-admin-nets.php:298
 msgid "Both optional. \"Every other week\" counts from the start date; a one-time net uses the start date."
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:299
+#: includes/admin/class-arnl-admin-nets.php:303
 #: includes/admin/class-arnl-admin-schedule.php:257
 #: includes/class-arnl-shortcodes.php:620
 msgid "Net Control"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:302
+#: includes/admin/class-arnl-admin-nets.php:306
 msgid "Default Net Control Station"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:307
+#: includes/admin/class-arnl-admin-nets.php:311
 msgid "Can be changed for each session on the schedule."
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:313
+#: includes/admin/class-arnl-admin-nets.php:317
 msgid "The preamble and script Net Control reads on the air. It is shown, formatted and read-only, on the Net Log of every session."
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:325
+#: includes/admin/class-arnl-admin-nets.php:329
 msgid "Paragraph=p;Heading=h3;Subheading=h4;Preformatted=pre"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:333
+#: includes/admin/class-arnl-admin-nets.php:337
 msgid "Insert a placeholder, filled in for each session:"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:339
+#: includes/admin/class-arnl-admin-nets.php:343
 msgid "Replace the current script with the sample directed-net script?"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:339
+#: includes/admin/class-arnl-admin-nets.php:343
 msgid "Insert sample script"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:353
+#: includes/admin/class-arnl-admin-nets.php:357
 #: includes/admin/class-arnl-admin-settings.php:231
 msgid "Discord"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:356
+#: includes/admin/class-arnl-admin-nets.php:360
 msgid "Post to Discord"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:358
+#: includes/admin/class-arnl-admin-nets.php:362
 msgid "Post this net to a Discord channel"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:361
+#: includes/admin/class-arnl-admin-nets.php:365
 msgid "Webhook URL"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:362
-#: includes/admin/class-arnl-admin-nets.php:419
+#: includes/admin/class-arnl-admin-nets.php:366
+#: includes/admin/class-arnl-admin-nets.php:423
 msgid "Saved – leave blank to keep it"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:364
+#: includes/admin/class-arnl-admin-nets.php:368
 msgid "Remove the saved webhook"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:369
+#: includes/admin/class-arnl-admin-nets.php:373
 msgid "Or post to the same channel as"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:370
-#: includes/admin/class-arnl-admin-nets.php:427
+#: includes/admin/class-arnl-admin-nets.php:374
+#: includes/admin/class-arnl-admin-nets.php:431
 msgid "— another net —"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:373
+#: includes/admin/class-arnl-admin-nets.php:377
 msgid "In Discord: Server Settings → Integrations → Webhooks → New Webhook, choose the channel, then Copy Webhook URL. The URL is a password: it is not shown again after saving."
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:375
+#: includes/admin/class-arnl-admin-nets.php:379
 msgid "Post"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:381
+#: includes/admin/class-arnl-admin-nets.php:385
 msgid "Include in check-in posts"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:385
+#: includes/admin/class-arnl-admin-nets.php:389
 msgid "Callsign, station type, traffic and relays are always included. Mentions such as @everyone are never triggered."
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:388
+#: includes/admin/class-arnl-admin-nets.php:392
 msgid "Post as"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:389
+#: includes/admin/class-arnl-admin-nets.php:393
 msgid "The webhook's own name"
 msgstr ""
 
 #. translators: 1: date and time, 2: error message.
-#: includes/admin/class-arnl-admin-nets.php:395
-#: includes/admin/class-arnl-admin-nets.php:446
+#: includes/admin/class-arnl-admin-nets.php:399
+#: includes/admin/class-arnl-admin-nets.php:450
 #, php-format
 msgid "Last error (%1$s): %2$s"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:399
+#: includes/admin/class-arnl-admin-nets.php:403
 msgid "Save and send a test message"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:405
+#: includes/admin/class-arnl-admin-nets.php:409
 #: includes/admin/class-arnl-admin-settings.php:232
 msgid "Facebook Page"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:408
+#: includes/admin/class-arnl-admin-nets.php:412
 #: includes/admin/class-arnl-admin-schedule.php:93
 msgid "Post to Facebook"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:410
+#: includes/admin/class-arnl-admin-nets.php:414
 msgid "Announce this net's sessions on a Facebook Page"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:412
+#: includes/admin/class-arnl-admin-nets.php:416
 msgid "Sessions are posted on the Page. Facebook does not allow apps to create Page or Group events, or to post in Groups, so the Net Log of each session shows ready-to-paste event details for creating those by hand."
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:414
+#: includes/admin/class-arnl-admin-nets.php:418
 msgid "Page ID"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:418
+#: includes/admin/class-arnl-admin-nets.php:422
 msgid "Page access token"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:421
+#: includes/admin/class-arnl-admin-nets.php:425
 msgid "Remove the saved token"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:426
+#: includes/admin/class-arnl-admin-nets.php:430
 msgid "Or post to the same Page as"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:430
+#: includes/admin/class-arnl-admin-nets.php:434
 msgid "A Page access token with the pages_manage_posts permission (see the plugin README for the steps). It is not shown again after saving."
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:432
+#: includes/admin/class-arnl-admin-nets.php:436
 msgid "Announce"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:434
+#: includes/admin/class-arnl-admin-nets.php:438
 msgid "hours before each session"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:435
+#: includes/admin/class-arnl-admin-nets.php:439
 msgid "(0 = only when you click \"Post to Facebook\" on the schedule; checked hourly)"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:438
+#: includes/admin/class-arnl-admin-nets.php:442
 msgid "Post text"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:440
+#: includes/admin/class-arnl-admin-nets.php:444
 msgid "Placeholders: {net} {date} {time} {end_time} {timezone} {frequency} {digital} {system} {system_url} {ncs} {topic} {type} {description} {url}. Lines whose placeholders are all empty are left out. A cancelled session's post is marked CANCELLED."
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:450
+#: includes/admin/class-arnl-admin-nets.php:454
 msgid "Save and test the connection"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:456
+#: includes/admin/class-arnl-admin-nets.php:460
 msgid "Display & check-ins"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:459
+#: includes/admin/class-arnl-admin-nets.php:463
 msgid "Logo"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:465
+#: includes/admin/class-arnl-admin-nets.php:469
 msgid "Net logo"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:465
+#: includes/admin/class-arnl-admin-nets.php:469
 msgid "Use this logo"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:466
+#: includes/admin/class-arnl-admin-nets.php:470
 msgid "Choose logo"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:467
+#: includes/admin/class-arnl-admin-nets.php:471
 msgid "Change logo"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:469
+#: includes/admin/class-arnl-admin-nets.php:473
 msgid "Remove logo"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:471
+#: includes/admin/class-arnl-admin-nets.php:475
 msgid "From the Media Library. Shown on the net and session pages, the nets directory, the Net Log and in Discord posts. A square image of at least 300 × 300 pixels works best."
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:475
+#: includes/admin/class-arnl-admin-nets.php:479
 msgid "Calendar color"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:479
+#: includes/admin/class-arnl-admin-nets.php:483
 #: includes/admin/class-arnl-admin-settings.php:53
 msgid "Online check-ins"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:481
+#: includes/admin/class-arnl-admin-nets.php:485
 msgid "Allow stations to check in from the website"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:484
+#: includes/admin/class-arnl-admin-nets.php:488
 msgid "Check-in opens"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:486
+#: includes/admin/class-arnl-admin-nets.php:490
 msgid "and closes"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:489
+#: includes/admin/class-arnl-admin-nets.php:493
 msgid "Up to an hour before the start and after the end. While Net Control has the net open, check-ins stay open regardless."
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:500
+#: includes/admin/class-arnl-admin-nets.php:504
 msgid "Active (shown on the calendar)"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:501
+#: includes/admin/class-arnl-admin-nets.php:505
 msgid "Inactive (hidden, schedule paused)"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:511
+#: includes/admin/class-arnl-admin-nets.php:515
 msgid "Create Net"
 msgstr ""
 
-#: includes/admin/class-arnl-admin-nets.php:511
+#: includes/admin/class-arnl-admin-nets.php:515
 msgid "Save Net"
 msgstr ""
 
 #. translators: %s: error message.
-#: includes/admin/class-arnl-admin-nets.php:606
+#: includes/admin/class-arnl-admin-nets.php:610
 #, php-format
 msgid "The net was saved, but the Discord test failed: %s"
 msgstr ""
 
 #. translators: %s: error message.
-#: includes/admin/class-arnl-admin-nets.php:615
+#: includes/admin/class-arnl-admin-nets.php:619
 #, php-format
 msgid "The net was saved, but the Facebook test failed: %s"
 msgstr ""
@@ -2193,52 +2202,52 @@ msgstr ""
 msgid "Details and online check-in: %s"
 msgstr ""
 
-#: includes/class-arnl-install.php:306
+#: includes/class-arnl-install.php:307
 msgid "Net Control Operator"
 msgstr ""
 
-#: includes/class-arnl-nets.php:274
-#: includes/class-arnl-nets.php:301
+#: includes/class-arnl-nets.php:275
+#: includes/class-arnl-nets.php:302
 msgid "The net could not be saved."
 msgstr ""
 
-#: includes/class-arnl-nets.php:342
+#: includes/class-arnl-nets.php:343
 msgid "Please enter a net name."
 msgstr ""
 
-#: includes/class-arnl-nets.php:373
+#: includes/class-arnl-nets.php:374
 msgid "Choose at least one day of the week."
 msgstr ""
 
-#: includes/class-arnl-nets.php:376
+#: includes/class-arnl-nets.php:377
 msgid "Choose at least one week of the month (1st, 2nd, ..., Last)."
 msgstr ""
 
-#: includes/class-arnl-nets.php:379
+#: includes/class-arnl-nets.php:380
 msgid "A one-time net needs a date. Set the start date."
 msgstr ""
 
-#: includes/class-arnl-nets.php:386
+#: includes/class-arnl-nets.php:387
 msgid "The end date must be on or after the start date."
 msgstr ""
 
-#: includes/class-arnl-nets.php:393
+#: includes/class-arnl-nets.php:394
 msgid "Enter a Discord webhook URL (https://discord.com/api/webhooks/...) or leave it blank."
 msgstr ""
 
-#: includes/class-arnl-nets.php:396
+#: includes/class-arnl-nets.php:397
 msgid "Enter the Discord webhook URL for this net, or turn Discord off for it."
 msgstr ""
 
-#: includes/class-arnl-nets.php:402
+#: includes/class-arnl-nets.php:403
 msgid "Enter the Facebook Page ID and Page access token for this net, or turn Facebook off for it."
 msgstr ""
 
-#: includes/class-arnl-nets.php:416
+#: includes/class-arnl-nets.php:417
 msgid "Enter the repeater system website as a web address, for example https://example.org/"
 msgstr ""
 
-#: includes/class-arnl-nets.php:427
+#: includes/class-arnl-nets.php:428
 msgid "Please enter a valid start time."
 msgstr ""
 
@@ -2671,131 +2680,131 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: net name.
-#: includes/functions.php:624
+#: includes/functions.php:625
 #, php-format
 msgid "%s logo"
 msgstr ""
 
-#: includes/functions.php:736
+#: includes/functions.php:737
 msgid "Net Control callsign"
 msgstr ""
 
-#: includes/functions.php:737
+#: includes/functions.php:738
 msgid "Net Control name"
 msgstr ""
 
-#: includes/functions.php:738
+#: includes/functions.php:739
 msgid "Callsign and name"
 msgstr ""
 
-#: includes/functions.php:741
+#: includes/functions.php:742
 msgid "Start time"
 msgstr ""
 
-#: includes/functions.php:743
+#: includes/functions.php:744
 msgid "Time zone"
 msgstr ""
 
-#: includes/functions.php:744
+#: includes/functions.php:745
 msgid "Frequency / repeater"
 msgstr ""
 
-#: includes/functions.php:745
+#: includes/functions.php:746
 msgid "Digital rooms / reflectors"
 msgstr ""
 
-#: includes/functions.php:747
+#: includes/functions.php:748
 msgid "Repeater system website"
 msgstr ""
 
-#: includes/functions.php:750
+#: includes/functions.php:751
 msgid "Session web page"
 msgstr ""
 
-#: includes/functions.php:751
+#: includes/functions.php:752
 msgid "Site / club name"
 msgstr ""
 
-#: includes/functions.php:851
+#: includes/functions.php:852
 msgid "Opening"
 msgstr ""
 
-#: includes/functions.php:852
+#: includes/functions.php:853
 msgid "QST, QST, QST."
 msgstr ""
 
-#: includes/functions.php:852
+#: includes/functions.php:853
 msgid "This is {ncs_callsign}, my name is {ncs_name}, Net Control for the {net}."
 msgstr ""
 
-#: includes/functions.php:853
+#: includes/functions.php:854
 msgid "The net meets {date} at {time} {timezone} on {frequency}. This is a directed net: all transmissions go through Net Control. Please wait to be called, except for emergency or priority traffic."
 msgstr ""
 
-#: includes/functions.php:854
+#: includes/functions.php:855
 msgid "Emergency and priority traffic"
 msgstr ""
 
-#: includes/functions.php:855
+#: includes/functions.php:856
 msgid "Is there any emergency or priority traffic? Please call now."
 msgstr ""
 
-#: includes/functions.php:856
+#: includes/functions.php:857
 msgid "(Pause. Handle emergency or priority traffic before anything else.)"
 msgstr ""
 
-#: includes/functions.php:858
+#: includes/functions.php:859
 msgid "Net Control will now take check-ins. Please give your callsign phonetically, your name and location, and say if you are mobile or portable or have traffic for the net."
 msgstr ""
 
-#: includes/functions.php:859
+#: includes/functions.php:860
 msgid "Short-time and mobile stations, please call now."
 msgstr ""
 
-#: includes/functions.php:859
+#: includes/functions.php:860
 msgid "All other stations, please call now."
 msgstr ""
 
-#: includes/functions.php:859
+#: includes/functions.php:860
 msgid "Are there any relays for stations Net Control could not hear?"
 msgstr ""
 
-#: includes/functions.php:860
+#: includes/functions.php:861
 msgid "(Acknowledge each station by callsign, and acknowledge the website check-ins in the Net Log. Identify at least every 10 minutes.)"
 msgstr ""
 
-#: includes/functions.php:861
+#: includes/functions.php:862
 msgid "Topic, traffic and announcements"
 msgstr ""
 
-#: includes/functions.php:862
+#: includes/functions.php:863
 msgid "Topic for this session: {topic}"
 msgstr ""
 
-#: includes/functions.php:863
+#: includes/functions.php:864
 msgid "Stations with traffic for the net, please call now. Net Control will then go down the list for comments."
 msgstr ""
 
-#: includes/functions.php:864
+#: includes/functions.php:865
 msgid "Are there any announcements for the net? Please call now."
 msgstr ""
 
-#: includes/functions.php:865
+#: includes/functions.php:866
 msgid "(Read the announcements from the Net Log: stations marked with an announcement.)"
 msgstr ""
 
-#: includes/functions.php:866
+#: includes/functions.php:867
 msgid "Closing"
 msgstr ""
 
-#: includes/functions.php:867
+#: includes/functions.php:868
 msgid "Are there any late check-ins, comments or traffic before the net closes?"
 msgstr ""
 
-#: includes/functions.php:868
+#: includes/functions.php:869
 msgid "(Pause.)"
 msgstr ""
 
-#: includes/functions.php:869
+#: includes/functions.php:870
 msgid "Thank you to everyone who checked in. This is {ncs_callsign} closing the {net} and returning the frequency to normal amateur use. 73."
 msgstr ""

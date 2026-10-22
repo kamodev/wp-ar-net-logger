@@ -15,7 +15,7 @@ Schedule, publish and log Amateur Radio nets: recurring schedules, a public cale
 AR Net Logger helps radio clubs, ARES / RACES groups and net managers run their on-air nets from WordPress.
 
 * **Nets**: name, type (directed, traffic / NTS, ARES, SKYWARN, rag chew, ...), frequency, mode, band, repeater / access info, description, logo, calendar color.
-* **Digital and linked nets**: YSF room, Wires-X room, D-STAR reflector and XLX reflector for digital nets; the linked repeater system and its website for 2 m / 70 cm nets.
+* **Digital and linked nets**: YSF room, Wires-X room, D-STAR reflector, XLX reflector and DMR talkgroup for digital nets; the linked repeater system and its website for 2 m / 70 cm nets.
 * **Net script**: a formatted preamble / script for Net Control, written in the WordPress visual editor, with per-session placeholders ({ncs_callsign}, {frequency}, {topic}, ...) and a sample directed-net script.
 * **Schedules**: weekly, every other week, monthly by week of the month (1st–5th or last), one-time, or manual. Days of the week, months, start / end dates, start / end times.
 * **Session overrides**: change the date, time, topic, Net Control Station or frequency of any single session, cancel it, or add special sessions.
@@ -91,6 +91,7 @@ Untick "Require a valid amateur radio callsign format" in the settings.
 == Changelog ==
 
 = 1.2.3 =
+* DMR talkgroup for digital nets (e.g. "BrandMeister TG 31088, TS2"), next to the YSF, Wires-X, D-STAR and XLX fields: shown on the net and session pages, the Net Log, calendar exports, Discord, Facebook posts and the {digital} placeholder.
 * Discord and Facebook are now set up per net (Nets → Edit → Discord / Facebook Page): each net has its own Discord webhook, "post as" name, post types and included details, and its own Facebook Page ID, access token, announcement lead time and post text.
 * "Save and send a test message" / "Save and test the connection" on the net form; delivery errors are shown per net.
 * Other nets can reuse a Discord channel or Facebook Page ("Or post to the same … as") without the webhook or token being shown.

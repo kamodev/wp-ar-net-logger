@@ -233,6 +233,10 @@ class ARNL_Admin_Nets {
 									<label for="arnl-xlx-reflector"><?php esc_html_e( 'XLX reflector', 'ar-net-logger' ); ?></label>
 									<input type="text" id="arnl-xlx-reflector" name="xlx_reflector" value="<?php echo esc_attr( $net['xlx_reflector'] ); ?>" maxlength="100" placeholder="<?php esc_attr_e( 'e.g. XLX307 module D', 'ar-net-logger' ); ?>">
 								</p>
+								<p>
+									<label for="arnl-dmr-talkgroup"><?php esc_html_e( 'DMR talkgroup', 'ar-net-logger' ); ?></label>
+									<input type="text" id="arnl-dmr-talkgroup" name="dmr_talkgroup" value="<?php echo esc_attr( $net['dmr_talkgroup'] ); ?>" maxlength="100" placeholder="<?php esc_attr_e( 'e.g. BrandMeister TG 31088, TS2', 'ar-net-logger' ); ?>">
+								</p>
 							</div>
 						</td>
 					</tr>
@@ -524,7 +528,7 @@ class ARNL_Admin_Nets {
 		$id = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
 		check_admin_referer( 'arnl_save_net_' . $id );
 
-		$text = array( 'name', 'slug', 'net_type', 'mode', 'band', 'frequency', 'access_info', 'recurrence', 'start_time', 'end_time', 'start_date', 'end_date', 'ncs_callsign', 'ncs_name', 'color', 'status', 'system_name', 'system_url', 'ysf_room', 'xlx_reflector', 'dstar_reflector', 'wiresx_room', 'checkin_before', 'checkin_after' );
+		$text = array( 'name', 'slug', 'net_type', 'mode', 'band', 'frequency', 'access_info', 'recurrence', 'start_time', 'end_time', 'start_date', 'end_date', 'ncs_callsign', 'ncs_name', 'color', 'status', 'system_name', 'system_url', 'ysf_room', 'xlx_reflector', 'dstar_reflector', 'wiresx_room', 'dmr_talkgroup', 'checkin_before', 'checkin_after' );
 		$data = array();
 		foreach ( $text as $field ) {
 			$data[ $field ] = isset( $_POST[ $field ] ) ? sanitize_text_field( wp_unslash( $_POST[ $field ] ) ) : '';

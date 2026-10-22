@@ -548,6 +548,7 @@ function arnl_digital_rooms( array $net ) {
 		'wiresx_room'     => __( 'Wires-X room', 'ar-net-logger' ),
 		'dstar_reflector' => __( 'D-STAR reflector', 'ar-net-logger' ),
 		'xlx_reflector'   => __( 'XLX reflector', 'ar-net-logger' ),
+		'dmr_talkgroup'   => __( 'DMR talkgroup', 'ar-net-logger' ),
 	);
 	$rooms  = array();
 	foreach ( $fields as $key => $label ) {
