@@ -2,7 +2,7 @@
 /**
  * Net Log screen: what the Net Control Station uses while running a net.
  *
- * Shows the session, its preamble, a quick check-in form, and the running
+ * Shows the session, its net script, a quick check-in form, and the running
  * list of check-ins (from the air and from the website) with approve /
  * acknowledge / edit / delete actions, plus CSV export.
  *
@@ -24,6 +24,7 @@ class ARNL_Admin_Log {
 		add_action( 'admin_post_arnl_checkin_action', array( __CLASS__, 'handle_checkin_action' ) );
 		add_action( 'admin_post_arnl_update_session', array( __CLASS__, 'handle_update_session' ) );
 		add_action( 'admin_post_arnl_export_checkins', array( __CLASS__, 'handle_export' ) );
+		add_action( 'admin_post_arnl_script', array( __CLASS__, 'handle_script' ) );
 		add_action( 'wp_ajax_arnl_lookup_callsign', array( __CLASS__, 'ajax_lookup' ) );
 		add_action( 'wp_ajax_arnl_search_callsigns', array( __CLASS__, 'ajax_search' ) );
 		add_action( 'wp_ajax_arnl_refresh_log', array( __CLASS__, 'ajax_refresh' ) );
@@ -149,6 +150,9 @@ class ARNL_Admin_Log {
 						<a class="button" href="<?php echo esc_url( ARNL_Admin::action_url( 'arnl_export_checkins', array( 'event' => $o->event_id ), 'arnl_export_' . $o->event_id ) ); ?>"><?php esc_html_e( 'Export CSV', 'ar-net-logger' ); ?></a>
 						<button type="button" class="button arnl-print"><?php esc_html_e( 'Print Log', 'ar-net-logger' ); ?></button>
 					<?php endif; ?>
+					<?php if ( '' !== trim( wp_strip_all_tags( $net['preamble'] ) ) ) : ?>
+						<a class="button" href="<?php echo esc_url( self::script_url( $o ) ); ?>" target="arnl-script-<?php echo esc_attr( $o->key() ); ?>"><?php esc_html_e( 'Net Script', 'ar-net-logger' ); ?></a>
+					<?php endif; ?>
 					<?php if ( '' !== $public_url ) : ?>
 						<a class="button" href="<?php echo esc_url( $public_url ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Public Page', 'ar-net-logger' ); ?></a>
 					<?php endif; ?>
@@ -167,14 +171,9 @@ class ARNL_Admin_Log {
 					<?php self::render_checkins_table( $o, $checkins, $stats ); ?>
 				</div>
 				<div class="arnl-log-side">
+					<?php self::render_script_box( $o, $can_manage ); ?>
 					<?php self::render_session_box( $o ); ?>
 					<?php self::render_share_box( $o ); ?>
-					<?php if ( '' !== trim( wp_strip_all_tags( $net['preamble'] ) ) ) : ?>
-						<details class="arnl-box arnl-preamble" open>
-							<summary><?php esc_html_e( 'Net preamble / script', 'ar-net-logger' ); ?></summary>
-							<div class="arnl-preamble-text"><?php echo wp_kses_post( wpautop( $net['preamble'] ) ); ?></div>
-						</details>
-					<?php endif; ?>
 					<details class="arnl-box">
 						<summary><?php esc_html_e( 'NCS quick reference', 'ar-net-logger' ); ?></summary>
 						<ol class="arnl-ncs-tips">
@@ -480,6 +479,151 @@ class ARNL_Admin_Log {
 			<p><button type="button" class="button arnl-copy-button" data-arnl-copy="#arnl-fb-event"><?php esc_html_e( 'Copy event details', 'ar-net-logger' ); ?></button> <span class="arnl-copy-status" aria-live="polite"></span></p>
 		</details>
 		<?php
+	}
+
+	/**
+	 * The net's script, formatted and read-only, with this session's details filled in.
+	 *
+	 * @param ARNL_Occurrence $o          Session.
+	 * @param bool            $can_manage Whether the user may edit the net.
+	 */
+	protected static function render_script_box( ARNL_Occurrence $o, $can_manage ) {
+		$script = arnl_render_script( $o );
+		$edit   = ARNL_Admin::url(
+			'arnl-nets',
+			array(
+				'action' => 'edit',
+				'id'     => $o->net_id,
+			)
+		) . '#arnl-script-row';
+		if ( '' === $script ) {
+			if ( $can_manage ) {
+				echo '<div class="arnl-box arnl-script-box arnl-script-box--empty"><h2>' . esc_html__( 'Net script', 'ar-net-logger' ) . '</h2><p class="arnl-muted">' . esc_html__( 'This net has no script yet.', 'ar-net-logger' ) . ' <a href="' . esc_url( $edit ) . '">' . esc_html__( 'Write one, or start from the sample', 'ar-net-logger' ) . '</a></p></div>';
+			}
+			return;
+		}
+		?>
+		<details class="arnl-box arnl-script-box" id="arnl-script" open>
+			<summary>
+				<?php esc_html_e( 'Net script', 'ar-net-logger' ); ?>
+				<span class="arnl-script-links">
+					<a href="<?php echo esc_url( self::script_url( $o ) ); ?>" target="arnl-script-<?php echo esc_attr( $o->key() ); ?>"><?php esc_html_e( 'Open in new window', 'ar-net-logger' ); ?></a>
+					<?php if ( $can_manage ) : ?>
+						| <a href="<?php echo esc_url( $edit ); ?>"><?php esc_html_e( 'Edit', 'ar-net-logger' ); ?></a>
+					<?php endif; ?>
+				</span>
+			</summary>
+			<div class="arnl-script"><?php echo $script; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitized by arnl_render_script(). ?></div>
+		</details>
+		<?php
+	}
+
+	/**
+	 * URL of a session's net script on its own page (second screen or print).
+	 *
+	 * @param ARNL_Occurrence $o Session.
+	 * @return string
+	 */
+	public static function script_url( ARNL_Occurrence $o ) {
+		return add_query_arg(
+			array(
+				'action' => 'arnl_script',
+				'event'  => $o->key(),
+			),
+			admin_url( 'admin-post.php' )
+		);
+	}
+
+	/**
+	 * A session's net script as a standalone, print-friendly page.
+	 */
+	public static function handle_script() {
+		if ( ! current_user_can( ARNL_Install::CAP_LOG ) ) {
+			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'ar-net-logger' ), 403 );
+		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only view.
+		$o      = self::occurrence( isset( $_GET['event'] ) ? sanitize_text_field( wp_unslash( $_GET['event'] ) ) : '' );
+		$script = arnl_render_script( $o );
+		$freq   = arnl_describe_frequency( $o->net, $o->frequency );
+		nocache_headers();
+		header( 'Content-Type: text/html; charset=' . get_option( 'blog_charset' ) );
+		?>
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+<meta charset="<?php echo esc_attr( get_option( 'blog_charset' ) ); ?>">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title><?php echo esc_html( sprintf( /* translators: %s: net name. */ __( 'Net script: %s', 'ar-net-logger' ), $o->title() ) ); ?></title>
+<style>
+	body { margin: 0; padding: 1.5em; font: 18px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1e1e1e; background: #fff; }
+	.arnl-sheet { max-width: 46em; margin: 0 auto; }
+	header { border-bottom: 2px solid #dcdcde; margin-bottom: 1em; }
+	h1 { font-size: 1.5em; margin: 0 0 0.2em; }
+	.arnl-meta { margin: 0 0 0.75em; color: #50575e; }
+	.arnl-tools { float: right; display: flex; gap: 0.4em; }
+	.arnl-tools button { font: inherit; font-size: 0.75em; padding: 0.2em 0.7em; cursor: pointer; }
+	.arnl-script h2, .arnl-script h3, .arnl-script h4 { margin: 1.2em 0 0.4em; }
+	.arnl-script blockquote { margin: 1em 0; padding: 0.5em 1em; border-left: 4px solid #2271b1; background: #f0f6fc; }
+	.arnl-script-blank { display: inline-block; min-width: 4em; border-bottom: 2px dotted #996800; color: transparent; }
+	@media print { .arnl-tools { display: none; } body { padding: 0; font-size: 13pt; } }
+	@media (prefers-color-scheme: dark) { body { background: #1d2327; color: #f0f0f1; } .arnl-meta { color: #c3c4c7; } .arnl-script blockquote { background: #2c3338; } }
+</style>
+</head>
+<body>
+<div class="arnl-sheet">
+	<header>
+		<div class="arnl-tools">
+			<button type="button" data-size="-1" aria-label="<?php esc_attr_e( 'Smaller text', 'ar-net-logger' ); ?>">A&minus;</button>
+			<button type="button" data-size="1" aria-label="<?php esc_attr_e( 'Larger text', 'ar-net-logger' ); ?>">A+</button>
+			<button type="button" onclick="window.print()"><?php esc_html_e( 'Print', 'ar-net-logger' ); ?></button>
+		</div>
+		<h1><?php echo esc_html( $o->title() ); ?></h1>
+		<p class="arnl-meta">
+			<?php echo esc_html( arnl_format_date( $o->date, 'l, ' . get_option( 'date_format' ) ) . ' · ' . ARNL_Calendar::time_range( $o ) ); ?>
+			<?php if ( '' !== $freq ) : ?>
+				<br><?php echo esc_html( $freq ); ?>
+			<?php endif; ?>
+			<?php if ( '' !== $o->ncs_callsign ) : ?>
+				<br><?php echo esc_html( ARNL_Calendar::ncs_label( $o ) ); ?>
+			<?php endif; ?>
+		</p>
+	</header>
+	<main class="arnl-script">
+		<?php
+		if ( '' !== $script ) {
+			echo $script; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitized by arnl_render_script().
+		} else {
+			echo '<p>' . esc_html__( 'This net has no script yet.', 'ar-net-logger' ) . '</p>';
+		}
+		?>
+	</main>
+</div>
+<script>
+( function () {
+	var size = 18;
+	try {
+		size = parseFloat( localStorage.getItem( 'arnlScriptSize' ) ) || size;
+	} catch ( e ) {}
+	function apply() {
+		document.body.style.fontSize = size + 'px';
+	}
+	apply();
+	Array.prototype.forEach.call( document.querySelectorAll( '[data-size]' ), function ( button ) {
+		button.addEventListener( 'click', function () {
+			size = Math.min( 40, Math.max( 12, size + 2 * parseInt( button.getAttribute( 'data-size' ), 10 ) ) );
+			apply();
+			try {
+				localStorage.setItem( 'arnlScriptSize', size );
+			} catch ( e ) {}
+		} );
+	} );
+}() );
+</script>
+</body>
+</html>
+		<?php
+		exit;
 	}
 
 	/**

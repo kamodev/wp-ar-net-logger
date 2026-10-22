@@ -45,6 +45,19 @@ class ARNL_Shortcodes {
 	public static function register_assets() {
 		wp_register_style( 'arnl-public', ARNL_URL . 'assets/css/arnl-public.css', array(), ARNL_VERSION );
 		wp_register_script( 'arnl-public', ARNL_URL . 'assets/js/arnl-public.js', array(), ARNL_VERSION, true );
+		wp_localize_script(
+			'arnl-public',
+			'arnlPublic',
+			array(
+				'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
+				/**
+				 * Seconds between refreshes of a running session's public check-in list (0 turns it off).
+				 *
+				 * @param int $seconds Interval.
+				 */
+				'interval' => max( 0, (int) apply_filters( 'arnl_public_refresh_interval', 30 ) ),
+			)
+		);
 	}
 
 	/**

@@ -264,11 +264,39 @@ class ARNL_Admin_Nets {
 							<p class="description"><?php esc_html_e( 'Can be changed for each session on the schedule.', 'ar-net-logger' ); ?></p>
 						</td>
 					</tr>
-					<tr>
-						<th scope="row"><label for="arnl-preamble"><?php esc_html_e( 'Net preamble / script', 'ar-net-logger' ); ?></label></th>
+					<tr id="arnl-script-row">
+						<th scope="row"><label for="arnl_preamble"><?php esc_html_e( 'Net script', 'ar-net-logger' ); ?></label></th>
 						<td>
-							<textarea id="arnl-preamble" name="preamble" class="large-text" rows="8" placeholder="<?php esc_attr_e( 'This is [callsign], net control for the ... net. This is a directed net. Is there any emergency or priority traffic? ...', 'ar-net-logger' ); ?>"><?php echo esc_textarea( $net['preamble'] ); ?></textarea>
-							<p class="description"><?php esc_html_e( 'Shown to the NCS on the Net Log screen while running the net.', 'ar-net-logger' ); ?></p>
+							<p class="description arnl-script-intro"><?php esc_html_e( 'The preamble and script Net Control reads on the air. It is shown, formatted and read-only, on the Net Log of every session.', 'ar-net-logger' ); ?></p>
+							<?php
+							wp_editor(
+								$net['preamble'],
+								'arnl_preamble',
+								array(
+									'textarea_name' => 'preamble',
+									'textarea_rows' => 16,
+									'media_buttons' => false,
+									'tinymce'       => array(
+										'toolbar1'      => 'formatselect,bold,italic,underline,forecolor,backcolor,bullist,numlist,blockquote,hr,alignleft,aligncenter,link,removeformat,undo,redo',
+										'toolbar2'      => '',
+										'block_formats' => __( 'Paragraph=p;Heading=h3;Subheading=h4;Preformatted=pre', 'ar-net-logger' ),
+									),
+									'quicktags'     => array( 'buttons' => 'strong,em,ul,ol,li,block,link,close' ),
+								)
+							);
+							?>
+							<div class="arnl-script-tools">
+								<p class="arnl-placeholders">
+									<span class="arnl-placeholders-label"><?php esc_html_e( 'Insert a placeholder, filled in for each session:', 'ar-net-logger' ); ?></span>
+									<?php foreach ( arnl_script_placeholders() as $key => $label ) : ?>
+										<button type="button" class="button-link arnl-insert-placeholder" data-placeholder="<?php echo esc_attr( '{' . $key . '}' ); ?>" title="<?php echo esc_attr( $label ); ?>"><code><?php echo esc_html( '{' . $key . '}' ); ?></code></button>
+									<?php endforeach; ?>
+								</p>
+								<p>
+									<button type="button" class="button" id="arnl-insert-sample" data-arnl-confirm="<?php esc_attr_e( 'Replace the current script with the sample directed-net script?', 'ar-net-logger' ); ?>"><?php esc_html_e( 'Insert sample script', 'ar-net-logger' ); ?></button>
+								</p>
+								<template id="arnl-sample-script"><?php echo wp_kses_post( arnl_sample_script() ); ?></template>
+							</div>
 						</td>
 					</tr>
 				</table>

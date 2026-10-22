@@ -568,3 +568,144 @@ function arnl_ics_url( array $args = array() ) {
 function arnl_webcal_url( $url ) {
 	return preg_replace( '#^https?://#i', 'webcal://', $url );
 }
+
+/**
+ * Placeholders a net script can use, filled in for each session: key => description.
+ *
+ * @return array<string,string>
+ */
+function arnl_script_placeholders() {
+	return array(
+		'ncs_callsign' => __( 'Net Control callsign', 'ar-net-logger' ),
+		'ncs_name'     => __( 'Net Control name', 'ar-net-logger' ),
+		'ncs'          => __( 'Callsign and name', 'ar-net-logger' ),
+		'net'          => __( 'Net name', 'ar-net-logger' ),
+		'date'         => __( 'Date', 'ar-net-logger' ),
+		'time'         => __( 'Start time', 'ar-net-logger' ),
+		'end_time'     => __( 'End time', 'ar-net-logger' ),
+		'timezone'     => __( 'Time zone', 'ar-net-logger' ),
+		'frequency'    => __( 'Frequency / repeater', 'ar-net-logger' ),
+		'topic'        => __( 'Topic', 'ar-net-logger' ),
+		'type'         => __( 'Net type', 'ar-net-logger' ),
+		'url'          => __( 'Session web page', 'ar-net-logger' ),
+		'site'         => __( 'Site / club name', 'ar-net-logger' ),
+	);
+}
+
+/**
+ * Placeholder values of a session for its net script.
+ *
+ * @param ARNL_Occurrence $o Session.
+ * @return array<string,string>
+ */
+function arnl_script_values( ARNL_Occurrence $o ) {
+	$url    = arnl_event_url( $o );
+	$values = array(
+		'ncs_callsign' => $o->ncs_callsign,
+		'ncs_name'     => $o->ncs_name,
+		'ncs'          => '' !== $o->ncs_callsign ? trim( $o->ncs_callsign . ( '' !== $o->ncs_name ? ' (' . $o->ncs_name . ')' : '' ) ) : '',
+		'net'          => $o->title(),
+		'date'         => arnl_format_date( $o->date, 'l, ' . get_option( 'date_format' ) ),
+		'time'         => arnl_format_time( $o->start_time ),
+		'end_time'     => arnl_format_time( $o->end_time ),
+		'timezone'     => arnl_timezone_label( $o->start()->getTimestamp() ),
+		'frequency'    => arnl_describe_frequency( $o->net, $o->frequency ),
+		'topic'        => $o->topic,
+		'type'         => arnl_label( arnl_net_types(), $o->net['net_type'] ),
+		'url'          => 0 === strpos( $url, 'http' ) ? $url : '',
+		'site'         => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
+	);
+	/**
+	 * Filters the placeholder values of a net script.
+	 *
+	 * @param array           $values Placeholder => value.
+	 * @param ARNL_Occurrence $o      Session.
+	 */
+	return array_map( 'strval', (array) apply_filters( 'arnl_script_values', $values, $o ) );
+}
+
+/**
+ * A net's script (rich text) for one session, read-only, with its placeholders
+ * filled in. Placeholders without a value show as a blank to fill in on the air.
+ *
+ * @param ARNL_Occurrence $o Session.
+ * @return string Safe HTML, or '' when the net has no script.
+ */
+function arnl_render_script( ARNL_Occurrence $o ) {
+	$script = (string) $o->net['preamble'];
+	if ( '' === trim( wp_strip_all_tags( $script ) ) ) {
+		return '';
+	}
+	$values = arnl_script_values( $o );
+	$html   = '';
+	foreach ( wp_html_split( wpautop( $script ) ) as $part ) {
+		$in_tag = '' !== $part && '<' === $part[0];
+		$html  .= preg_replace_callback(
+			'/\{([a-z_]+)\}/',
+			static function ( $found ) use ( $values, $in_tag ) {
+				if ( ! isset( $values[ $found[1] ] ) ) {
+					return $found[0];
+				}
+				if ( $in_tag ) {
+					return esc_attr( $values[ $found[1] ] );
+				}
+				if ( '' === $values[ $found[1] ] ) {
+					return '<span class="arnl-script-blank" title="' . esc_attr( $found[0] ) . '">______</span>';
+				}
+				return esc_html( $values[ $found[1] ] );
+			},
+			$part
+		);
+	}
+	/**
+	 * Filters a session's rendered net script.
+	 *
+	 * @param string          $html Script HTML.
+	 * @param ARNL_Occurrence $o    Session.
+	 */
+	return (string) apply_filters( 'arnl_net_script', wp_kses_post( $html ), $o );
+}
+
+/**
+ * Example directed-net script (HTML for the editor), following common ARRL / NTS
+ * net practice. Placeholders are filled in for each session.
+ *
+ * @return string
+ */
+function arnl_sample_script() {
+	$bold = static function ( $text ) {
+		return str_replace(
+			array( '{ncs_callsign}', '{net}' ),
+			array( '<strong>{ncs_callsign}</strong>', '<strong>{net}</strong>' ),
+			esc_html( $text )
+		);
+	};
+	$cue  = static function ( $text ) {
+		return '<p><em>' . esc_html( $text ) . '</em></p>';
+	};
+	$html = array(
+		'<h3>' . esc_html__( 'Opening', 'ar-net-logger' ) . '</h3>',
+		'<p><strong>' . esc_html__( 'QST, QST, QST.', 'ar-net-logger' ) . '</strong> ' . $bold( __( 'This is {ncs_callsign}, my name is {ncs_name}, Net Control for the {net}.', 'ar-net-logger' ) ) . '</p>',
+		'<p>' . esc_html__( 'The net meets {date} at {time} {timezone} on {frequency}. This is a directed net: all transmissions go through Net Control. Please wait to be called, except for emergency or priority traffic.', 'ar-net-logger' ) . '</p>',
+		'<h3>' . esc_html__( 'Emergency and priority traffic', 'ar-net-logger' ) . '</h3>',
+		'<p><span style="color: #d63638"><strong>' . esc_html__( 'Is there any emergency or priority traffic? Please call now.', 'ar-net-logger' ) . '</strong></span></p>',
+		$cue( __( '(Pause. Handle emergency or priority traffic before anything else.)', 'ar-net-logger' ) ),
+		'<h3>' . esc_html__( 'Check-ins', 'ar-net-logger' ) . '</h3>',
+		'<p>' . esc_html__( 'Net Control will now take check-ins. Please give your callsign phonetically, your name and location, and say if you are mobile or portable or have traffic for the net.', 'ar-net-logger' ) . '</p>',
+		'<ul><li>' . esc_html__( 'Short-time and mobile stations, please call now.', 'ar-net-logger' ) . '</li><li>' . esc_html__( 'All other stations, please call now.', 'ar-net-logger' ) . '</li><li>' . esc_html__( 'Are there any relays for stations Net Control could not hear?', 'ar-net-logger' ) . '</li></ul>',
+		$cue( __( '(Acknowledge each station by callsign, and acknowledge the website check-ins in the Net Log. Identify at least every 10 minutes.)', 'ar-net-logger' ) ),
+		'<h3>' . esc_html__( 'Topic and traffic', 'ar-net-logger' ) . '</h3>',
+		'<p>' . esc_html__( 'Topic for this session: {topic}', 'ar-net-logger' ) . '</p>',
+		'<p>' . esc_html__( 'Stations with traffic for the net, please call now. Net Control will then go down the list for comments.', 'ar-net-logger' ) . '</p>',
+		'<h3>' . esc_html__( 'Closing', 'ar-net-logger' ) . '</h3>',
+		'<p>' . esc_html__( 'Are there any late check-ins, comments or traffic before the net closes?', 'ar-net-logger' ) . '</p>',
+		$cue( __( '(Pause.)', 'ar-net-logger' ) ),
+		'<p>' . $bold( __( 'Thank you to everyone who checked in. This is {ncs_callsign} closing the {net} and returning the frequency to normal amateur use. 73.', 'ar-net-logger' ) ) . '</p>',
+	);
+	/**
+	 * Filters the sample net script offered in the net editor.
+	 *
+	 * @param string $html Script HTML.
+	 */
+	return (string) apply_filters( 'arnl_sample_script', implode( "\n", $html ) );
+}
