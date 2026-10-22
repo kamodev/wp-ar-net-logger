@@ -47,9 +47,77 @@
 		$( '#arnl-recurrence' ).on( 'change', syncRecurrence );
 	}
 
+	// Net form: the per-net webhook only matters for "this net's own channel".
+	var syncDiscord = function () {
+		$( '.arnl-row-discord-webhook' ).toggle( $( '#arnl-discord-mode' ).val() === 'custom' );
+	};
+	if ( $( '#arnl-discord-mode' ).length ) {
+		syncDiscord();
+		$( '#arnl-discord-mode' ).on( 'change', syncDiscord );
+	}
+
 	if ( $.fn.wpColorPicker ) {
 		$( '.arnl-color-picker' ).wpColorPicker();
 	}
+
+	// Net form: the script editor (visual or text tab).
+	function scriptEditor() {
+		var editor = window.tinymce && window.tinymce.get( 'arnl_preamble' );
+		return editor && ! editor.isHidden() ? editor : null;
+	}
+
+	$( document ).on( 'click', '.arnl-insert-placeholder', function () {
+		var text = $( this ).data( 'placeholder' );
+		var editor = scriptEditor();
+		var area = document.getElementById( 'arnl_preamble' );
+		if ( editor ) {
+			editor.focus();
+			editor.insertContent( text );
+		} else if ( area ) {
+			var start = area.selectionStart || 0;
+			area.value = area.value.slice( 0, start ) + text + area.value.slice( area.selectionEnd || start );
+			area.focus();
+			area.setSelectionRange( start + text.length, start + text.length );
+		}
+	} );
+
+	$( '#arnl-insert-sample' ).on( 'click', function () {
+		var html = $( '#arnl-sample-script' ).html();
+		var editor = scriptEditor();
+		var current = editor ? editor.getContent() : $( '#arnl_preamble' ).val();
+		if ( $.trim( current ) && ! window.confirm( $( this ).data( 'arnl-confirm' ) ) ) {
+			return;
+		}
+		if ( editor ) {
+			editor.setContent( html );
+			editor.undoManager.add();
+			editor.focus();
+		} else {
+			$( '#arnl_preamble' ).val( html ).trigger( 'focus' );
+		}
+	} );
+
+	// Copy-to-clipboard buttons (e.g. Facebook event details).
+	$( document ).on( 'click', '[data-arnl-copy]', function () {
+		var $button = $( this );
+		var field = document.querySelector( $button.data( 'arnl-copy' ) );
+		var done = function () {
+			$button.siblings( '.arnl-copy-status' ).text( settings.i18n.copied );
+		};
+		if ( ! field ) {
+			return;
+		}
+		if ( window.navigator.clipboard && window.isSecureContext ) {
+			window.navigator.clipboard.writeText( field.value ).then( done, function () {
+				field.select();
+			} );
+		} else {
+			field.select();
+			if ( document.execCommand( 'copy' ) ) {
+				done();
+			}
+		}
+	} );
 
 	$( '.arnl-print' ).on( 'click', function () {
 		window.print();

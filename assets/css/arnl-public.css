@@ -514,19 +514,132 @@ a.arnl-cal-event-link:focus {
 	font-style: italic;
 }
 
-.arnl-public-log-list {
-	columns: 14em auto;
-	column-gap: 2em;
-	margin: 0 0 1em 1.5em;
+/*
+ * Public check-in list: each station with whether Net Control has
+ * acknowledged it on the air (green check) or not yet (dashed, muted).
+ */
+.arnl-public-log {
+	--arnl-ack: #00a32a;
+	--arnl-ack-soft: rgba(0, 163, 42, 0.1);
+	--arnl-wait: rgba(128, 128, 128, 0.55);
 }
 
-.arnl-public-log-list li {
-	break-inside: avoid;
+.arnl-ack-summary {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4em 1.2em;
+	margin: 0 0 0.75em;
+	font-size: 0.9em;
+}
+
+.arnl-ack-key {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+}
+
+.arnl-public-log .arnl-ack-icon {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 50%;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.arnl-public-log .is-ack .arnl-ack-icon {
+	background: var(--arnl-ack);
+	color: #fff;
+}
+
+.arnl-public-log .is-waiting .arnl-ack-icon {
+	border: 2px dashed var(--arnl-wait);
+	color: var(--arnl-wait);
+}
+
+.arnl-public-log-list {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(16em, 1fr));
+	gap: 0.5em;
+	margin: 0 0 1em;
+	padding: 0;
+	list-style: none;
+}
+
+.arnl-public-log-list .arnl-checkin-item {
+	display: flex;
+	align-items: center;
+	gap: 0.6em;
+	margin: 0;
+	padding: 0.45em 0.7em;
+	border: 1px solid var(--arnl-border, rgba(128, 128, 128, 0.3));
+	border-radius: 6px;
+}
+
+.arnl-public-log-list .arnl-checkin-item.is-ack {
+	border-color: var(--arnl-ack);
+	background: var(--arnl-ack-soft);
+}
+
+.arnl-public-log-list .arnl-checkin-item.is-waiting {
+	border-style: dashed;
+}
+
+.arnl-public-log-list .arnl-checkin-item.is-mine {
+	box-shadow: 0 0 0 2px var(--arnl-accent, #2271b1);
+}
+
+.arnl-checkin-who {
+	flex: 1;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.arnl-public-log-list .arnl-callsign {
+	letter-spacing: 0.03em;
 }
 
 .arnl-public-log-list .arnl-name {
 	margin-left: 0.4em;
 	opacity: 0.85;
+}
+
+.arnl-ack-label {
+	flex: none;
+	font-size: 0.8em;
+	white-space: nowrap;
+}
+
+.arnl-public-log .is-ack .arnl-ack-label {
+	padding: 0.1em 0.6em;
+	border-radius: 1em;
+	background: var(--arnl-ack);
+	color: #fff;
+	font-weight: 600;
+}
+
+.arnl-public-log .is-waiting .arnl-ack-label {
+	opacity: 0.75;
+	font-style: italic;
+}
+
+.arnl-public-log-list .arnl-checkin-item.is-new {
+	animation: arnl-acked 2.5s ease-out;
+}
+
+@keyframes arnl-acked {
+	from {
+		box-shadow: 0 0 0 4px var(--arnl-ack);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.arnl-public-log-list .arnl-checkin-item.is-new {
+		animation: none;
+	}
 }
 
 /*

@@ -112,6 +112,20 @@
 	color: #fff;
 }
 
+/* Integrations */
+.arnl-integration-error {
+	color: #b32d2e;
+}
+
+.arnl-integration-note {
+	max-width: 800px;
+}
+
+.arnl-share-box .arnl-fb-event {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 12px;
+}
+
 /* Schedule list */
 .arnl-filters {
 	display: flex;
@@ -242,11 +256,96 @@
 	cursor: pointer;
 }
 
-.arnl-preamble-text {
-	max-height: 360px;
-	overflow: auto;
+/* Net script: formatted, read-only, beside the check-in form. */
+.arnl-script-box > summary {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.25em 0.75em;
+}
+
+.arnl-script-links {
+	font-size: 12px;
+	font-weight: 400;
+}
+
+.arnl-script {
+	margin-top: 0.5em;
 	font-size: 14px;
 	line-height: 1.6;
+	overflow-wrap: break-word;
+}
+
+.arnl-script > :first-child {
+	margin-top: 0;
+}
+
+.arnl-script h2,
+.arnl-script h3,
+.arnl-script h4 {
+	margin: 1.1em 0 0.35em;
+	font-size: 1.1em;
+}
+
+.arnl-script h4 {
+	font-size: 1em;
+}
+
+.arnl-script blockquote {
+	margin: 0.75em 0;
+	padding: 0.4em 0.8em;
+	border-left: 4px solid #2271b1;
+	background: #f0f6fc;
+}
+
+.arnl-script ul,
+.arnl-script ol {
+	margin-left: 1.5em;
+}
+
+.arnl-script ul {
+	list-style: disc;
+}
+
+.arnl-script-blank {
+	display: inline-block;
+	min-width: 4em;
+	border-bottom: 2px dotted #996800;
+	color: transparent;
+}
+
+@media (min-width: 1101px) {
+	.arnl-script-box .arnl-script {
+		max-height: max(300px, calc(100vh - 300px));
+		overflow: auto;
+		overscroll-behavior: contain;
+	}
+}
+
+.arnl-placeholders {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.3em 0.5em;
+	margin: 0.75em 0 0.5em;
+}
+
+.arnl-placeholders .button-link {
+	text-decoration: none;
+}
+
+.arnl-placeholders .button-link code {
+	cursor: pointer;
+}
+
+.arnl-placeholders .button-link:hover code,
+.arnl-placeholders .button-link:focus code {
+	background: #dcdcde;
+}
+
+.arnl-script-intro {
+	margin-bottom: 0.75em;
 }
 
 .arnl-ncs-tips {

@@ -1,10 +1,10 @@
 # AR Net Logger
 
-A WordPress plugin for scheduling, publishing and logging **Amateur Radio (ham radio) nets**: recurring net schedules, per-session overrides, a public calendar with shortcodes, iCalendar export, Net Control Station (NCS) assignments, and check-ins logged both by the NCS in the admin and by stations online from the website.
+A WordPress plugin for scheduling, publishing and logging **Amateur Radio (ham radio) nets**: recurring net schedules, per-session overrides, a public calendar with shortcodes, iCalendar export, Net Control Station (NCS) assignments, check-ins logged both by the NCS in the admin and by stations online from the website, live check-in posts to **Discord**, and session announcements on a **Facebook Page**.
 
 - **Requires:** WordPress 6.0+, PHP 7.4+
 - **License:** GPL-2.0-or-later
-- **Download:** [`dist/ar-net-logger-1.1.1.zip`](dist/ar-net-logger-1.1.1.zip) or the [latest release](https://github.com/kamodev/wp-ar-net-logger/releases/latest), installable from *Plugins → Add New → Upload Plugin*
+- **Download:** [`dist/ar-net-logger-1.2.0.zip`](dist/ar-net-logger-1.2.0.zip) or the [latest release](https://github.com/kamodev/wp-ar-net-logger/releases/latest), installable from *Plugins → Add New → Upload Plugin*
 
 ---
 
@@ -16,17 +16,19 @@ The design follows standard net practice: ARRL NTS net procedures, common NCS sc
 |---|---|
 | A **net** meets on a regular schedule (e.g. *every Tuesday 7 PM*, *1st & 3rd Thursday*, *every other Saturday*, *Wednesdays June–August*) | **Nets** with a recurrence: weekly, every other week, monthly by week of the month (1st–5th / last), one-time, or manual only. Optional months, start / end dates, start / end times. |
 | Each session has a **Net Control Station** and sometimes a **topic** or a changed date or time | **Sessions**: any date can be overridden (date, time, topic, NCS callsign + name, frequency, notes) or **cancelled**, and special one-off sessions can be added. |
-| The NCS reads the **preamble**, asks for emergency / priority traffic, then takes check-ins (short-time, mobile / portable, relays, stations with traffic) | The **Net Log** screen shows the net's preamble and an NCS quick reference, plus a fast check-in form (callsign, name, QTH, station type, short time, traffic with precedence & count, relayed by, comments). As the NCS types a callsign it suggests stations from previous check-ins (or the US license database for new ones) and fills in name, QTH and station type. |
+| The NCS reads the **preamble / script**, asks for emergency / priority traffic, then takes check-ins (short-time, mobile / portable, relays, stations with traffic) | Each net has a **formatted net script** (written in the WordPress visual editor, with placeholders such as `{ncs_callsign}` and `{frequency}` filled in for each session). The **Net Log** screen shows it read-only beside the check-in form (or in its own window for a second screen or print), with an NCS quick reference, plus a fast check-in form (callsign, name, QTH, station type, short time, traffic with precedence & count, relayed by, comments). As the NCS types a callsign it suggests stations from previous check-ins (or the US license database for new ones) and fills in name, QTH and station type. |
 | The NCS **opens** and **closes** the net and reports **QNI / QTC** | *Open Net* / *Close Net* buttons; live counts of check-ins (QNI), traffic (QTC), short-time, mobile / portable, relayed and online stations; CSV export and a print view of the log. |
+| The club follows along on **Discord** and **Facebook** | Each check-in is posted to a Discord channel as it is logged, with "on the air" and closing-summary posts. Upcoming sessions are announced on the club's Facebook Page, and ready-to-paste details are provided for Facebook events. |
 | Listeners want to know **when** and **where** nets meet | Each net has its own page at `/net/{net-name}/` and each session at `/net/{net-name}/?p={id}`. Shortcodes give a month calendar (with Net / Type / Mode / Band filters), a list, upcoming sessions and a net directory, plus iCal subscribe / download, Google Calendar and Outlook links. |
 | Stations that can't be heard well want to be counted | **Online check-in** from the session page, open from *N* minutes before until *M* minutes after the net (or while the NCS has it open), with optional moderation. |
+| Net Control **acknowledges** each station on the air | The public check-in list marks each station **Acknowledged** (green check) or **Waiting for Net Control** as the NCS clicks *Ack* in the Net Log, and updates itself while the net runs, so a station that checked in online sees it without reloading. |
 
 ---
 
 ## Installation
 
-1. Download `dist/ar-net-logger-1.1.1.zip`, then go to **Plugins → Add New → Upload Plugin** and activate it. (Or clone this repository into `wp-content/plugins/`.)
-2. Go to **Net Logger → Nets → Add New Net**: enter the name, frequency / mode / band, days and time, default NCS and the net preamble.
+1. Download `dist/ar-net-logger-1.2.0.zip`, then go to **Plugins → Add New → Upload Plugin** and activate it. (Or clone this repository into `wp-content/plugins/`.)
+2. Go to **Net Logger → Nets → Add New Net**: enter the name, frequency / mode / band, days and time, default NCS and the net script (or start from the sample script).
 3. Add `[arnl_calendar]` to a page.
 
 On activation the plugin creates three tables (`{prefix}arnl_nets`, `{prefix}arnl_events`, `{prefix}arnl_checkins`), default settings, a **Net Control Operator** role, and a **Nets** page at `/net/` that hosts the net permalinks.
@@ -38,8 +40,8 @@ On activation the plugin creates three tables (`{prefix}arnl_nets`, `{prefix}arn
 | **Net Logger → Schedule** | Upcoming (or past) sessions with filters by net, date range and status. Per session: **Net Log**, **Edit** (override date / time / topic / NCS for that date only), **Cancel / Restore**, **Delete** (reverts a regular session to the net's defaults). Also *Add Special Session* and *Export .ics*. |
 | **Net Logger → Calendar** | Month view; click a session to open its Net Log. |
 | **Net Logger → Nets** | Nets list (search, active / inactive views, bulk activate / deactivate / delete) and the add / edit form. |
-| **Net Log** (from the schedule) | Run the net: open / close, session NCS / topic / private log notes, quick check-in entry with **callsign type-ahead**, a check-in list that **updates in the background** (website check-ins appear without reloading; new rows are highlighted), approve / reject / acknowledge / edit / delete check-ins, *Approve all pending*, CSV export, print. |
-| **Net Logger → Settings** | Online check-in options, check-in window, public check-in list, flood protection, session details page, iCal feed range, data removal on uninstall, plus a shortcode and feed reference. |
+| **Net Log** (from the schedule) | Run the net: the **net script** for this session (formatted, read-only, *Open in new window* for a second screen or print), open / close, session NCS / topic / private log notes, quick check-in entry with **callsign type-ahead**, a check-in list that **updates in the background** (website check-ins appear without reloading; new rows are highlighted), approve / reject / acknowledge / edit / delete check-ins, *Approve all pending*, CSV export, print. |
+| **Net Logger → Settings** | Online check-in options, check-in window, public check-in list, flood protection, net permalink base, session details page, iCal feed range, **Discord** and **Facebook Page** connections, data removal on uninstall, plus a shortcode and feed reference. |
 
 ### Roles and capabilities
 
@@ -150,8 +152,29 @@ Events use UTC times and stable UIDs, so a rescheduled session updates the origi
 - Spam protection: nonce, honeypot field, and per-visitor rate limit.
 - Optional moderation: check-ins stay *pending* until Net Control approves them.
 - Optional "logged-in users only".
-- The public check-in list shows callsign + name, callsign only, or nothing.
+- The public check-in list shows callsign + name, callsign only, or nothing. Each station is marked **Acknowledged** once Net Control clicks *Ack* in the Net Log (or ticks *Acknowledged on air*), or **Waiting for Net Control** until then (*Not acknowledged* after the net closes), with a count of each.
+- While the net is in session or check-ins are open, the list **updates itself** every 30 seconds (filter `arnl_public_refresh_interval`, `0` turns it off; paused while the tab is hidden), so a station sees its acknowledgement without reloading. The visitor's own check-in is highlighted.
 - The visitor's callsign, name and QTH are remembered in their browser for next time.
+
+## Net script
+
+Each net can have a **script**: the preamble and running order Net Control reads on the air. Edit it under **Nets → Edit → Net Control → Net script** with the WordPress visual editor (headings, bold / italic / underline, text and highlight colors, lists, quotes, links) or its Code tab. *Insert sample script* starts from a directed-net script (opening, emergency / priority traffic, check-ins, topic and traffic, closing).
+
+Placeholders are filled in for each session, so a substitute NCS or a changed topic or time shows up in the script automatically:
+
+| Placeholder | Value |
+|---|---|
+| `{ncs_callsign}`, `{ncs_name}`, `{ncs}` | The session's Net Control Station (callsign, name, or "CALL (Name)") |
+| `{net}`, `{type}` | Net name and type |
+| `{date}`, `{time}`, `{end_time}`, `{timezone}` | Session date and times |
+| `{frequency}` | Frequency, mode, band and repeater details |
+| `{topic}` | The session topic |
+| `{url}` | The session's web page |
+| `{site}` | The site (club) name |
+
+A placeholder with no value for a session (for example no topic) shows as a blank line to fill in on the air. The **Net Log** shows the script formatted and read-only at the top of the sidebar, beside the check-in form; **Open in new window** (or the *Net Script* button) opens it on its own page with larger text controls, for a second screen or for printing. Scripts saved by earlier versions as plain text still display as before.
+
+Developers can add placeholders with the `arnl_script_values` filter.
 
 ## Callsign type-ahead (Net Log)
 
@@ -161,6 +184,56 @@ Callsign fields on the Net Log (the check-in callsign, *Relayed by*, the session
 - **From the license database:** for a complete callsign never logged before, a lookup in the US FCC database via [callook.info](https://callook.info) adds a suggestion with the operator's first name and city / state. Results are cached for 30 days (unknown callsigns for a day). It can be turned off under *Settings → Callsign lookup*, and other services can be plugged in with the `arnl_callsign_lookup` filter.
 - Use the arrow keys and Enter (or click) to pick a station; name, QTH and station type are filled in. Press Enter again to log the check-in.
 - If you type a callsign and log it without picking a suggestion, the name and QTH are still filled in from the station's history.
+
+## Discord & Facebook
+
+### Discord: check-ins as they happen
+
+Each check-in is posted to a Discord channel as it is logged, whether by Net Control or from the website (website check-ins post once approved).
+
+Setup:
+
+1. In Discord: *Server Settings → Integrations → Webhooks → New Webhook*, pick the channel, then **Copy Webhook URL**.
+2. In WordPress: *Net Logger → Settings → Discord*, paste it as the **Default webhook URL**, save, then click **Send a test message**.
+
+What gets posted:
+
+- **Each check-in**: callsign, name and location (optional), station type, short time, traffic (count and precedence), relay station, comments (optional, off by default), "checked in online", the check-in number, and a link to the session page.
+- **When the NCS opens the net**: "*Net* is on the air", with frequency, NCS, topic and the online check-in link.
+- **When the net closes**: a summary with QNI / QTC counts and the list of callsigns.
+
+More options:
+
+- Each kind of post can be turned off. *Post as* sets the bot name.
+- **Per net:** *Nets → Edit → Sharing* can send a net to its own channel (its own webhook) or turn Discord off for that net.
+- **Safe by design:**
+  - Messages go out after the page is answered, so logging is never slowed down.
+  - User text is escaped, and `@everyone` or role mentions are never triggered.
+  - The webhook URL is never shown again after saving.
+  - Delivery errors (e.g. a deleted webhook) appear under the setting.
+
+### Facebook Page: session announcements
+
+Facebook's API supports **posting to a Page**, so each upcoming session is announced as a Page post. The post includes the net, date and time, frequency, NCS, topic and a link to the session page; the text is editable with placeholders.
+
+- **Automatic** posts go out *N* hours before each session (default 24, checked hourly by WP-Cron). **Manual** posting uses *Post to Facebook* on the schedule or on the Net Log's Share box. Set *N* to 0 for manual only.
+- Each session is posted once. If a posted session is **cancelled**, the post is edited to start with "❌ CANCELLED".
+- **Per net:** *Nets → Edit → Sharing → Do not post this net to Facebook*.
+
+**Facebook Events and Groups:** Facebook does not let apps **create events** (the Events API has been limited to approved partners for years), and it **removed posting to Groups** in April 2024. Instead, every session's Net Log has a **Share** box with the event name, start, end, location and details, plus a **Copy** button, ready to paste into *Create event* on your Page or Group.
+
+#### Getting a Page ID and access token
+
+Meta changes these screens from time to time. In outline:
+
+1. **Page ID:** on your Facebook Page, *About → Page transparency* (or the Page's settings).
+2. **Create an app:** at [developers.facebook.com](https://developers.facebook.com/), *My Apps → Create App* (a Business-type app). Your Facebook account must be an admin of the Page.
+3. **User token:** in the [Graph API Explorer](https://developers.facebook.com/tools/explorer/), select the app and add the permissions `pages_show_list`, `pages_read_engagement` and `pages_manage_posts`. Click *Generate Access Token* and allow access to your Page.
+4. **Long-lived token:** in the [Access Token Debugger](https://developers.facebook.com/tools/debug/accesstoken/), click *Extend Access Token* to get a long-lived user token.
+5. **Page token:** back in the Explorer, with that long-lived token, run `GET me/accounts`. Copy your Page's `access_token`; a Page token obtained this way does not expire while you remain a Page admin.
+6. **Connect:** paste the Page ID and Page token under *Net Logger → Settings → Facebook Page*, save, and click **Test the connection**.
+
+If posts are only visible to you, check the app's mode (Development / Live) and its permissions in the Meta App Dashboard.
 
 ## Data model (CRUD)
 
@@ -174,9 +247,9 @@ Regular sessions are not stored. `ARNL_Schedule::occurrences()` expands each net
 
 ### Hooks for developers
 
-Filters: `arnl_log_refresh_interval` (seconds between Net Log updates, default 15), `arnl_net_types`, `arnl_modes`, `arnl_bands`, `arnl_station_types`, `arnl_is_valid_callsign`, `arnl_checkins_open`, `arnl_pre_online_checkin` (return `WP_Error` to reject), `arnl_checkin_prefill`, `arnl_occurrences`, `arnl_describe_schedule`, `arnl_ics_vevent`, `arnl_callsign_lookup` (return station fields, `false` for unknown, or `null` for the built-in lookup), `arnl_now`.
+Filters: `arnl_log_refresh_interval` (seconds between Net Log updates, default 15), `arnl_public_refresh_interval` (seconds between public check-in list updates, default 30), `arnl_script_values` (net script placeholders), `arnl_net_script` (rendered net script), `arnl_sample_script`, `arnl_discord_payload` (change or cancel a Discord message), `arnl_facebook_message` (Facebook post text), `arnl_net_types`, `arnl_modes`, `arnl_bands`, `arnl_station_types`, `arnl_is_valid_callsign`, `arnl_checkins_open`, `arnl_pre_online_checkin` (return `WP_Error` to reject), `arnl_checkin_prefill`, `arnl_occurrences`, `arnl_describe_schedule`, `arnl_ics_vevent`, `arnl_callsign_lookup` (return station fields, `false` for unknown, or `null` for the built-in lookup), `arnl_now`.
 
-Actions: `arnl_net_saved`, `arnl_before_delete_net`, `arnl_event_saved`, `arnl_before_delete_event`, `arnl_checkin_created`, `arnl_checkin_updated`.
+Actions: `arnl_net_saved`, `arnl_before_delete_net`, `arnl_event_saved`, `arnl_event_status_changed`, `arnl_before_delete_event`, `arnl_checkin_created`, `arnl_checkin_updated`, `arnl_checkin_approved`, `arnl_facebook_posted`.
 
 ## Development
 

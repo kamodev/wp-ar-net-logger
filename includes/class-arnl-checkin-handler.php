@@ -20,6 +20,8 @@ class ARNL_Checkin_Handler {
 	public static function init() {
 		add_action( 'admin_post_nopriv_' . self::ACTION, array( __CLASS__, 'handle' ) );
 		add_action( 'admin_post_' . self::ACTION, array( __CLASS__, 'handle' ) );
+		add_action( 'wp_ajax_nopriv_arnl_public_log', array( __CLASS__, 'ajax_public_log' ) );
+		add_action( 'wp_ajax_arnl_public_log', array( __CLASS__, 'ajax_public_log' ) );
 	}
 
 	/**
@@ -147,8 +149,14 @@ class ARNL_Checkin_Handler {
 
 		switch ( $code ) {
 			case 'checked_in':
-				/* translators: %s: callsign. */
-				return array( 'success', sprintf( __( 'Thanks %s, you are checked in! 73.', 'ar-net-logger' ), $callsign ) );
+				return array(
+					'success',
+					'none' === ARNL_Settings::get( 'public_log' )
+						/* translators: %s: callsign. */
+						? sprintf( __( 'Thanks %s, you are checked in! Listen for Net Control to acknowledge you on the air. 73.', 'ar-net-logger' ), $callsign )
+						/* translators: %s: callsign. */
+						: sprintf( __( 'Thanks %s, you are checked in! Listen for Net Control to acknowledge you on the air; the check-in list shows when they have. 73.', 'ar-net-logger' ), $callsign ),
+				);
 			case 'pending':
 				return array( 'success', __( 'Thanks! Your check-in was received and will be listed once Net Control confirms it.', 'ar-net-logger' ) );
 			case 'duplicate':
@@ -310,41 +318,150 @@ class ARNL_Checkin_Handler {
 	}
 
 	/**
-	 * Public list of approved check-ins (per the "public log" setting).
+	 * Whether a session's public check-in list should update itself (net running or check-in open).
+	 *
+	 * @param ARNL_Occurrence $o Session.
+	 * @return bool
+	 */
+	public static function log_is_live( ARNL_Occurrence $o ) {
+		return 'active' === $o->status || $o->checkins_open();
+	}
+
+	/**
+	 * Fingerprint of what the public list shows.
+	 *
+	 * @param ARNL_Occurrence $o        Session.
+	 * @param array[]         $checkins Approved check-ins.
+	 * @return string
+	 */
+	protected static function public_signature( ARNL_Occurrence $o, array $checkins ) {
+		$parts = array( $o->status, self::log_is_live( $o ) ? 'live' : 'static' );
+		foreach ( $checkins as $c ) {
+			$parts[] = $c['id'] . ':' . $c['acknowledged'] . ':' . $c['callsign'] . ':' . $c['name'];
+		}
+		return md5( implode( '|', $parts ) );
+	}
+
+	/**
+	 * Public list of approved check-ins (per the "public log" setting), showing
+	 * which stations Net Control has acknowledged on the air.
 	 *
 	 * @param ARNL_Occurrence $o Session.
 	 * @return string
 	 */
 	public static function public_log( ARNL_Occurrence $o ) {
 		$mode = ARNL_Settings::get( 'public_log' );
-		if ( 'none' === $mode || $o->is_virtual() ) {
+		if ( 'none' === $mode ) {
 			return '';
 		}
-		$checkins = ARNL_Checkins::for_event( $o->event_id, 'approved' );
-		if ( ! $checkins ) {
+		$checkins = $o->is_virtual() ? array() : ARNL_Checkins::for_event( $o->event_id, 'approved' );
+		$live     = self::log_is_live( $o );
+		if ( ! $checkins && ! $live ) {
 			return '';
 		}
+		$acked = 0;
+		foreach ( $checkins as $c ) {
+			$acked += $c['acknowledged'] ? 1 : 0;
+		}
+		$closed = in_array( $o->status, array( 'completed', 'cancelled' ), true );
+
 		ob_start();
 		?>
-		<div class="arnl-public-log">
+		<div class="arnl-public-log"<?php echo $live ? ' data-arnl-live="' . esc_attr( $o->key() ) . '" data-arnl-signature="' . esc_attr( self::public_signature( $o, $checkins ) ) . '"' : ''; ?>>
 			<h3>
 				<?php
 				/* translators: %d: number of check-ins. */
 				echo esc_html( sprintf( _n( '%d check-in', '%d check-ins', count( $checkins ), 'ar-net-logger' ), count( $checkins ) ) );
 				?>
 			</h3>
-			<ol class="arnl-public-log-list">
-				<?php foreach ( $checkins as $c ) : ?>
-					<li>
-						<strong class="arnl-callsign"><?php echo esc_html( $c['callsign'] ); ?></strong>
-						<?php if ( 'callsign_name' === $mode && '' !== $c['name'] ) : ?>
-							<span class="arnl-name"><?php echo esc_html( $c['name'] ); ?></span>
-						<?php endif; ?>
-					</li>
-				<?php endforeach; ?>
-			</ol>
+			<?php if ( $checkins ) : ?>
+				<p class="arnl-ack-summary">
+					<?php if ( $acked ) : ?>
+						<span class="arnl-ack-key is-ack"><span class="arnl-ack-icon" aria-hidden="true">✓</span>
+							<?php
+							/* translators: %d: number of acknowledged check-ins. */
+							echo esc_html( sprintf( _n( '%d acknowledged by Net Control', '%d acknowledged by Net Control', $acked, 'ar-net-logger' ), $acked ) );
+							?>
+						</span>
+					<?php endif; ?>
+					<?php if ( count( $checkins ) > $acked ) : ?>
+						<span class="arnl-ack-key is-waiting"><span class="arnl-ack-icon" aria-hidden="true">…</span>
+							<?php
+							$waiting = count( $checkins ) - $acked;
+							echo esc_html(
+								$closed
+									/* translators: %d: number of check-ins not acknowledged. */
+									? sprintf( _n( '%d not acknowledged on the air', '%d not acknowledged on the air', $waiting, 'ar-net-logger' ), $waiting )
+									/* translators: %d: number of check-ins waiting for acknowledgement. */
+									: sprintf( _n( '%d waiting for Net Control', '%d waiting for Net Control', $waiting, 'ar-net-logger' ), $waiting )
+							);
+							?>
+						</span>
+					<?php endif; ?>
+				</p>
+				<ol class="arnl-public-log-list">
+					<?php foreach ( $checkins as $c ) : ?>
+						<li class="arnl-checkin-item <?php echo $c['acknowledged'] ? 'is-ack' : 'is-waiting'; ?>" data-callsign="<?php echo esc_attr( $c['callsign'] ); ?>">
+							<span class="arnl-ack-icon" aria-hidden="true"><?php echo $c['acknowledged'] ? '✓' : '…'; ?></span>
+							<span class="arnl-checkin-who">
+								<strong class="arnl-callsign"><?php echo esc_html( $c['callsign'] ); ?></strong>
+								<?php if ( 'callsign_name' === $mode && '' !== $c['name'] ) : ?>
+									<span class="arnl-name"><?php echo esc_html( $c['name'] ); ?></span>
+								<?php endif; ?>
+							</span>
+							<span class="arnl-ack-label">
+								<?php
+								if ( $c['acknowledged'] ) {
+									esc_html_e( 'Acknowledged', 'ar-net-logger' );
+								} elseif ( $closed ) {
+									esc_html_e( 'Not acknowledged', 'ar-net-logger' );
+								} else {
+									esc_html_e( 'Waiting for Net Control', 'ar-net-logger' );
+								}
+								?>
+							</span>
+						</li>
+					<?php endforeach; ?>
+				</ol>
+			<?php else : ?>
+				<p class="arnl-cal-empty"><?php esc_html_e( 'No check-ins yet.', 'ar-net-logger' ); ?></p>
+			<?php endif; ?>
 		</div>
 		<?php
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * AJAX (public): the check-in list of a running session, only when it changed.
+	 */
+	public static function ajax_public_log() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- public, read-only data that is also on the page.
+		$key   = isset( $_GET['event'] ) ? sanitize_text_field( wp_unslash( $_GET['event'] ) ) : '';
+		$since = isset( $_GET['since'] ) ? sanitize_key( wp_unslash( $_GET['since'] ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		$o = ARNL_Schedule::find( $key );
+		if ( ! $o || 'active' !== $o->net['status'] || 'none' === ARNL_Settings::get( 'public_log' ) ) {
+			wp_send_json_error( null, 404 );
+		}
+		$checkins  = $o->is_virtual() ? array() : ARNL_Checkins::for_event( $o->event_id, 'approved' );
+		$signature = self::public_signature( $o, $checkins );
+		$live      = self::log_is_live( $o );
+		if ( $since === $signature ) {
+			wp_send_json_success(
+				array(
+					'changed' => false,
+					'live'    => $live,
+				)
+			);
+		}
+		wp_send_json_success(
+			array(
+				'changed'   => true,
+				'live'      => $live,
+				'signature' => $signature,
+				'event'     => $o->key(),
+				'html'      => self::public_log( $o ),
+			)
+		);
 	}
 }

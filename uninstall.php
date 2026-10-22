@@ -23,7 +23,8 @@ function arnl_uninstall_site() {
 	if ( $page_id && 'page' === get_post_type( $page_id ) ) {
 		wp_delete_post( $page_id, true );
 	}
-	foreach ( array( 'arnl_settings', 'arnl_db_version', 'arnl_net_page_id', 'arnl_flush_rewrite', 'arnl_create_page' ) as $option ) {
+	wp_clear_scheduled_hook( 'arnl_hourly' );
+	foreach ( array( 'arnl_settings', 'arnl_db_version', 'arnl_net_page_id', 'arnl_flush_rewrite', 'arnl_create_page', 'arnl_fb_posts', 'arnl_fb_last_error', 'arnl_discord_last_error' ) as $option ) {
 		delete_option( $option );
 	}
 	delete_transient( 'arnl_event_page' );

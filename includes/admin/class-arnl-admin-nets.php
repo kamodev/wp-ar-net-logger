@@ -264,11 +264,84 @@ class ARNL_Admin_Nets {
 							<p class="description"><?php esc_html_e( 'Can be changed for each session on the schedule.', 'ar-net-logger' ); ?></p>
 						</td>
 					</tr>
-					<tr>
-						<th scope="row"><label for="arnl-preamble"><?php esc_html_e( 'Net preamble / script', 'ar-net-logger' ); ?></label></th>
+					<tr id="arnl-script-row">
+						<th scope="row"><label for="arnl_preamble"><?php esc_html_e( 'Net script', 'ar-net-logger' ); ?></label></th>
 						<td>
-							<textarea id="arnl-preamble" name="preamble" class="large-text" rows="8" placeholder="<?php esc_attr_e( 'This is [callsign], net control for the ... net. This is a directed net. Is there any emergency or priority traffic? ...', 'ar-net-logger' ); ?>"><?php echo esc_textarea( $net['preamble'] ); ?></textarea>
-							<p class="description"><?php esc_html_e( 'Shown to the NCS on the Net Log screen while running the net.', 'ar-net-logger' ); ?></p>
+							<p class="description arnl-script-intro"><?php esc_html_e( 'The preamble and script Net Control reads on the air. It is shown, formatted and read-only, on the Net Log of every session.', 'ar-net-logger' ); ?></p>
+							<?php
+							wp_editor(
+								$net['preamble'],
+								'arnl_preamble',
+								array(
+									'textarea_name' => 'preamble',
+									'textarea_rows' => 16,
+									'media_buttons' => false,
+									'tinymce'       => array(
+										'toolbar1'      => 'formatselect,bold,italic,underline,forecolor,backcolor,bullist,numlist,blockquote,hr,alignleft,aligncenter,link,removeformat,undo,redo',
+										'toolbar2'      => '',
+										'block_formats' => __( 'Paragraph=p;Heading=h3;Subheading=h4;Preformatted=pre', 'ar-net-logger' ),
+									),
+									'quicktags'     => array( 'buttons' => 'strong,em,ul,ol,li,block,link,close' ),
+								)
+							);
+							?>
+							<div class="arnl-script-tools">
+								<p class="arnl-placeholders">
+									<span class="arnl-placeholders-label"><?php esc_html_e( 'Insert a placeholder, filled in for each session:', 'ar-net-logger' ); ?></span>
+									<?php foreach ( arnl_script_placeholders() as $key => $label ) : ?>
+										<button type="button" class="button-link arnl-insert-placeholder" data-placeholder="<?php echo esc_attr( '{' . $key . '}' ); ?>" title="<?php echo esc_attr( $label ); ?>"><code><?php echo esc_html( '{' . $key . '}' ); ?></code></button>
+									<?php endforeach; ?>
+								</p>
+								<p>
+									<button type="button" class="button" id="arnl-insert-sample" data-arnl-confirm="<?php esc_attr_e( 'Replace the current script with the sample directed-net script?', 'ar-net-logger' ); ?>"><?php esc_html_e( 'Insert sample script', 'ar-net-logger' ); ?></button>
+								</p>
+								<template id="arnl-sample-script"><?php echo wp_kses_post( arnl_sample_script() ); ?></template>
+							</div>
+						</td>
+					</tr>
+				</table>
+
+				<h2 class="title"><?php esc_html_e( 'Sharing', 'ar-net-logger' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="arnl-discord-mode"><?php esc_html_e( 'Discord', 'ar-net-logger' ); ?></label></th>
+						<td>
+							<?php
+							ARNL_Admin::select(
+								'discord_mode',
+								array(
+									'default' => '' !== (string) ARNL_Settings::get( 'discord_webhook' ) ? __( 'Post check-ins to the default Discord channel', 'ar-net-logger' ) : __( 'Use the default Discord webhook (none set yet)', 'ar-net-logger' ),
+									'custom'  => __( 'Post check-ins to this net\'s own Discord channel', 'ar-net-logger' ),
+									'off'     => __( 'Do not post this net to Discord', 'ar-net-logger' ),
+								),
+								$net['discord_mode'],
+								array( 'id' => 'arnl-discord-mode' )
+							);
+							?>
+							<p class="arnl-row-discord-webhook">
+								<label for="arnl-discord-webhook"><?php esc_html_e( 'Webhook URL for this net', 'ar-net-logger' ); ?></label><br>
+								<input type="password" id="arnl-discord-webhook" name="discord_webhook" class="large-text code" value="" autocomplete="off" placeholder="<?php echo esc_attr( '' !== $net['discord_webhook'] ? __( 'Saved – leave blank to keep it', 'ar-net-logger' ) : 'https://discord.com/api/webhooks/…' ); ?>">
+							</p>
+							<p class="description"><?php esc_html_e( 'In Discord: Server Settings → Integrations → Webhooks → New Webhook, choose the channel, then Copy Webhook URL.', 'ar-net-logger' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="arnl-facebook-mode"><?php esc_html_e( 'Facebook', 'ar-net-logger' ); ?></label></th>
+						<td>
+							<?php
+							ARNL_Admin::select(
+								'facebook_mode',
+								array(
+									'default' => __( 'Announce sessions on the Facebook Page', 'ar-net-logger' ),
+									'off'     => __( 'Do not post this net to Facebook', 'ar-net-logger' ),
+								),
+								$net['facebook_mode'],
+								array( 'id' => 'arnl-facebook-mode' )
+							);
+							?>
+							<?php if ( ! ARNL_Facebook::configured() ) : ?>
+								<p class="description"><?php esc_html_e( 'Connect a Facebook Page under Net Logger → Settings first.', 'ar-net-logger' ); ?></p>
+							<?php endif; ?>
 						</td>
 					</tr>
 				</table>
@@ -331,6 +404,18 @@ class ARNL_Admin_Nets {
 			$data[ $field ] = isset( $_POST[ $field ] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST[ $field ] ) ) : array();
 		}
 		$data['allow_checkins'] = empty( $_POST['allow_checkins'] ) ? 0 : 1;
+		foreach ( array( 'discord_mode', 'facebook_mode' ) as $field ) {
+			$data[ $field ] = isset( $_POST[ $field ] ) ? sanitize_key( wp_unslash( $_POST[ $field ] ) ) : 'default';
+		}
+		// The webhook is a secret and not shown again: blank keeps the saved one; other modes clear it.
+		$webhook = isset( $_POST['discord_webhook'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['discord_webhook'] ) ) ) : '';
+		if ( 'custom' !== $data['discord_mode'] ) {
+			$webhook = '';
+		} elseif ( '' === $webhook && $id ) {
+			$saved   = ARNL_Nets::get( $id );
+			$webhook = $saved ? $saved['discord_webhook'] : '';
+		}
+		$data['discord_webhook'] = $webhook;
 
 		$result = $id ? ARNL_Nets::update( $id, $data ) : ARNL_Nets::insert( $data );
 		$form   = ARNL_Admin::url(

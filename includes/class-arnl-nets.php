@@ -36,31 +36,34 @@ class ARNL_Nets {
 	 */
 	public static function defaults() {
 		return array(
-			'id'             => 0,
-			'name'           => '',
-			'slug'           => '',
-			'description'    => '',
-			'net_type'       => 'directed',
-			'mode'           => 'fm',
-			'band'           => '2m',
-			'frequency'      => '',
-			'access_info'    => '',
-			'start_time'     => '19:00:00',
-			'end_time'       => '20:00:00',
-			'recurrence'     => ARNL_Recurrence::WEEKLY,
-			'days_of_week'   => array(),
-			'weeks_of_month' => array(),
-			'months'         => array(),
-			'start_date'     => '',
-			'end_date'       => '',
-			'ncs_callsign'   => '',
-			'ncs_name'       => '',
-			'preamble'       => '',
-			'color'          => '#2271b1',
-			'allow_checkins' => 1,
-			'status'         => 'active',
-			'created_at'     => '',
-			'updated_at'     => '',
+			'id'              => 0,
+			'name'            => '',
+			'slug'            => '',
+			'description'     => '',
+			'net_type'        => 'directed',
+			'mode'            => 'fm',
+			'band'            => '2m',
+			'frequency'       => '',
+			'access_info'     => '',
+			'start_time'      => '19:00:00',
+			'end_time'        => '20:00:00',
+			'recurrence'      => ARNL_Recurrence::WEEKLY,
+			'days_of_week'    => array(),
+			'weeks_of_month'  => array(),
+			'months'          => array(),
+			'start_date'      => '',
+			'end_date'        => '',
+			'ncs_callsign'    => '',
+			'ncs_name'        => '',
+			'preamble'        => '',
+			'color'           => '#2271b1',
+			'allow_checkins'  => 1,
+			'discord_mode'    => 'default',
+			'discord_webhook' => '',
+			'facebook_mode'   => 'default',
+			'status'          => 'active',
+			'created_at'      => '',
+			'updated_at'      => '',
 		);
 	}
 
@@ -365,6 +368,15 @@ class ARNL_Nets {
 			$errors->add( 'arnl_end_date', __( 'The end date must be on or after the start date.', 'ar-net-logger' ) );
 		}
 
+		$discord_mode    = in_array( (string) $data['discord_mode'], array( 'default', 'custom', 'off' ), true ) ? (string) $data['discord_mode'] : 'default';
+		$discord_webhook = trim( (string) $data['discord_webhook'] );
+		if ( '' !== $discord_webhook && ! ARNL_Discord::valid_webhook( $discord_webhook ) ) {
+			$errors->add( 'arnl_discord_webhook', __( 'Enter a Discord webhook URL (https://discord.com/api/webhooks/...) or leave it blank.', 'ar-net-logger' ) );
+		}
+		if ( 'custom' === $discord_mode && '' === $discord_webhook ) {
+			$errors->add( 'arnl_discord_webhook', __( 'Enter the Discord webhook URL for this net, or choose the default webhook.', 'ar-net-logger' ) );
+		}
+
 		$start_time = arnl_sanitize_time( $data['start_time'], '' );
 		if ( '' === $start_time ) {
 			$errors->add( 'arnl_start_time', __( 'Please enter a valid start time.', 'ar-net-logger' ) );
@@ -387,28 +399,31 @@ class ARNL_Nets {
 		$color = sanitize_hex_color( (string) $data['color'] );
 
 		return array(
-			'name'           => $name,
-			'slug'           => self::unique_slug( substr( $slug, 0, 180 ), (int) $id ),
-			'description'    => wp_kses_post( (string) $data['description'] ),
-			'net_type'       => array_key_exists( (string) $data['net_type'], arnl_net_types() ) ? (string) $data['net_type'] : 'other',
-			'mode'           => array_key_exists( (string) $data['mode'], arnl_modes() ) ? (string) $data['mode'] : '',
-			'band'           => array_key_exists( (string) $data['band'], arnl_bands() ) ? (string) $data['band'] : '',
-			'frequency'      => substr( sanitize_text_field( (string) $data['frequency'] ), 0, 100 ),
-			'access_info'    => substr( sanitize_text_field( (string) $data['access_info'] ), 0, 255 ),
-			'start_time'     => $start_time,
-			'end_time'       => $end_time,
-			'recurrence'     => $recurrence,
-			'days_of_week'   => implode( ',', $days ),
-			'weeks_of_month' => ARNL_Recurrence::MONTHLY === $recurrence ? implode( ',', $weeks ) : '',
-			'months'         => implode( ',', $months ),
-			'start_date'     => '' !== $start_date ? $start_date : null,
-			'end_date'       => '' !== $end_date ? $end_date : null,
-			'ncs_callsign'   => arnl_sanitize_callsign( $data['ncs_callsign'] ),
-			'ncs_name'       => substr( sanitize_text_field( (string) $data['ncs_name'] ), 0, 100 ),
-			'preamble'       => wp_kses_post( (string) $data['preamble'] ),
-			'color'          => $color ? $color : '#2271b1',
-			'allow_checkins' => empty( $data['allow_checkins'] ) ? 0 : 1,
-			'status'         => 'inactive' === $data['status'] ? 'inactive' : 'active',
+			'name'            => $name,
+			'slug'            => self::unique_slug( substr( $slug, 0, 180 ), (int) $id ),
+			'description'     => wp_kses_post( (string) $data['description'] ),
+			'net_type'        => array_key_exists( (string) $data['net_type'], arnl_net_types() ) ? (string) $data['net_type'] : 'other',
+			'mode'            => array_key_exists( (string) $data['mode'], arnl_modes() ) ? (string) $data['mode'] : '',
+			'band'            => array_key_exists( (string) $data['band'], arnl_bands() ) ? (string) $data['band'] : '',
+			'frequency'       => substr( sanitize_text_field( (string) $data['frequency'] ), 0, 100 ),
+			'access_info'     => substr( sanitize_text_field( (string) $data['access_info'] ), 0, 255 ),
+			'start_time'      => $start_time,
+			'end_time'        => $end_time,
+			'recurrence'      => $recurrence,
+			'days_of_week'    => implode( ',', $days ),
+			'weeks_of_month'  => ARNL_Recurrence::MONTHLY === $recurrence ? implode( ',', $weeks ) : '',
+			'months'          => implode( ',', $months ),
+			'start_date'      => '' !== $start_date ? $start_date : null,
+			'end_date'        => '' !== $end_date ? $end_date : null,
+			'ncs_callsign'    => arnl_sanitize_callsign( $data['ncs_callsign'] ),
+			'ncs_name'        => substr( sanitize_text_field( (string) $data['ncs_name'] ), 0, 100 ),
+			'preamble'        => wp_kses_post( (string) $data['preamble'] ),
+			'color'           => $color ? $color : '#2271b1',
+			'allow_checkins'  => empty( $data['allow_checkins'] ) ? 0 : 1,
+			'discord_mode'    => $discord_mode,
+			'discord_webhook' => $discord_webhook,
+			'facebook_mode'   => 'off' === (string) $data['facebook_mode'] ? 'off' : 'default',
+			'status'          => 'inactive' === $data['status'] ? 'inactive' : 'active',
 		);
 	}
 

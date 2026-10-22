@@ -325,6 +325,14 @@ class ARNL_Checkins {
 			return new WP_Error( 'arnl_db_error', __( 'The check-in could not be saved.', 'ar-net-logger' ) );
 		}
 		do_action( 'arnl_checkin_updated', (int) $id );
+		if ( 'approved' === $row['status'] && 'approved' !== $current['status'] ) {
+			/**
+			 * Fires when a pending (or rejected) check-in is approved.
+			 *
+			 * @param int $id Check-in ID.
+			 */
+			do_action( 'arnl_checkin_approved', (int) $id );
+		}
 		return true;
 	}
 

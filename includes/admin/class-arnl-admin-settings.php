@@ -17,6 +17,8 @@ class ARNL_Admin_Settings {
 	 */
 	public static function init() {
 		add_action( 'admin_init', array( __CLASS__, 'register' ) );
+		add_action( 'admin_post_arnl_discord_test', array( __CLASS__, 'handle_discord_test' ) );
+		add_action( 'admin_post_arnl_facebook_test', array( __CLASS__, 'handle_facebook_test' ) );
 	}
 
 	/**
@@ -193,6 +195,106 @@ class ARNL_Admin_Settings {
 					</tr>
 				</table>
 
+				<h2 class="title" id="arnl-discord"><?php esc_html_e( 'Discord', 'ar-net-logger' ); ?></h2>
+				<?php $discord_error = get_option( ARNL_Discord::ERROR_OPTION ); ?>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="arnl-discord-webhook"><?php esc_html_e( 'Default webhook URL', 'ar-net-logger' ); ?></label></th>
+						<td>
+							<input type="password" id="arnl-discord-webhook" name="<?php echo esc_attr( $name ); ?>[discord_webhook]" value="" class="large-text code" autocomplete="off" placeholder="<?php echo esc_attr( '' !== $s['discord_webhook'] ? __( 'Saved – leave blank to keep it', 'ar-net-logger' ) : 'https://discord.com/api/webhooks/…' ); ?>">
+							<?php if ( '' !== $s['discord_webhook'] ) : ?>
+								<br><label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[discord_webhook_clear]" value="1"> <?php esc_html_e( 'Remove the saved webhook', 'ar-net-logger' ); ?></label>
+								&nbsp; <a class="button button-small" href="<?php echo esc_url( ARNL_Admin::action_url( 'arnl_discord_test' ) ); ?>"><?php esc_html_e( 'Send a test message', 'ar-net-logger' ); ?></a>
+							<?php endif; ?>
+							<p class="description"><?php esc_html_e( 'In Discord: Server Settings → Integrations → Webhooks → New Webhook, pick the channel, Copy Webhook URL. Nets can use their own channel instead (Nets → Edit → Sharing).', 'ar-net-logger' ); ?></p>
+							<?php if ( is_array( $discord_error ) && ! empty( $discord_error['message'] ) ) : ?>
+								<p class="arnl-integration-error">
+									<?php
+									/* translators: 1: date/time, 2: error message. */
+									echo esc_html( sprintf( __( 'Last error (%1$s): %2$s', 'ar-net-logger' ), $discord_error['time'], $discord_error['message'] ) );
+									?>
+								</p>
+							<?php endif; ?>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Post to Discord', 'ar-net-logger' ); ?></th>
+						<td>
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[discord_checkins]" value="1" <?php checked( $s['discord_checkins'] ); ?>> <?php esc_html_e( 'Each check-in (website check-ins once approved)', 'ar-net-logger' ); ?></label><br>
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[discord_open_close]" value="1" <?php checked( $s['discord_open_close'] ); ?>> <?php esc_html_e( 'When the NCS opens the net, and a summary when it closes', 'ar-net-logger' ); ?></label>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Include', 'ar-net-logger' ); ?></th>
+						<td>
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[discord_include_name]" value="1" <?php checked( $s['discord_include_name'] ); ?>> <?php esc_html_e( 'Name', 'ar-net-logger' ); ?></label> &nbsp;
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[discord_include_location]" value="1" <?php checked( $s['discord_include_location'] ); ?>> <?php esc_html_e( 'Location', 'ar-net-logger' ); ?></label> &nbsp;
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[discord_include_comments]" value="1" <?php checked( $s['discord_include_comments'] ); ?>> <?php esc_html_e( 'Comments', 'ar-net-logger' ); ?></label>
+							<p class="description"><?php esc_html_e( 'Callsign, station type, traffic and relays are always included. Mentions such as @everyone are never triggered.', 'ar-net-logger' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="arnl-discord-username"><?php esc_html_e( 'Post as', 'ar-net-logger' ); ?></label></th>
+						<td><input type="text" id="arnl-discord-username" name="<?php echo esc_attr( $name ); ?>[discord_username]" value="<?php echo esc_attr( $s['discord_username'] ); ?>" class="regular-text" maxlength="80" placeholder="<?php esc_attr_e( 'The webhook\'s own name', 'ar-net-logger' ); ?>"></td>
+					</tr>
+				</table>
+
+				<h2 class="title" id="arnl-facebook"><?php esc_html_e( 'Facebook Page', 'ar-net-logger' ); ?></h2>
+				<?php $facebook_error = get_option( ARNL_Facebook::ERROR_OPTION ); ?>
+				<p class="description arnl-integration-note">
+					<?php esc_html_e( 'Sessions are announced as posts on your Facebook Page. Facebook does not allow apps to create Page or Group events, or to post in Groups, so the Net Log of each session shows ready-to-paste event details for creating those by hand.', 'ar-net-logger' ); ?>
+				</p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="arnl-facebook-page"><?php esc_html_e( 'Page ID', 'ar-net-logger' ); ?></label></th>
+						<td>
+							<input type="text" id="arnl-facebook-page" name="<?php echo esc_attr( $name ); ?>[facebook_page_id]" value="<?php echo esc_attr( $s['facebook_page_id'] ); ?>" class="regular-text code" inputmode="numeric">
+							<p class="description"><?php esc_html_e( 'On your Page: About → Page transparency, or Settings → Page ID.', 'ar-net-logger' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="arnl-facebook-token"><?php esc_html_e( 'Page access token', 'ar-net-logger' ); ?></label></th>
+						<td>
+							<input type="password" id="arnl-facebook-token" name="<?php echo esc_attr( $name ); ?>[facebook_token]" value="" class="large-text code" autocomplete="off" placeholder="<?php echo esc_attr( '' !== $s['facebook_token'] ? __( 'Saved – leave blank to keep it', 'ar-net-logger' ) : '' ); ?>">
+							<?php if ( '' !== $s['facebook_token'] ) : ?>
+								<br><label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[facebook_token_clear]" value="1"> <?php esc_html_e( 'Remove the saved token', 'ar-net-logger' ); ?></label>
+								&nbsp; <a class="button button-small" href="<?php echo esc_url( ARNL_Admin::action_url( 'arnl_facebook_test' ) ); ?>"><?php esc_html_e( 'Test the connection', 'ar-net-logger' ); ?></a>
+							<?php endif; ?>
+							<p class="description"><?php esc_html_e( 'A long-lived Page access token with the pages_manage_posts and pages_read_engagement permissions (see the README for the steps).', 'ar-net-logger' ); ?></p>
+							<?php if ( is_array( $facebook_error ) && ! empty( $facebook_error['message'] ) ) : ?>
+								<p class="arnl-integration-error">
+									<?php
+									/* translators: 1: date/time, 2: error message. */
+									echo esc_html( sprintf( __( 'Last error (%1$s): %2$s', 'ar-net-logger' ), $facebook_error['time'], $facebook_error['message'] ) );
+									?>
+								</p>
+							<?php endif; ?>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="arnl-facebook-lead"><?php esc_html_e( 'Announce sessions', 'ar-net-logger' ); ?></label></th>
+						<td>
+							<?php
+							printf(
+								/* translators: %s: hours input. */
+								esc_html__( 'Post each session automatically %s hours before it starts.', 'ar-net-logger' ),
+								'<input type="number" id="arnl-facebook-lead" min="0" max="336" class="small-text" name="' . esc_attr( $name ) . '[facebook_lead_hours]" value="' . (int) $s['facebook_lead_hours'] . '">'
+							);
+							?>
+							<p class="description"><?php esc_html_e( '0 = only when you click "Post to Facebook" on the schedule. Checked hourly by WP-Cron. A cancelled session\'s post is marked CANCELLED.', 'ar-net-logger' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="arnl-facebook-template"><?php esc_html_e( 'Post text', 'ar-net-logger' ); ?></label></th>
+						<td>
+							<textarea id="arnl-facebook-template" name="<?php echo esc_attr( $name ); ?>[facebook_template]" rows="7" class="large-text"><?php echo esc_textarea( '' !== $s['facebook_template'] ? $s['facebook_template'] : ARNL_Facebook::default_template() ); ?></textarea>
+							<p class="description">
+								<?php esc_html_e( 'Placeholders: {net} {date} {time} {end_time} {timezone} {frequency} {ncs} {topic} {type} {description} {url}. Lines whose placeholders are all empty are left out.', 'ar-net-logger' ); ?>
+							</p>
+						</td>
+					</tr>
+				</table>
+
 				<h2 class="title"><?php esc_html_e( 'Uninstall', 'ar-net-logger' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
@@ -208,6 +310,40 @@ class ARNL_Admin_Settings {
 			<?php self::reference(); ?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Send a test message to the default Discord webhook.
+	 */
+	public static function handle_discord_test() {
+		check_admin_referer( 'arnl_discord_test' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to change these settings.', 'ar-net-logger' ), 403 );
+		}
+		$back    = ARNL_Admin::url( 'arnl-settings' ) . '#arnl-discord';
+		$webhook = (string) ARNL_Settings::get( 'discord_webhook' );
+		$result  = '' !== $webhook ? ARNL_Discord::send( $webhook, ARNL_Discord::test_payload() ) : new WP_Error( 'arnl_discord', __( 'Save a Discord webhook URL first.', 'ar-net-logger' ) );
+		if ( is_wp_error( $result ) ) {
+			/* translators: %s: error message. */
+			ARNL_Admin::fail( $back, sprintf( __( 'Discord: %s', 'ar-net-logger' ), $result->get_error_message() ) );
+		}
+		ARNL_Admin::redirect( $back, 'discord_test_sent' );
+	}
+
+	/**
+	 * Check the Facebook Page connection.
+	 */
+	public static function handle_facebook_test() {
+		check_admin_referer( 'arnl_facebook_test' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to change these settings.', 'ar-net-logger' ), 403 );
+		}
+		$back   = ARNL_Admin::url( 'arnl-settings' ) . '#arnl-facebook';
+		$result = ARNL_Facebook::test();
+		if ( is_wp_error( $result ) ) {
+			ARNL_Admin::fail( $back, $result );
+		}
+		ARNL_Admin::redirect( add_query_arg( 'arnl_page', rawurlencode( $result ), ARNL_Admin::url( 'arnl-settings' ) ) . '#arnl-facebook', 'facebook_connected' );
 	}
 
 	/**
