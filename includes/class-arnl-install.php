@@ -52,13 +52,99 @@ class ARNL_Install {
 	 * Create tables, roles, default options and the "Nets" page for net permalinks.
 	 */
 	public static function install() {
+		$previous = (string) get_option( 'arnl_db_version' );
 		self::create_tables();
+		if ( '' !== $previous && version_compare( $previous, '5', '<' ) ) {
+			self::move_sharing_to_nets();
+		}
 		self::add_caps();
 		add_option( ARNL_Settings::OPTION, ARNL_Settings::defaults() );
 		// The page is created on "init", once WordPress has registered its post types.
 		update_option( 'arnl_create_page', 1 );
 		ARNL_Permalinks::schedule_flush();
 		update_option( 'arnl_db_version', ARNL_DB_VERSION );
+	}
+
+	/**
+	 * Upgrade to 1.2.3: Discord and Facebook were set up site-wide (with a
+	 * per-net on / off or channel). Copy the site settings into every net so
+	 * each keeps posting where it did, then drop them from the site settings.
+	 */
+	public static function move_sharing_to_nets() {
+		global $wpdb;
+		$settings = get_option( ARNL_Settings::OPTION, array() );
+		$settings = is_array( $settings ) ? $settings : array();
+		$old      = array_merge(
+			array(
+				'discord_webhook'               => '',
+				'discord_username'              => '',
+				'discord_checkins'              => 1,
+				'discord_open_close'            => 1,
+				'discord_include_name'          => 1,
+				'discord_include_location'      => 1,
+				'discord_include_announcements' => 1,
+				'discord_include_comments'      => 0,
+				'facebook_page_id'              => '',
+				'facebook_token'                => '',
+				'facebook_lead_hours'           => 24,
+				'facebook_template'             => '',
+			),
+			$settings
+		);
+
+		$post    = array();
+		$include = array();
+		foreach ( array( 'checkins', 'open_close' ) as $kind ) {
+			if ( ! empty( $old[ 'discord_' . $kind ] ) ) {
+				$post[] = $kind;
+			}
+		}
+		foreach ( array( 'name', 'location', 'announcements', 'comments' ) as $field ) {
+			if ( ! empty( $old[ 'discord_include_' . $field ] ) ) {
+				$include[] = $field;
+			}
+		}
+		$page  = (string) $old['facebook_page_id'];
+		$token = (string) $old['facebook_token'];
+
+		$table = ARNL_Nets::table();
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+		foreach ( (array) $wpdb->get_results( "SELECT id, discord_mode, discord_webhook, facebook_mode FROM {$table}", ARRAY_A ) as $net ) {
+			if ( in_array( $net['discord_mode'], array( 'custom', 'on' ), true ) ) {
+				$webhook = (string) $net['discord_webhook']; // The net's own channel.
+			} elseif ( 'off' === $net['discord_mode'] ) {
+				$webhook = '';
+			} else {
+				$webhook = (string) $old['discord_webhook']; // The site's default channel.
+			}
+			$facebook = 'off' !== $net['facebook_mode'] && '' !== $page && '' !== $token;
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->update(
+				$table,
+				array(
+					'discord_mode'        => '' !== $webhook ? 'on' : 'off',
+					'discord_webhook'     => $webhook,
+					'discord_username'    => substr( (string) $old['discord_username'], 0, 80 ),
+					'discord_post'        => implode( ',', $post ),
+					'discord_include'     => implode( ',', $include ),
+					'facebook_mode'       => $facebook ? 'on' : 'off',
+					'facebook_page_id'    => $facebook ? $page : '',
+					'facebook_token'      => $facebook ? $token : '',
+					'facebook_lead_hours' => max( 0, min( 336, (int) $old['facebook_lead_hours'] ) ),
+					'facebook_template'   => (string) $old['facebook_template'],
+				),
+				array( 'id' => (int) $net['id'] )
+			);
+		}
+
+		foreach ( array_keys( $old ) as $key ) {
+			unset( $settings[ $key ] );
+		}
+		update_option( ARNL_Settings::OPTION, $settings );
+		delete_option( 'arnl_discord_last_error' );
+		delete_option( 'arnl_fb_last_error' );
+		ARNL_Settings::flush();
+		ARNL_Nets::flush_cache();
 	}
 
 	/**
@@ -125,12 +211,20 @@ class ARNL_Install {
   xlx_reflector varchar(100) NOT NULL DEFAULT '',
   dstar_reflector varchar(100) NOT NULL DEFAULT '',
   wiresx_room varchar(100) NOT NULL DEFAULT '',
+  dmr_talkgroup varchar(100) NOT NULL DEFAULT '',
   linked_system tinyint(1) NOT NULL DEFAULT 0,
   system_name varchar(100) NOT NULL DEFAULT '',
   system_url varchar(255) NOT NULL DEFAULT '',
   discord_mode varchar(10) NOT NULL DEFAULT 'default',
   discord_webhook varchar(255) NOT NULL DEFAULT '',
   facebook_mode varchar(10) NOT NULL DEFAULT 'default',
+  discord_username varchar(80) NOT NULL DEFAULT '',
+  discord_post varchar(40) NOT NULL DEFAULT 'checkins,open_close',
+  discord_include varchar(80) NOT NULL DEFAULT 'name,location,announcements',
+  facebook_page_id varchar(64) NOT NULL DEFAULT '',
+  facebook_token text NULL,
+  facebook_lead_hours smallint(6) NOT NULL DEFAULT 24,
+  facebook_template text NULL,
   status varchar(20) NOT NULL DEFAULT 'active',
   created_at datetime NOT NULL,
   updated_at datetime NOT NULL,

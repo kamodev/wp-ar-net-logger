@@ -36,45 +36,53 @@ class ARNL_Nets {
 	 */
 	public static function defaults() {
 		return array(
-			'id'              => 0,
-			'name'            => '',
-			'slug'            => '',
-			'description'     => '',
-			'net_type'        => 'directed',
-			'mode'            => 'fm',
-			'band'            => '2m',
-			'frequency'       => '',
-			'access_info'     => '',
-			'start_time'      => '19:00:00',
-			'end_time'        => '20:00:00',
-			'recurrence'      => ARNL_Recurrence::WEEKLY,
-			'days_of_week'    => array(),
-			'weeks_of_month'  => array(),
-			'months'          => array(),
-			'start_date'      => '',
-			'end_date'        => '',
-			'ncs_callsign'    => '',
-			'ncs_name'        => '',
-			'preamble'        => '',
-			'color'           => '#2271b1',
-			'allow_checkins'  => 1,
-			'checkin_before'  => -1,
-			'checkin_after'   => -1,
-			'logo_id'         => 0,
-			'is_digital'      => 0,
-			'ysf_room'        => '',
-			'xlx_reflector'   => '',
-			'dstar_reflector' => '',
-			'wiresx_room'     => '',
-			'linked_system'   => 0,
-			'system_name'     => '',
-			'system_url'      => '',
-			'discord_mode'    => 'default',
-			'discord_webhook' => '',
-			'facebook_mode'   => 'default',
-			'status'          => 'active',
-			'created_at'      => '',
-			'updated_at'      => '',
+			'id'                  => 0,
+			'name'                => '',
+			'slug'                => '',
+			'description'         => '',
+			'net_type'            => 'directed',
+			'mode'                => 'fm',
+			'band'                => '2m',
+			'frequency'           => '',
+			'access_info'         => '',
+			'start_time'          => '19:00:00',
+			'end_time'            => '20:00:00',
+			'recurrence'          => ARNL_Recurrence::WEEKLY,
+			'days_of_week'        => array(),
+			'weeks_of_month'      => array(),
+			'months'              => array(),
+			'start_date'          => '',
+			'end_date'            => '',
+			'ncs_callsign'        => '',
+			'ncs_name'            => '',
+			'preamble'            => '',
+			'color'               => '#2271b1',
+			'allow_checkins'      => 1,
+			'checkin_before'      => -1,
+			'checkin_after'       => -1,
+			'logo_id'             => 0,
+			'is_digital'          => 0,
+			'ysf_room'            => '',
+			'xlx_reflector'       => '',
+			'dstar_reflector'     => '',
+			'wiresx_room'         => '',
+			'dmr_talkgroup'       => '',
+			'linked_system'       => 0,
+			'system_name'         => '',
+			'system_url'          => '',
+			'discord_mode'        => 'off',
+			'discord_webhook'     => '',
+			'discord_username'    => '',
+			'discord_post'        => array( 'checkins', 'open_close' ),
+			'discord_include'     => array( 'name', 'location', 'announcements' ),
+			'facebook_mode'       => 'off',
+			'facebook_page_id'    => '',
+			'facebook_token'      => '',
+			'facebook_lead_hours' => 24,
+			'facebook_template'   => '',
+			'status'              => 'active',
+			'created_at'          => '',
+			'updated_at'          => '',
 		);
 	}
 
@@ -379,13 +387,24 @@ class ARNL_Nets {
 			$errors->add( 'arnl_end_date', __( 'The end date must be on or after the start date.', 'ar-net-logger' ) );
 		}
 
-		$discord_mode    = in_array( (string) $data['discord_mode'], array( 'default', 'custom', 'off' ), true ) ? (string) $data['discord_mode'] : 'default';
+		// Discord and Facebook are set up for each net.
+		$discord_mode    = 'off' === (string) $data['discord_mode'] ? 'off' : 'on';
 		$discord_webhook = trim( (string) $data['discord_webhook'] );
 		if ( '' !== $discord_webhook && ! ARNL_Discord::valid_webhook( $discord_webhook ) ) {
 			$errors->add( 'arnl_discord_webhook', __( 'Enter a Discord webhook URL (https://discord.com/api/webhooks/...) or leave it blank.', 'ar-net-logger' ) );
 		}
-		if ( 'custom' === $discord_mode && '' === $discord_webhook ) {
-			$errors->add( 'arnl_discord_webhook', __( 'Enter the Discord webhook URL for this net, or choose the default webhook.', 'ar-net-logger' ) );
+		if ( 'on' === $discord_mode && '' === $discord_webhook ) {
+			$errors->add( 'arnl_discord_webhook', __( 'Enter the Discord webhook URL for this net, or turn Discord off for it.', 'ar-net-logger' ) );
+		}
+		$facebook_mode    = 'off' === (string) $data['facebook_mode'] ? 'off' : 'on';
+		$facebook_page_id = substr( preg_replace( '/\D/', '', (string) $data['facebook_page_id'] ), 0, 64 );
+		$facebook_token   = preg_replace( '/[^A-Za-z0-9_|.\-]/', '', (string) $data['facebook_token'] );
+		if ( 'on' === $facebook_mode && ( '' === $facebook_page_id || '' === $facebook_token ) ) {
+			$errors->add( 'arnl_facebook', __( 'Enter the Facebook Page ID and Page access token for this net, or turn Facebook off for it.', 'ar-net-logger' ) );
+		}
+		$facebook_template = trim( substr( sanitize_textarea_field( (string) $data['facebook_template'] ), 0, 2000 ) );
+		if ( ARNL_Facebook::default_template() === $facebook_template ) {
+			$facebook_template = '';
 		}
 
 		$band          = array_key_exists( (string) $data['band'], arnl_bands() ) ? (string) $data['band'] : '';
@@ -426,43 +445,63 @@ class ARNL_Nets {
 		$color = sanitize_hex_color( (string) $data['color'] );
 
 		return array(
-			'name'            => $name,
-			'slug'            => self::unique_slug( substr( $slug, 0, 180 ), (int) $id ),
-			'description'     => wp_kses_post( (string) $data['description'] ),
-			'net_type'        => array_key_exists( (string) $data['net_type'], arnl_net_types() ) ? (string) $data['net_type'] : 'other',
-			'mode'            => array_key_exists( (string) $data['mode'], arnl_modes() ) ? (string) $data['mode'] : '',
-			'band'            => $band,
-			'frequency'       => substr( sanitize_text_field( (string) $data['frequency'] ), 0, 100 ),
-			'access_info'     => substr( sanitize_text_field( (string) $data['access_info'] ), 0, 255 ),
-			'start_time'      => $start_time,
-			'end_time'        => $end_time,
-			'recurrence'      => $recurrence,
-			'days_of_week'    => implode( ',', $days ),
-			'weeks_of_month'  => ARNL_Recurrence::MONTHLY === $recurrence ? implode( ',', $weeks ) : '',
-			'months'          => implode( ',', $months ),
-			'start_date'      => '' !== $start_date ? $start_date : null,
-			'end_date'        => '' !== $end_date ? $end_date : null,
-			'ncs_callsign'    => arnl_sanitize_callsign( $data['ncs_callsign'] ),
-			'ncs_name'        => substr( sanitize_text_field( (string) $data['ncs_name'] ), 0, 100 ),
-			'preamble'        => wp_kses_post( (string) $data['preamble'] ),
-			'color'           => $color ? $color : '#2271b1',
-			'allow_checkins'  => empty( $data['allow_checkins'] ) ? 0 : 1,
-			'checkin_before'  => self::window_minutes( $data['checkin_before'] ),
-			'checkin_after'   => self::window_minutes( $data['checkin_after'] ),
-			'logo_id'         => $logo_id,
-			'is_digital'      => empty( $data['is_digital'] ) ? 0 : 1,
-			'ysf_room'        => substr( sanitize_text_field( (string) $data['ysf_room'] ), 0, 100 ),
-			'xlx_reflector'   => substr( sanitize_text_field( (string) $data['xlx_reflector'] ), 0, 100 ),
-			'dstar_reflector' => substr( sanitize_text_field( (string) $data['dstar_reflector'] ), 0, 100 ),
-			'wiresx_room'     => substr( sanitize_text_field( (string) $data['wiresx_room'] ), 0, 100 ),
-			'linked_system'   => $linked_system,
-			'system_name'     => substr( sanitize_text_field( (string) $data['system_name'] ), 0, 100 ),
-			'system_url'      => substr( $system_url, 0, 255 ),
-			'discord_mode'    => $discord_mode,
-			'discord_webhook' => $discord_webhook,
-			'facebook_mode'   => 'off' === (string) $data['facebook_mode'] ? 'off' : 'default',
-			'status'          => 'inactive' === $data['status'] ? 'inactive' : 'active',
+			'name'                => $name,
+			'slug'                => self::unique_slug( substr( $slug, 0, 180 ), (int) $id ),
+			'description'         => wp_kses_post( (string) $data['description'] ),
+			'net_type'            => array_key_exists( (string) $data['net_type'], arnl_net_types() ) ? (string) $data['net_type'] : 'other',
+			'mode'                => array_key_exists( (string) $data['mode'], arnl_modes() ) ? (string) $data['mode'] : '',
+			'band'                => $band,
+			'frequency'           => substr( sanitize_text_field( (string) $data['frequency'] ), 0, 100 ),
+			'access_info'         => substr( sanitize_text_field( (string) $data['access_info'] ), 0, 255 ),
+			'start_time'          => $start_time,
+			'end_time'            => $end_time,
+			'recurrence'          => $recurrence,
+			'days_of_week'        => implode( ',', $days ),
+			'weeks_of_month'      => ARNL_Recurrence::MONTHLY === $recurrence ? implode( ',', $weeks ) : '',
+			'months'              => implode( ',', $months ),
+			'start_date'          => '' !== $start_date ? $start_date : null,
+			'end_date'            => '' !== $end_date ? $end_date : null,
+			'ncs_callsign'        => arnl_sanitize_callsign( $data['ncs_callsign'] ),
+			'ncs_name'            => substr( sanitize_text_field( (string) $data['ncs_name'] ), 0, 100 ),
+			'preamble'            => wp_kses_post( (string) $data['preamble'] ),
+			'color'               => $color ? $color : '#2271b1',
+			'allow_checkins'      => empty( $data['allow_checkins'] ) ? 0 : 1,
+			'checkin_before'      => self::window_minutes( $data['checkin_before'] ),
+			'checkin_after'       => self::window_minutes( $data['checkin_after'] ),
+			'logo_id'             => $logo_id,
+			'is_digital'          => empty( $data['is_digital'] ) ? 0 : 1,
+			'ysf_room'            => substr( sanitize_text_field( (string) $data['ysf_room'] ), 0, 100 ),
+			'xlx_reflector'       => substr( sanitize_text_field( (string) $data['xlx_reflector'] ), 0, 100 ),
+			'dstar_reflector'     => substr( sanitize_text_field( (string) $data['dstar_reflector'] ), 0, 100 ),
+			'wiresx_room'         => substr( sanitize_text_field( (string) $data['wiresx_room'] ), 0, 100 ),
+			'dmr_talkgroup'       => substr( sanitize_text_field( (string) $data['dmr_talkgroup'] ), 0, 100 ),
+			'linked_system'       => $linked_system,
+			'system_name'         => substr( sanitize_text_field( (string) $data['system_name'] ), 0, 100 ),
+			'system_url'          => substr( $system_url, 0, 255 ),
+			'discord_mode'        => $discord_mode,
+			'discord_webhook'     => $discord_webhook,
+			'discord_username'    => substr( sanitize_text_field( (string) $data['discord_username'] ), 0, 80 ),
+			'discord_post'        => self::option_list( $data['discord_post'], array_keys( ARNL_Discord::post_options() ) ),
+			'discord_include'     => self::option_list( $data['discord_include'], array_keys( ARNL_Discord::include_options() ) ),
+			'facebook_mode'       => $facebook_mode,
+			'facebook_page_id'    => $facebook_page_id,
+			'facebook_token'      => $facebook_token,
+			'facebook_lead_hours' => max( 0, min( 336, (int) $data['facebook_lead_hours'] ) ),
+			'facebook_template'   => $facebook_template,
+			'status'              => 'inactive' === $data['status'] ? 'inactive' : 'active',
 		);
+	}
+
+	/**
+	 * Keep the allowed keys of a checkbox list, in their canonical order, as a comma list.
+	 *
+	 * @param array|string $value   Submitted keys (array or comma list).
+	 * @param string[]     $allowed Allowed keys.
+	 * @return string
+	 */
+	public static function option_list( $value, array $allowed ) {
+		$chosen = is_array( $value ) ? array_map( 'strval', $value ) : arnl_parse_list( (string) $value );
+		return implode( ',', array_values( array_intersect( $allowed, $chosen ) ) );
 	}
 
 	/**
@@ -508,16 +547,21 @@ class ARNL_Nets {
 
 		$net['id']             = (int) $net['id'];
 		$net['allow_checkins'] = (int) $net['allow_checkins'];
-		foreach ( array( 'checkin_before', 'checkin_after', 'logo_id', 'is_digital', 'linked_system' ) as $key ) {
+		foreach ( array( 'checkin_before', 'checkin_after', 'logo_id', 'is_digital', 'linked_system', 'facebook_lead_hours' ) as $key ) {
 			$net[ $key ] = (int) $net[ $key ];
 		}
-		$net['description']  = (string) $net['description'];
-		$net['preamble']     = (string) $net['preamble'];
-		$net['start_date']   = (string) $net['start_date'];
-		$net['end_date']     = (string) $net['end_date'];
-		$net['days_of_week'] = array_map( 'intval', arnl_parse_list( $net['days_of_week'] ) );
-		$net['months']       = array_map( 'intval', arnl_parse_list( $net['months'] ) );
-		$weeks               = array();
+		foreach ( array( 'discord_post', 'discord_include' ) as $key ) {
+			$net[ $key ] = is_array( $net[ $key ] ) ? $net[ $key ] : arnl_parse_list( (string) $net[ $key ] );
+		}
+		$net['facebook_token']    = (string) $net['facebook_token'];
+		$net['facebook_template'] = (string) $net['facebook_template'];
+		$net['description']       = (string) $net['description'];
+		$net['preamble']          = (string) $net['preamble'];
+		$net['start_date']        = (string) $net['start_date'];
+		$net['end_date']          = (string) $net['end_date'];
+		$net['days_of_week']      = array_map( 'intval', arnl_parse_list( $net['days_of_week'] ) );
+		$net['months']            = array_map( 'intval', arnl_parse_list( $net['months'] ) );
+		$weeks                    = array();
 		foreach ( arnl_parse_list( $net['weeks_of_month'] ) as $w ) {
 			$weeks[] = 'last' === $w ? 'last' : (int) $w;
 		}

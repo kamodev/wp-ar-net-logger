@@ -4,7 +4,7 @@ Tags: ham radio, amateur radio, net control, calendar, discord
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,7 +15,7 @@ Schedule, publish and log Amateur Radio nets: recurring schedules, a public cale
 AR Net Logger helps radio clubs, ARES / RACES groups and net managers run their on-air nets from WordPress.
 
 * **Nets**: name, type (directed, traffic / NTS, ARES, SKYWARN, rag chew, ...), frequency, mode, band, repeater / access info, description, logo, calendar color.
-* **Digital and linked nets**: YSF room, Wires-X room, D-STAR reflector and XLX reflector for digital nets; the linked repeater system and its website for 2 m / 70 cm nets.
+* **Digital and linked nets**: YSF room, Wires-X room, D-STAR reflector, XLX reflector and DMR talkgroup for digital nets; the linked repeater system and its website for 2 m / 70 cm nets.
 * **Net script**: a formatted preamble / script for Net Control, written in the WordPress visual editor, with per-session placeholders ({ncs_callsign}, {frequency}, {topic}, ...) and a sample directed-net script.
 * **Schedules**: weekly, every other week, monthly by week of the month (1st–5th or last), one-time, or manual. Days of the week, months, start / end dates, start / end times.
 * **Session overrides**: change the date, time, topic, Net Control Station or frequency of any single session, cancel it, or add special sessions.
@@ -23,8 +23,8 @@ AR Net Logger helps radio clubs, ARES / RACES groups and net managers run their 
 * **Calendar shortcodes** with visitor filters (Net, Type, Mode, Band): `[arnl_calendar]`, `[arnl_upcoming]`, `[arnl_nets]`, `[arnl_event]`, `[arnl_checkin]`, `[arnl_net]`.
 * **Calendar export**: subscribable iCal feeds (filterable by net, type, mode and band), single-session .ics downloads, Google Calendar and Outlook.com links.
 * **Net Log** for the Net Control Station: the net script (formatted, read-only, or in its own window), open / close net, quick check-in entry with a callsign type-ahead that fills in name, QTH and station type from previous check-ins or the US license database (callook.info), short-time, mobile / portable, relays, traffic precedence and count, acknowledgements, QNI / QTC counts that update in the background, CSV export and print.
-* **Discord**: each check-in posted to a channel as it is logged (plus "on the air" and closing-summary posts), per-net channels, privacy options.
-* **Facebook Page**: upcoming sessions announced automatically (or on demand); cancelled sessions marked; ready-to-paste details for Facebook Page / Group events.
+* **Discord**: each check-in posted to the net's channel as it is logged (plus "on the air" and closing-summary posts), set up per net with its own privacy options.
+* **Facebook Page**: each net's upcoming sessions announced on its Page automatically (or on demand); cancelled sessions marked; ready-to-paste details for Facebook Page / Group events.
 * **Online check-ins** from the website during a window of up to an hour before and after the net (site default or per net), with announcements, callsign validation, duplicate detection, honeypot, rate limiting and optional moderation. The public check-in list shows which stations Net Control has acknowledged on the air and updates itself while the net runs.
 * **Net Control Operator** role that can run nets and log check-ins without editing the site.
 
@@ -58,7 +58,11 @@ Net Logger → Settings → Net permalink base. It is the slug of the "Nets" pag
 
 = How do I post check-ins to Discord? =
 
-Create a webhook in Discord (Server Settings → Integrations → Webhooks), paste its URL under Net Logger → Settings → Discord, save, and send a test message. A net can post to its own channel under Nets → Edit → Sharing.
+Create a webhook in Discord (Server Settings → Integrations → Webhooks), then under Nets → Edit → Discord tick "Post this net to a Discord channel", paste the webhook URL and click "Save and send a test message". Each net has its own channel and options; other nets can reuse a channel with "Or post to the same channel as".
+
+= How do I announce sessions on Facebook? =
+
+Under Nets → Edit → Facebook Page, tick "Announce this net's sessions on a Facebook Page", enter the Page ID and a Page access token, and click "Save and test the connection". Each net can post to its own Page.
 
 = Can it create Facebook events or post in a Facebook Group? =
 
@@ -85,6 +89,14 @@ By default 15 minutes before the start until 15 minutes after the end (Settings 
 Untick "Require a valid amateur radio callsign format" in the settings.
 
 == Changelog ==
+
+= 1.2.3 =
+* DMR talkgroup for digital nets (e.g. "BrandMeister TG 31088, TS2"), next to the YSF, Wires-X, D-STAR and XLX fields: shown on the net and session pages, the Net Log, calendar exports, Discord, Facebook posts and the {digital} placeholder.
+* Discord and Facebook are now set up per net (Nets → Edit → Discord / Facebook Page): each net has its own Discord webhook, "post as" name, post types and included details, and its own Facebook Page ID, access token, announcement lead time and post text.
+* "Save and send a test message" / "Save and test the connection" on the net form; delivery errors are shown per net.
+* Other nets can reuse a Discord channel or Facebook Page ("Or post to the same … as") without the webhook or token being shown.
+* Settings → Discord & Facebook is now an overview of which nets post where.
+* Upgrading copies the previous site-wide Discord and Facebook settings into every net, so nets keep posting where they did.
 
 = 1.2.2 =
 * Net logo: choose an image from the Media Library for each net. Shown on net and session pages, the nets directory, the Net Log and as the Discord post thumbnail.

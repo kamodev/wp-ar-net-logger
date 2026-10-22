@@ -1,7 +1,7 @@
 <?php
 /**
  * Discord: posts check-ins (and net open / close announcements) to a channel
- * through a Discord webhook.
+ * through a Discord webhook. Each net has its own webhook and options.
  *
  * Messages are queued while the request runs and sent at shutdown, after the
  * response has been handed to the browser where the server allows it, so
@@ -17,10 +17,13 @@ defined( 'ABSPATH' ) || exit;
  */
 class ARNL_Discord {
 
-	const ERROR_OPTION = 'arnl_discord_last_error';
+	/**
+	 * Last delivery error of each net: net ID => array( time, message ).
+	 */
+	const ERRORS_OPTION = 'arnl_discord_errors';
 
 	/**
-	 * Messages waiting to be sent: array( webhook, payload ).
+	 * Messages waiting to be sent: array( webhook, payload, net ).
 	 *
 	 * @var array[]
 	 */
@@ -47,20 +50,87 @@ class ARNL_Discord {
 	}
 
 	/**
-	 * Webhook a net posts to ('' when it does not post).
+	 * What a net can post: key => label.
+	 *
+	 * @return array<string,string>
+	 */
+	public static function post_options() {
+		return array(
+			'checkins'   => __( 'Each check-in (website check-ins once approved)', 'ar-net-logger' ),
+			'open_close' => __( 'When the NCS opens the net, and a summary when it closes', 'ar-net-logger' ),
+		);
+	}
+
+	/**
+	 * Optional check-in details: key => label.
+	 *
+	 * @return array<string,string>
+	 */
+	public static function include_options() {
+		return array(
+			'name'          => __( 'Name', 'ar-net-logger' ),
+			'location'      => __( 'Location', 'ar-net-logger' ),
+			'announcements' => __( 'Announcements', 'ar-net-logger' ),
+			'comments'      => __( 'Comments', 'ar-net-logger' ),
+		);
+	}
+
+	/**
+	 * Webhook a net posts to ('' when it does not post to Discord).
 	 *
 	 * @param array $net Net.
 	 * @return string
 	 */
 	public static function webhook_for( array $net ) {
-		$mode = isset( $net['discord_mode'] ) ? $net['discord_mode'] : 'default';
-		if ( 'off' === $mode ) {
-			return '';
+		$webhook = isset( $net['discord_webhook'] ) ? (string) $net['discord_webhook'] : '';
+		return isset( $net['discord_mode'] ) && 'on' === $net['discord_mode'] && self::valid_webhook( $webhook ) ? $webhook : '';
+	}
+
+	/**
+	 * Whether a net posts a kind of message ("checkins", "open_close").
+	 *
+	 * @param array  $net  Net.
+	 * @param string $kind Kind.
+	 * @return bool
+	 */
+	public static function posts( array $net, $kind ) {
+		return '' !== self::webhook_for( $net ) && in_array( $kind, (array) $net['discord_post'], true );
+	}
+
+	/**
+	 * Whether a net's check-in posts include a detail ("name", "location", "announcements", "comments").
+	 *
+	 * @param array  $net   Net.
+	 * @param string $field Detail.
+	 * @return bool
+	 */
+	public static function includes( array $net, $field ) {
+		return isset( $net['discord_include'] ) && in_array( $field, (array) $net['discord_include'], true );
+	}
+
+	/**
+	 * Last delivery error of a net, or null.
+	 *
+	 * @param int $net_id Net ID.
+	 * @return array{time:string,message:string}|null
+	 */
+	public static function last_error( $net_id ) {
+		$errors = get_option( self::ERRORS_OPTION, array() );
+		return is_array( $errors ) && isset( $errors[ (int) $net_id ]['message'] ) ? $errors[ (int) $net_id ] : null;
+	}
+
+	/**
+	 * Send a test message to a net's channel.
+	 *
+	 * @param array $net Net.
+	 * @return true|WP_Error
+	 */
+	public static function test( array $net ) {
+		$webhook = self::webhook_for( $net );
+		if ( '' === $webhook ) {
+			return new WP_Error( 'arnl_discord', __( 'Turn Discord on for this net and save its webhook URL first.', 'ar-net-logger' ) );
 		}
-		if ( 'custom' === $mode && ! empty( $net['discord_webhook'] ) ) {
-			return (string) $net['discord_webhook'];
-		}
-		return (string) ARNL_Settings::get( 'discord_webhook' );
+		return self::send( $webhook, self::test_payload( $net ), $net );
 	}
 
 	/**
@@ -90,16 +160,9 @@ class ARNL_Discord {
 	 * @param int $id Check-in ID.
 	 */
 	protected static function queue_checkin( $id ) {
-		if ( ! ARNL_Settings::get( 'discord_checkins' ) ) {
-			return;
-		}
 		$checkin = ARNL_Checkins::get( $id );
 		$o       = $checkin ? ARNL_Schedule::find( 'e' . $checkin['event_id'] ) : null;
-		if ( ! $checkin || ! $o ) {
-			return;
-		}
-		$webhook = self::webhook_for( $o->net );
-		if ( '' === $webhook ) {
+		if ( ! $checkin || ! $o || ! self::posts( $o->net, 'checkins' ) ) {
 			return;
 		}
 		$number = 0;
@@ -108,7 +171,7 @@ class ARNL_Discord {
 				$number = $i + 1;
 			}
 		}
-		self::queue( $webhook, self::checkin_payload( $checkin, $o, $number ) );
+		self::queue( self::webhook_for( $o->net ), self::checkin_payload( $checkin, $o, $number ), $o->net );
 	}
 
 	/**
@@ -119,16 +182,12 @@ class ARNL_Discord {
 	 * @param string $new_status New status.
 	 */
 	public static function status_changed( $event_id, $old_status, $new_status ) {
-		if ( ! ARNL_Settings::get( 'discord_open_close' ) || ! in_array( $new_status, array( 'active', 'completed' ), true ) ) {
+		if ( ! in_array( $new_status, array( 'active', 'completed' ), true ) ) {
 			return;
 		}
 		$o = ARNL_Schedule::find( 'e' . (int) $event_id );
-		if ( ! $o ) {
-			return;
-		}
-		$webhook = self::webhook_for( $o->net );
-		if ( '' !== $webhook ) {
-			self::queue( $webhook, 'active' === $new_status ? self::open_payload( $o ) : self::close_payload( $o ) );
+		if ( $o && self::posts( $o->net, 'open_close' ) ) {
+			self::queue( self::webhook_for( $o->net ), 'active' === $new_status ? self::open_payload( $o ) : self::close_payload( $o ), $o->net );
 		}
 	}
 
@@ -137,8 +196,9 @@ class ARNL_Discord {
 	 *
 	 * @param string $webhook Webhook URL.
 	 * @param array  $payload Message.
+	 * @param array  $net     Net the message is about.
 	 */
-	public static function queue( $webhook, array $payload ) {
+	public static function queue( $webhook, array $payload, array $net = array() ) {
 		if ( self::valid_webhook( $webhook ) ) {
 			/**
 			 * Filters a Discord message before it is sent. Return false to skip it.
@@ -148,7 +208,7 @@ class ARNL_Discord {
 			 */
 			$payload = apply_filters( 'arnl_discord_payload', $payload, $webhook );
 			if ( is_array( $payload ) ) {
-				self::$queue[] = array( $webhook, $payload );
+				self::$queue[] = array( $webhook, $payload, $net );
 			}
 		}
 	}
@@ -168,7 +228,7 @@ class ARNL_Discord {
 			fastcgi_finish_request();
 		}
 		foreach ( $queue as $message ) {
-			self::send( $message[0], $message[1] );
+			self::send( $message[0], $message[1], $message[2] );
 		}
 	}
 
@@ -177,10 +237,12 @@ class ARNL_Discord {
 	 *
 	 * @param string $webhook Webhook URL.
 	 * @param array  $payload Message.
+	 * @param array  $net     Net (its "post as" name; errors are noted on it).
 	 * @return true|WP_Error
 	 */
-	public static function send( $webhook, array $payload ) {
-		$username = trim( (string) ARNL_Settings::get( 'discord_username' ) );
+	public static function send( $webhook, array $payload, array $net = array() ) {
+		$net_id   = isset( $net['id'] ) ? (int) $net['id'] : 0;
+		$username = isset( $net['discord_username'] ) ? trim( (string) $net['discord_username'] ) : '';
 		if ( '' !== $username && ! isset( $payload['username'] ) ) {
 			$payload['username'] = substr( $username, 0, 80 );
 		}
@@ -197,11 +259,11 @@ class ARNL_Discord {
 				)
 			);
 			if ( is_wp_error( $response ) ) {
-				return self::failed( $response->get_error_message() );
+				return self::failed( $response->get_error_message(), $net_id );
 			}
 			$code = (int) wp_remote_retrieve_response_code( $response );
 			if ( $code >= 200 && $code < 300 ) {
-				delete_option( self::ERROR_OPTION );
+				self::note_error( $net_id, null );
 				return true;
 			}
 			$body = json_decode( (string) wp_remote_retrieve_body( $response ), true );
@@ -211,27 +273,50 @@ class ARNL_Discord {
 				continue;
 			}
 			$message = isset( $body['message'] ) ? (string) $body['message'] : 'HTTP ' . $code;
-			return self::failed( $message );
+			return self::failed( $message, $net_id );
 		}
-		return self::failed( 'HTTP 429' );
+		return self::failed( 'HTTP 429', $net_id );
 	}
 
 	/**
-	 * Remember a delivery error for the settings screen.
+	 * Remember a delivery error for the net's edit screen.
 	 *
 	 * @param string $message Error.
+	 * @param int    $net_id  Net ID.
 	 * @return WP_Error
 	 */
-	protected static function failed( $message ) {
-		update_option(
-			self::ERROR_OPTION,
+	protected static function failed( $message, $net_id ) {
+		self::note_error(
+			$net_id,
 			array(
 				'time'    => current_time( 'mysql' ),
 				'message' => (string) $message,
-			),
-			false
+			)
 		);
 		return new WP_Error( 'arnl_discord', (string) $message );
+	}
+
+	/**
+	 * Store (or clear, with null) a net's last delivery error.
+	 *
+	 * @param int        $net_id Net ID.
+	 * @param array|null $error  Error.
+	 */
+	protected static function note_error( $net_id, $error ) {
+		if ( ! $net_id ) {
+			return;
+		}
+		$errors = get_option( self::ERRORS_OPTION, array() );
+		$errors = is_array( $errors ) ? $errors : array();
+		if ( null === $error && ! isset( $errors[ $net_id ] ) ) {
+			return;
+		}
+		if ( null === $error ) {
+			unset( $errors[ $net_id ] );
+		} else {
+			$errors[ $net_id ] = $error;
+		}
+		update_option( self::ERRORS_OPTION, $errors, false );
 	}
 
 	/**
@@ -244,12 +329,12 @@ class ARNL_Discord {
 	 */
 	public static function checkin_payload( array $c, ARNL_Occurrence $o, $number = 0 ) {
 		$title = $c['callsign'];
-		if ( ARNL_Settings::get( 'discord_include_name' ) && '' !== $c['name'] ) {
+		if ( self::includes( $o->net, 'name' ) && '' !== $c['name'] ) {
 			$title .= ' – ' . self::escape( $c['name'] );
 		}
 
 		$lines = array();
-		if ( ARNL_Settings::get( 'discord_include_location' ) && '' !== $c['location'] ) {
+		if ( self::includes( $o->net, 'location' ) && '' !== $c['location'] ) {
 			$lines[] = '📍 ' . self::escape( $c['location'] );
 		}
 		$station = array();
@@ -270,13 +355,13 @@ class ARNL_Discord {
 			/* translators: %s: relay station callsign. */
 			$lines[] = '🔁 ' . self::escape( sprintf( __( 'Relayed by %s', 'ar-net-logger' ), $c['relayed_by'] ) );
 		}
-		if ( $c['has_announcement'] && ARNL_Settings::get( 'discord_include_announcements' ) ) {
+		if ( $c['has_announcement'] && self::includes( $o->net, 'announcements' ) ) {
 			$lines[] = '📢 ' . ( '' !== $c['announcement']
 				/* translators: %s: announcement text. */
 				? self::escape( sprintf( __( 'Announcement: %s', 'ar-net-logger' ), $c['announcement'] ) )
 				: __( 'Has an announcement for the net', 'ar-net-logger' ) );
 		}
-		if ( ARNL_Settings::get( 'discord_include_comments' ) && '' !== $c['comments'] ) {
+		if ( self::includes( $o->net, 'comments' ) && '' !== $c['comments'] ) {
 			$lines[] = '💬 ' . self::escape( $c['comments'] );
 		}
 		if ( 'online' === $c['source'] ) {
@@ -399,21 +484,20 @@ class ARNL_Discord {
 	}
 
 	/**
-	 * Test message for the settings screen.
+	 * Test message for a net's channel.
 	 *
+	 * @param array $net Net.
 	 * @return array
 	 */
-	public static function test_payload() {
-		return array(
-			'embeds' => array(
-				array(
-					'title'       => __( 'AR Net Logger is connected', 'ar-net-logger' ),
-					/* translators: %s: site name. */
-					'description' => sprintf( __( 'Check-ins from %s will be posted in this channel.', 'ar-net-logger' ), self::escape( get_bloginfo( 'name' ) ) ),
-					'color'       => self::color( '#2271b1' ),
-				),
-			),
+	public static function test_payload( array $net = array() ) {
+		$name  = isset( $net['name'] ) ? (string) $net['name'] : get_bloginfo( 'name' );
+		$embed = array(
+			'title'       => __( 'AR Net Logger is connected', 'ar-net-logger' ),
+			/* translators: %s: net name. */
+			'description' => sprintf( __( 'Check-ins of the %s will be posted in this channel.', 'ar-net-logger' ), self::escape( $name ) ),
+			'color'       => self::color( isset( $net['color'] ) ? $net['color'] : '#2271b1' ),
 		);
+		return array( 'embeds' => array( $net ? self::with_logo( $embed, $net ) : $embed ) );
 	}
 
 	/**
